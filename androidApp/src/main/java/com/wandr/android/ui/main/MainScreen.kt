@@ -25,8 +25,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.wandr.android.ui.activity.ActivityHistoryScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
+import com.wandr.android.ui.common.SlideInOverlay
 import com.wandr.android.ui.profile.ProfileScreen
 import com.wandr.android.ui.team.GroupsScreen
+import com.wandr.android.ui.team.TeamDetailsScreen
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.presentation.main.MainViewModel
 import org.koin.compose.koinInject
@@ -49,21 +51,28 @@ fun MainScreen(
     val tabs = MainTab.entries.filter { it != MainTab.Groups || state.isManager }
     val selectedTab = if (selectedRequested in tabs) selectedRequested else MainTab.Activities
     val userId = state.userId
+    // Group details slide in over the whole main screen, including the tab bar (like a pushed page).
+    var openTeamId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    MainScreenContent(
-        tabs = tabs,
-        selectedTab = selectedTab,
-        onSelectTab = { selectedRequested = it },
-        isLoading = state.isLoading,
-        modifier = modifier
-    ) { tab ->
-        if (userId != null) {
-            when (tab) {
-                MainTab.Activities -> ActivityHistoryScreen(userId = userId)
-                MainTab.Challenges -> ChallengeListScreen(userId = userId, teamId = state.teamId)
-                MainTab.Groups -> GroupsScreen(userId = userId)
-                MainTab.Profile -> ProfileScreen(userId = userId, onLogout = { viewModel.logout(onLogout) })
+    Box(modifier = modifier) {
+        MainScreenContent(
+            tabs = tabs,
+            selectedTab = selectedTab,
+            onSelectTab = { selectedRequested = it },
+            isLoading = state.isLoading
+        ) { tab ->
+            if (userId != null) {
+                when (tab) {
+                    MainTab.Activities -> ActivityHistoryScreen(userId = userId)
+                    MainTab.Challenges -> ChallengeListScreen(userId = userId, teamId = state.teamId)
+                    MainTab.Groups -> GroupsScreen(userId = userId, onOpenTeam = { openTeamId = it })
+                    MainTab.Profile -> ProfileScreen(userId = userId, onLogout = { viewModel.logout(onLogout) })
+                }
             }
+        }
+
+        SlideInOverlay(item = openTeamId.takeIf { userId != null }, onBack = { openTeamId = null }) { teamId ->
+            TeamDetailsScreen(teamId = teamId, userId = userId.orEmpty(), onBack = { openTeamId = null })
         }
     }
 }

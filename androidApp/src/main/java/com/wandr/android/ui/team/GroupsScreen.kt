@@ -1,7 +1,6 @@
 package com.wandr.android.ui.team
 
 import android.content.res.Configuration
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,31 +34,27 @@ import com.wandr.presentation.team.TeamIntent
 import com.wandr.presentation.team.TeamViewModel
 import org.koin.compose.koinInject
 
-/** Groups tab for managers: list -> details (drill-down) and a dialog to create a group. */
+/**
+ * Groups tab for managers: the list and a dialog to create a group. Opening a group is reported via
+ * [onOpenTeam]; the details page is shown by the main screen, above the tab bar.
+ */
 @Composable
 fun GroupsScreen(
     userId: String,
+    onOpenTeam: (teamId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TeamViewModel = koinInject()
 ) {
     val state by viewModel.uiState.collectAsState()
-    var selectedTeamId by rememberSaveable { mutableStateOf<String?>(null) }
     var showCreate by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(userId) { viewModel.processIntent(TeamIntent.LoadUserTeams(userId)) }
 
-    val teamId = selectedTeamId
-    if (teamId != null) {
-        // Drill-down inside the tab; system back returns to the list.
-        BackHandler { selectedTeamId = null }
-        TeamDetailsScreen(teamId = teamId, userId = userId, onBack = { selectedTeamId = null }, modifier = modifier)
-    } else {
-        GroupList(
-            teams = state.teams,
-            onSelectTeam = { selectedTeamId = it.id },
-            onCreateTeam = { showCreate = true },
-            modifier = modifier
-        )
-    }
+    GroupList(
+        teams = state.teams,
+        onSelectTeam = { onOpenTeam(it.id) },
+        onCreateTeam = { showCreate = true },
+        modifier = modifier
+    )
 
     if (showCreate) {
         Dialog(
