@@ -1,0 +1,66 @@
+package com.wandr.presentation.auth
+
+import com.wandr.domain.usecase.LoginUseCase
+import com.wandr.domain.usecase.RegisterUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+class LoginViewModel(
+    private val loginUseCase: LoginUseCase,
+    private val registerUseCase: RegisterUseCase,
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
+) {
+    private val _uiState = MutableStateFlow(LoginState())
+    val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
+
+    fun processIntent(intent: LoginIntent) {
+        when (intent) {
+            is LoginIntent.EmailChanged -> {
+                _uiState.update { it.copy(emailInput = intent.email, errorMessage = null) }
+            }
+            is LoginIntent.PasswordChanged -> {
+                _uiState.update { it.copy(passwordInput = intent.password, errorMessage = null) }
+            }
+            is LoginIntent.SubmitLogin -> performLogin()
+            is LoginIntent.SubmitRegister -> performRegister()
+            is LoginIntent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
+        }
+    }
+
+    private fun performLogin() {
+        val email = _uiState.value.emailInput
+        val password = _uiState.value.passwordInput
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        
+        scope.launch {
+            val result = loginUseCase(email, password)
+            result.onSuccess {
+                _uiState.update { it.copy(isLoading = false, isAuthenticated = true) }
+            }.onFailure { error ->
+                _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Login failed") }
+            }
+        }
+    }
+
+    private fun performRegister() {
+        val email = _uiState.value.emailInput
+        val password = _uiState.value.passwordInput
+        val username = email.substringBefore("@")
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        
+        scope.launch {
+            val result = registerUseCase(email, password, username)
+            result.onSuccess {
+                _uiState.update { it.copy(isLoading = false, isAuthenticated = true) }
+            }.onFailure { error ->
+                _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Registration failed") }
+            }
+        }
+    }
+}

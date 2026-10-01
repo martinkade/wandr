@@ -1,0 +1,30 @@
+# OS & IDE Files
+.DS_Store
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Build & Gradle Output
+build/
+*/build/
+.gradle/
+*.class
+*.log
+
+# Signing Credentials & API Secrets
+androidApp/signing/*.jks
+androidApp/signing/release*.keystore
+androidApp/signing/release*.key.properties
+androidApp/signing/*.json
+!androidApp/signing/README.md
+
+# Fastlane outputs & reports
+androidApp/fastlane/report.xml
+androidApp/fastlane/Preview.html
+androidApp/fastlane/screenshots/
+androidApp/fastlane/test_output/
+
+# Local Environment Configuration
+local.properties

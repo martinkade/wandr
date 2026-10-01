@@ -1,0 +1,29 @@
+/* German Localization */
+"app_name" = "WANDR App";
+"app_tagline" = "Outdoor- & Team-Fitness";
+"email_label" = "E-Mail";
+"email_address_label" = "E-Mail-Adresse";
+"password_label" = "Passwort";
+"password_hint" = "Passwort (mind. 6 Zeichen)";
+"sign_in_button" = "Anmelden";
+"create_account_button" = "Konto erstellen";
+"dont_have_account" = "Noch kein Konto? Registrieren";
+"already_have_account" = "Bereits ein Konto? Anmelden";
+"join_wandr_title" = "WANDR beitreten";
+"join_wandr_subtitle" = "Erstelle dein Konto, um an Challenges teilzunehmen";
+"user_profile_title" = "Benutzerprofil";
+"display_name_label" = "Anzeigename";
+"bio_label" = "Bio / Beschreibung";
+"save_profile_button" = "Profil speichern";
+
+/* Team & Invite Localization */
+"create_team_title" = "Neues Team erstellen";
+"team_name_label" = "Teamname";
+"team_description_label" = "Teambeschreibung";
+"create_team_button" = "Team erstellen";
+"join_team_title" = "Team beitreten";
+"invite_code_label" = "8-stelliger Einladungscode";
+"join_team_button" = "Team beitreten";
+"qr_invite_title" = "Team QR-Code Einladung";
+"scan_qr_to_join" = "Scanne diesen QR-Code mit WANDR, um dem Team beizutreten!";
+"team_members_title" = "Team-Mitglieder";

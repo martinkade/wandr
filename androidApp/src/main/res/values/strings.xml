@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WANDR</string>
+    <string name="app_tagline">Outdoor &amp; Team Fitness</string>
+    <string name="email_label">Email</string>
+    <string name="email_address_label">Email Address</string>
+    <string name="password_label">Password</string>
+    <string name="password_hint">Password (6+ chars)</string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="create_account_button">Create Account</string>
+    <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+    <string name="already_have_account">Already have an account? Sign In</string>
+    <string name="join_wandr_title">Join WANDR</string>
+    <string name="join_wandr_subtitle">Create your account to start challenges</string>
+    <string name="user_profile_title">User Profile</string>
+    <string name="display_name_label">Display Name</string>
+    <string name="bio_label">Bio / Description</string>
+    <string name="save_profile_button">Save Profile</string>
+    <string name="kmp_ready_text">WANDR Fitness — KMP Ready</string>
+
+    <!-- Team & Invite Localization -->
+    <string name="create_team_title">Create New Team</string>
+    <string name="team_name_label">Team Name</string>
+    <string name="team_description_label">Team Description</string>
+    <string name="create_team_button">Create Team</string>
+    <string name="join_team_title">Join Team</string>
+    <string name="invite_code_label">8-Character Invite Code</string>
+    <string name="join_team_button">Join Team</string>
+    <string name="qr_invite_title">Team QR Code Invite</string>
+    <string name="scan_qr_to_join">Scan this QR Code with WANDR to join the team!</string>
+    <string name="team_members_title">Team Members</string>
+</resources>

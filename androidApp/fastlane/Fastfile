@@ -1,0 +1,38 @@
+ENV['SUPPLY_UPLOAD_MAX_RETRIES']='5'
+
+default_platform(:android)
+
+platform :android do
+  desc "Runs all unit tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Deploy a new version of WANDR to Google Play Internal track"
+  lane :wandr do
+    gradle(task: "clean")
+    gradle(
+        task: "bundleRelease"
+    )
+    upload_to_play_store(
+        track: 'internal',
+        aab: 'build/outputs/bundle/release/androidApp-release.aab',
+        skip_upload_apk: true,
+        skip_upload_metadata: true,
+        skip_upload_changelogs: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        timeout: 600
+    )
+    upload_to_play_store(
+        track: 'internal',
+        track_promote_to: 'alpha',
+        skip_upload_apk: true,
+        skip_upload_aab: true,
+        skip_upload_metadata: true,
+        skip_upload_changelogs: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true
+    )
+  end
+end
