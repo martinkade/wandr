@@ -47,7 +47,9 @@ class SyncManager(
                 // 2. Sync Teams
                 val dirtyTeams = teamDao.getDirtyTeams()
                 for (team in dirtyTeams) {
-                    supabase.postgrest.from("teams").upsert(team)
+                    supabase.postgrest.from("teams").update(team.toUpdatePayload()) {
+                        filter { eq("id", team.id) }
+                    }
                     teamDao.insertTeam(team.copy(syncStatus = "SYNCED"))
                     totalSynced++
                 }

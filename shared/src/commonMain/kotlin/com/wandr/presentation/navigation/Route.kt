@@ -46,4 +46,4 @@ data object LiveGpsTrackingRoute : Route
 data object InitRoute : Route
 
 @Serializable
-data object DashboardRoute : Route
+data object MainRoute : Route

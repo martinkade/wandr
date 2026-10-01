@@ -57,7 +57,7 @@
     <string name="manual_entry">Manual Entry</string>
     <string name="gps_tracked">GPS Tracked</string>
 
-    <!-- Start-up & dashboard -->
+    <!-- Start-up & main screen -->
     <string name="init_loading">Preparing WANDR…</string>
     <string name="init_failed_title">Start-up failed</string>
     <string name="retry_button">Try Again</string>
@@ -87,4 +87,35 @@
     <string name="permission_location_title">Location Access</string>
     <string name="permission_location_message">WANDR records the route, distance and elevation of your activity using your precise location, including while the screen is off. Your location is only collected while a recording is running.\n\nOn the next screen you may also be asked to allow notifications, which show that a recording is active.</string>
     <string name="permission_location_denied">Location access is turned off. Enable it in the app settings to record GPS activities.</string>
+
+    <!-- Groups (managers) -->
+    <string name="tab_groups">Groups</string>
+    <string name="groups_empty">No groups yet. Create your first group to invite members.</string>
+    <string name="groups_new_button">New Group</string>
+    <string name="group_invite_code">Invite code: %1$s</string>
+
+    <!-- Profile edit mode -->
+    <string name="profile_edit_button">Edit</string>
+    <string name="profile_saved_message">Profile saved</string>
+    <string name="profile_avatar_updated_message">Profile photo updated</string>
+
+    <!-- Group details -->
+    <string name="team_photo_title">Group Photo</string>
+    <string name="team_cover_title">Cover Photo</string>
+    <string name="team_cover_change">Change Cover</string>
+    <string name="team_cover_content_description">Cover photo</string>
+    <string name="team_members_count">Members (%1$d)</string>
+    <string name="team_no_members">No members yet.</string>
+    <string name="team_saved_message">Group saved</string>
+    <string name="team_image_updated_message">Image updated</string>
+    <string name="role_admin">Admin</string>
+    <string name="role_member">Member</string>
+    <string name="back_button">Back</string>
+
+    <!-- Edit sheets -->
+    <string name="profile_edit_title">Edit Profile</string>
+    <string name="team_edit_title">Edit Group</string>
+    <string name="empty_value_placeholder">—</string>
+
+    <string name="team_details_title">Group Details</string>
 </resources>

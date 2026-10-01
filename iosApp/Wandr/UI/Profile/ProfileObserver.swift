@@ -10,8 +10,9 @@ final class ProfileObserver: ObservableObject {
     @Published var isLoading = true
     @Published var isSaving = false
     @Published var isAvatarUpdating = false
-    @Published var errorMessage: String?
-    @Published var successMessage: String?
+    @Published var snackbar: SnackbarMessage?
+    /// Increments after each successful save so the view can leave edit mode.
+    @Published var saveCompletedCount = 0
 
     private let viewModel = IosDependencies.shared.profileViewModel()
     nonisolated(unsafe) private var job: (any Kotlinx_coroutines_coreJob)?
@@ -40,6 +41,12 @@ final class ProfileObserver: ObservableObject {
 
     func save() { viewModel.processIntent(intent: ProfileIntentSaveProfile.shared) }
 
+    /// Drops unsaved edits and shows the stored profile again.
+    func discard() {
+        // The next state (no unsaved changes) restores displayName / bio from the stored profile.
+        viewModel.processIntent(intent: ProfileIntentDiscardChanges.shared)
+    }
+
     func uploadAvatar(_ jpeg: Data) {
         guard let userId else { return }
         viewModel.processIntent(intent: ProfileIntentUploadAvatar(userId: userId, jpegBytes: KotlinByteArray.from(data: jpeg)))
@@ -55,8 +62,20 @@ final class ProfileObserver: ObservableObject {
         isLoading = state.isLoading
         isSaving = state.isSaving
         isAvatarUpdating = state.isAvatarUpdating
-        errorMessage = state.errorMessage
-        successMessage = state.successMessage
+        if let error = state.errorMessage {
+            snackbar = SnackbarMessage(text: error, isError: true)
+            viewModel.processIntent(intent: ProfileIntentClearMessages.shared)
+        } else if let success = state.success {
+            switch success {
+            case .profileSaved:
+                snackbar = SnackbarMessage(text: String(localized: "profile_saved_message"))
+                saveCompletedCount += 1
+            case .avatarUpdated:
+                snackbar = SnackbarMessage(text: String(localized: "profile_avatar_updated_message"))
+            default: break
+            }
+            viewModel.processIntent(intent: ProfileIntentClearMessages.shared)
+        }
         // While the user is editing, the local text fields are the source of truth.
         if !state.hasUnsavedChanges, let profile = state.profile {
             displayName = profile.displayName

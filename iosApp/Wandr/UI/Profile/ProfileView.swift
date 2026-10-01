@@ -1,81 +1,35 @@
 import SwiftUI
 
+/// Read-only profile. "Edit" opens `ProfileEditView` in a sheet; saving closes it.
+/// Results (saved / photo updated / error) are reported in a snackbar (on the sheet while it is open).
 struct ProfileView: View {
     @Binding var displayName: String
     @Binding var bio: String
     var avatarUrl: String? = nil
     var isSaving: Bool = false
     var isAvatarUpdating: Bool = false
-    var errorMessage: String? = nil
-    var successMessage: String? = nil
+    /// Increments after each successful save; closes the sheet.
+    var saveCompletedCount: Int = 0
+    @Binding var snackbar: SnackbarMessage?
     var onSave: () -> Void = {}
+    var onCancel: () -> Void = {}
     var onAvatarReady: (Data) -> Void = { _ in }
     var onRemoveAvatar: () -> Void = {}
+    var onLogout: () -> Void = {}
+    /// Only for previews.
+    var startEditing: Bool = false
+
+    @State private var isEditing = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                Text(LocalizedStringKey("user_profile_title"))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
+                AvatarPickerView(displayName: displayName, avatarUrl: avatarUrl, isBusy: isAvatarUpdating, isEnabled: false)
 
-                AvatarEditorView(
-                    displayName: displayName,
-                    avatarUrl: avatarUrl,
-                    isBusy: isAvatarUpdating,
-                    onAvatarReady: onAvatarReady,
-                    onRemoveAvatar: onRemoveAvatar
-                )
-
-                VStack(spacing: 16) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(LocalizedStringKey("display_name_label"))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        TextField(LocalizedStringKey("display_name_label"), text: $displayName)
-                            .textFieldStyle(.plain)
-                            .padding()
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(12)
-                    }
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(LocalizedStringKey("bio_label"))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        TextEditor(text: $bio)
-                            .frame(height: 100)
-                            .padding(8)
-                            .scrollContentBackground(.hidden)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(12)
-                    }
+                VStack(spacing: 8) {
+                    LabeledValueView(label: "display_name_label", value: displayName)
+                    LabeledValueView(label: "bio_label", value: bio)
                 }
-
-                if let errorMessage {
-                    Text(errorMessage).font(.footnote).foregroundColor(.red)
-                }
-                if let successMessage {
-                    Text(successMessage).font(.footnote).foregroundColor(.green)
-                }
-
-                Button(action: onSave) {
-                    Group {
-                        if isSaving {
-                            ProgressView().tint(.wandrOnPrimary)
-                        } else {
-                            Text(LocalizedStringKey("save_profile_button")).font(.headline)
-                        }
-                    }
-                    .foregroundColor(.wandrOnPrimary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color.wandrPrimary)
-                    .cornerRadius(12)
-                }
-                .disabled(isSaving)
             }
             .padding(24)
         }
@@ -87,12 +41,42 @@ struct ProfileView: View {
             )
             .ignoresSafeArea()
         )
+        .navigationTitle(LocalizedStringKey("user_profile_title"))
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(LocalizedStringKey("logout_button"), role: .destructive, action: onLogout)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(LocalizedStringKey("profile_edit_button")) { isEditing = true }
+            }
+        }
+        .snackbar($snackbar)
+        .sheet(isPresented: $isEditing, onDismiss: onCancel) {
+            ProfileEditView(
+                displayName: $displayName,
+                bio: $bio,
+                avatarUrl: avatarUrl,
+                isSaving: isSaving,
+                isAvatarUpdating: isAvatarUpdating,
+                snackbar: $snackbar,
+                onSave: onSave,
+                onCancel: { isEditing = false },
+                onAvatarReady: onAvatarReady,
+                onRemoveAvatar: onRemoveAvatar
+            )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .interactiveDismissDisabled(isSaving)
+        }
+        .onChange(of: saveCompletedCount) { _, _ in isEditing = false }
+        .onAppear { if startEditing { isEditing = true } }
     }
 }
 
 /// Connects `ProfileView` to the shared `ProfileViewModel` for a signed-in user.
 struct ProfileContainerView: View {
     let userId: String?
+    var onLogout: () -> Void = {}
     @StateObject private var observer = ProfileObserver()
 
     var body: some View {
@@ -102,11 +86,13 @@ struct ProfileContainerView: View {
             avatarUrl: observer.avatarUrl,
             isSaving: observer.isSaving,
             isAvatarUpdating: observer.isAvatarUpdating,
-            errorMessage: observer.errorMessage,
-            successMessage: observer.successMessage,
+            saveCompletedCount: observer.saveCompletedCount,
+            snackbar: $observer.snackbar,
             onSave: observer.save,
+            onCancel: observer.discard,
             onAvatarReady: observer.uploadAvatar,
-            onRemoveAvatar: observer.removeAvatar
+            onRemoveAvatar: observer.removeAvatar,
+            onLogout: onLogout
         )
         .task(id: userId) {
             if let userId { observer.load(userId: userId) }
@@ -114,16 +100,29 @@ struct ProfileContainerView: View {
     }
 }
 
-#Preview("Light Mode") {
-    ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."))
-        .preferredColorScheme(.light)
+#Preview("Read-only") {
+    NavigationStack {
+        ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."), snackbar: .constant(nil))
+    }
 }
 
-#Preview("Dark Mode") {
-    ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."), successMessage: "Profile saved!")
-        .preferredColorScheme(.dark)
+#Preview("Read-only Dark") {
+    NavigationStack {
+        ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."), snackbar: .constant(nil))
+    }
+    .preferredColorScheme(.dark)
 }
 
-#Preview("iPad", traits: .fixedLayout(width: 820, height: 1000)) {
-    ProfileView(displayName: .constant("Martin Kade"), bio: .constant(""), errorMessage: "Save failed")
+#Preview("With edit sheet") {
+    NavigationStack {
+        ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."),
+                    snackbar: .constant(nil), startEditing: true)
+    }
+}
+
+#Preview("iPad, snackbar", traits: .fixedLayout(width: 820, height: 1000)) {
+    NavigationStack {
+        ProfileView(displayName: .constant("Martin Kade"), bio: .constant(""),
+                    snackbar: .constant(SnackbarMessage(text: "Profile saved")))
+    }
 }

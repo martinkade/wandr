@@ -4,6 +4,7 @@ import com.wandr.domain.repository.TeamRepository
 import com.wandr.domain.usecase.CreateTeamUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinTeamViaInviteUseCase
+import com.wandr.domain.usecase.RefreshUserTeamsUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -17,6 +18,7 @@ class TeamViewModel(
     private val getUserTeamsUseCase: GetUserTeamsUseCase,
     private val createTeamUseCase: CreateTeamUseCase,
     private val joinTeamViaInviteUseCase: JoinTeamViaInviteUseCase,
+    private val refreshUserTeamsUseCase: RefreshUserTeamsUseCase,
     private val teamRepository: TeamRepository,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
@@ -40,6 +42,8 @@ class TeamViewModel(
     private fun loadUserTeams(userId: String) {
         _uiState.update { it.copy(isLoading = true) }
         scope.launch {
+            // The local cache drives the UI; the remote pull only feeds it (and may fail while offline).
+            launch { refreshUserTeamsUseCase(userId) }
             getUserTeamsUseCase(userId).collect { teams ->
                 _uiState.update { it.copy(teams = teams, isLoading = false) }
             }

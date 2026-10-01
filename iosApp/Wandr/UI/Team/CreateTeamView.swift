@@ -3,6 +3,8 @@ import SwiftUI
 struct CreateTeamView: View {
     @State private var nameInput: String = ""
     @State private var descriptionInput: String = ""
+    var isLoading: Bool = false
+    var errorMessage: String? = nil
     var onCreateTeam: (String, String) -> Void = { _, _ in }
 
     var body: some View {
@@ -25,10 +27,20 @@ struct CreateTeamView: View {
                     .cornerRadius(12)
             }
 
+            if let errorMessage {
+                Text(errorMessage).font(.footnote).foregroundColor(.red)
+            }
+
             Button(action: {
                 onCreateTeam(nameInput, descriptionInput)
             }) {
-                Text(LocalizedStringKey("create_team_button"))
+                Group {
+                    if isLoading {
+                        ProgressView().tint(.wandrOnPrimary)
+                    } else {
+                        Text(LocalizedStringKey("create_team_button"))
+                    }
+                }
                     .font(.headline)
                     .foregroundColor(.wandrOnPrimary)
                     .frame(maxWidth: .infinity)
@@ -36,6 +48,7 @@ struct CreateTeamView: View {
                     .background(Color.wandrPrimary)
                     .cornerRadius(12)
             }
+            .disabled(isLoading)
 
             Spacer()
         }

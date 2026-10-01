@@ -6,7 +6,7 @@ enum RootDestination {
     case failed(String)
     case login
     case register
-    case dashboard
+    case main
 }
 
 /// Bridges the shared StartupViewModel / LoginViewModel StateFlows into SwiftUI.
@@ -29,7 +29,7 @@ final class RootViewModel: ObservableObject {
             Task { @MainActor in
                 guard let self else { return }
                 self.loginState = state
-                if state.isAuthenticated { self.destination = .dashboard }
+                if state.isAuthenticated { self.destination = .main }
             }
         })
         startup.processIntent(intent: StartupIntentStart.shared)
@@ -51,7 +51,7 @@ final class RootViewModel: ObservableObject {
 
     private func handle(_ state: StartupState) {
         switch state {
-        case is StartupStateAuthenticated: destination = .dashboard
+        case is StartupStateAuthenticated: destination = .main
         case is StartupStateUnauthenticated: destination = .login
         case let failed as StartupStateFailed: destination = .failed(failed.message)
         default: destination = .initializing

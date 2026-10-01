@@ -451,6 +451,25 @@ CREATE POLICY "Avatar Upload Access" ON storage.objects FOR INSERT TO authentica
 -- Required by the profile avatar feature, which deletes the previous avatar file after an update/removal.
 CREATE POLICY "Avatar Delete Access" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 
+-- Team avatar / cover: only the team owner and team admins may add or remove images in the folder <team_id>/...
+-- Required by the group details feature (upload new image, delete the previous one).
+CREATE POLICY "Team Image Upload Access" ON storage.objects FOR INSERT TO authenticated WITH CHECK (
+    bucket_id = 'team-covers' AND EXISTS (
+        SELECT 1 FROM public.teams t
+        WHERE t.id::text = (storage.foldername(name))[1]
+          AND (t.created_by = auth.uid() OR EXISTS (
+              SELECT 1 FROM public.team_members m WHERE m.team_id = t.id AND m.user_id = auth.uid() AND m.role = 'admin'))
+    )
+);
+CREATE POLICY "Team Image Delete Access" ON storage.objects FOR DELETE TO authenticated USING (
+    bucket_id = 'team-covers' AND EXISTS (
+        SELECT 1 FROM public.teams t
+        WHERE t.id::text = (storage.foldername(name))[1]
+          AND (t.created_by = auth.uid() OR EXISTS (
+              SELECT 1 FROM public.team_members m WHERE m.team_id = t.id AND m.user_id = auth.uid() AND m.role = 'admin'))
+    )
+);
+
 CREATE POLICY "FIT File Upload Access" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'fit-files' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "FIT File Read Access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'fit-files' AND auth.uid()::text = (storage.foldername(name))[1]);
 ```

@@ -21,6 +21,7 @@ private class FakeProfileDao : ProfileDao {
     fun addDirty(profile: ProfileEntity) { dirtyProfiles.add(profile) }
     override fun getProfileById(id: String): Flow<ProfileEntity?> = flowOf(null)
     override suspend fun getProfileOnce(id: String): ProfileEntity? = null
+    override fun getProfilesByIds(ids: List<String>): Flow<List<ProfileEntity>> = flowOf(emptyList())
     override suspend fun insertProfile(profile: ProfileEntity) { }
     override suspend fun updateProfile(profile: ProfileEntity) { }
     override suspend fun getDirtyProfiles(): List<ProfileEntity> = dirtyProfiles
@@ -28,6 +29,7 @@ private class FakeProfileDao : ProfileDao {
 
 private class FakeTeamDao : TeamDao {
     override fun getTeamById(id: String): Flow<TeamEntity?> = flowOf(null)
+    override suspend fun getTeamOnce(id: String): TeamEntity? = null
     override fun getTeamsForUser(userId: String): Flow<List<TeamEntity>> = flowOf(emptyList())
     override suspend fun getDirtyTeams(): List<TeamEntity> = emptyList()
     override suspend fun insertTeam(team: TeamEntity) { }

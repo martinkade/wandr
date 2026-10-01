@@ -29,7 +29,8 @@ fun AvatarPicker(
     displayName: String,
     onPickAvatar: () -> Unit,
     modifier: Modifier = Modifier,
-    isBusy: Boolean = false
+    isBusy: Boolean = false,
+    enabled: Boolean = true
 ) {
     val initials = displayName.take(2).uppercase().ifEmpty { "WA" }
 
@@ -38,7 +39,7 @@ fun AvatarPicker(
             .size(96.dp)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.primaryContainer)
-            .clickable(enabled = !isBusy) { onPickAvatar() },
+            .clickable(enabled = enabled && !isBusy) { onPickAvatar() },
         contentAlignment = Alignment.Center
     ) {
         if (avatarUrl != null) {

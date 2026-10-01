@@ -2,6 +2,8 @@ package com.wandr.presentation.profile
 
 import com.wandr.domain.model.Profile
 
+enum class ProfileSuccess { PROFILE_SAVED, AVATAR_UPDATED }
+
 data class ProfileState(
     val profile: Profile? = null,
     val isLoading: Boolean = false,
@@ -10,5 +12,6 @@ data class ProfileState(
     /** True while the user has edited name/bio without saving; protects the draft from cache emissions. */
     val hasUnsavedChanges: Boolean = false,
     val errorMessage: String? = null,
-    val successMessage: String? = null
+    /** What succeeded last; the UI maps it to a localized message. Cleared via [ProfileIntent.ClearMessages]. */
+    val success: ProfileSuccess? = null
 )

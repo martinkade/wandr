@@ -57,7 +57,7 @@
     <string name="manual_entry">Manueller Eintrag</string>
     <string name="gps_tracked">GPS Ausgezeichnet</string>
 
-    <!-- Start & Dashboard -->
+    <!-- Start & Hauptbildschirm -->
     <string name="init_loading">WANDR wird vorbereitet…</string>
     <string name="init_failed_title">Start fehlgeschlagen</string>
     <string name="retry_button">Erneut versuchen</string>
@@ -87,4 +87,35 @@
     <string name="permission_location_title">Standortzugriff</string>
     <string name="permission_location_message">WANDR zeichnet Strecke, Distanz und Höhenmeter deiner Aktivität anhand deines genauen Standorts auf, auch bei ausgeschaltetem Bildschirm. Dein Standort wird nur erfasst, solange eine Aufzeichnung läuft.\n\nAuf dem nächsten Bildschirm wirst du eventuell auch gefragt, ob Benachrichtigungen erlaubt sind. Sie zeigen an, dass eine Aufzeichnung aktiv ist.</string>
     <string name="permission_location_denied">Der Standortzugriff ist ausgeschaltet. Aktiviere ihn in den App-Einstellungen, um GPS-Aktivitäten aufzuzeichnen.</string>
+
+    <!-- Gruppen (Manager) -->
+    <string name="tab_groups">Gruppen</string>
+    <string name="groups_empty">Noch keine Gruppen. Lege deine erste Gruppe an, um Mitglieder einzuladen.</string>
+    <string name="groups_new_button">Neue Gruppe</string>
+    <string name="group_invite_code">Einladungscode: %1$s</string>
+
+    <!-- Profil bearbeiten -->
+    <string name="profile_edit_button">Bearbeiten</string>
+    <string name="profile_saved_message">Profil gespeichert</string>
+    <string name="profile_avatar_updated_message">Profilfoto aktualisiert</string>
+
+    <!-- Gruppendetails -->
+    <string name="team_photo_title">Gruppenbild</string>
+    <string name="team_cover_title">Titelbild</string>
+    <string name="team_cover_change">Titelbild ändern</string>
+    <string name="team_cover_content_description">Titelbild</string>
+    <string name="team_members_count">Mitglieder (%1$d)</string>
+    <string name="team_no_members">Noch keine Mitglieder.</string>
+    <string name="team_saved_message">Gruppe gespeichert</string>
+    <string name="team_image_updated_message">Bild aktualisiert</string>
+    <string name="role_admin">Admin</string>
+    <string name="role_member">Mitglied</string>
+    <string name="back_button">Zurück</string>
+
+    <!-- Bearbeiten-Sheets -->
+    <string name="profile_edit_title">Profil bearbeiten</string>
+    <string name="team_edit_title">Gruppe bearbeiten</string>
+    <string name="empty_value_placeholder">—</string>
+
+    <string name="team_details_title">Gruppendetails</string>
 </resources>

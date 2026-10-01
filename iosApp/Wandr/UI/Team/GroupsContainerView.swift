@@ -1,0 +1,38 @@
+@preconcurrency import shared
+import SwiftUI
+
+/// "Groups" tab for managers: the list plus a sheet to create a new group, connected to the shared TeamViewModel.
+struct GroupsContainerView: View {
+    let userId: String?
+    @StateObject private var observer = TeamObserver()
+    @State private var showCreate = false
+    @State private var selectedTeamId: String?
+
+    var body: some View {
+        NavigationStack {
+            TeamListView(
+                teams: observer.teams,
+                onSelectTeam: { selectedTeamId = $0.id },
+                onCreateTeam: {
+                    observer.resetMessages()
+                    showCreate = true
+                }
+            )
+            .navigationTitle(LocalizedStringKey("tab_groups"))
+            .navigationDestination(item: $selectedTeamId) { teamId in
+                if let userId { TeamDetailsContainerView(teamId: teamId, userId: userId) }
+            }
+        }
+        .sheet(isPresented: $showCreate) {
+            CreateTeamView(
+                isLoading: observer.isLoading,
+                errorMessage: observer.errorMessage,
+                onCreateTeam: { name, description in observer.create(name: name, description: description) }
+            )
+        }
+        .onChange(of: observer.createdCount) { _, _ in showCreate = false }
+        .task(id: userId) {
+            if let userId { observer.load(userId: userId) }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-package com.wandr.android.ui.profile
+package com.wandr.android.ui.common
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
@@ -9,11 +9,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
+import com.wandr.android.ui.theme.WandrTheme
 
+/** Lets the user choose where an image comes from (library / camera) or remove the current one. */
 @Composable
-fun AvatarSourceDialog(
+fun ImageSourceDialog(
+    title: String,
     canTakePhoto: Boolean,
     canRemove: Boolean,
     onChooseFromLibrary: () -> Unit,
@@ -23,7 +25,7 @@ fun AvatarSourceDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.avatar_change_title)) },
+        title = { Text(title) },
         text = {
             Column {
                 TextButton(onClick = onChooseFromLibrary) { Text(stringResource(R.string.avatar_choose_library)) }
@@ -46,10 +48,10 @@ fun AvatarSourceDialog(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true)
 @Composable
-private fun AvatarSourceDialogPreview() {
+private fun ImageSourceDialogPreview() {
     WandrTheme {
-        AvatarSourceDialog(
-            canTakePhoto = true, canRemove = true,
+        ImageSourceDialog(
+            title = "Profile Photo", canTakePhoto = true, canRemove = true,
             onChooseFromLibrary = {}, onTakePhoto = {}, onRemove = {}, onDismiss = {}
         )
     }

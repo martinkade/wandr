@@ -40,7 +40,7 @@ val dataModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single { com.wandr.data.remote.ProfileRemoteDataSource(get()) }
     single<ProfileRepository> { ProfileRepositoryImpl(get(), get()) }
-    single<TeamRepository> { TeamRepositoryImpl(get(), get(), get()) }
+    single<TeamRepository> { TeamRepositoryImpl(get(), get(), get(), get()) }
     single<ChallengeRepository> { ChallengeRepositoryImpl(get(), get(), get()) }
     single<com.wandr.domain.repository.ActivityRepository> { com.wandr.data.repository.ActivityRepositoryImpl(get(), get(), get()) }
     single { SyncManager(get(), get(), get(), get(), get()) }

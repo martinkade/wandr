@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
+import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.domain.model.Activity
 import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
@@ -32,19 +33,13 @@ fun ActivityHistoryScreen(
     onSelectActivity: (Activity) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    ScreenScaffold(title = stringResource(R.string.activities_title), modifier = modifier) { padding ->
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
+            .padding(padding)
             .padding(16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.activities_title),
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         if (state.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else if (state.activities.isEmpty()) {
@@ -66,6 +61,7 @@ fun ActivityHistoryScreen(
                 }
             }
         }
+    }
     }
 }
 

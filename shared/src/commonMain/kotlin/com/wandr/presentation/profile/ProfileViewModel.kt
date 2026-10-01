@@ -1,5 +1,6 @@
 package com.wandr.presentation.profile
 
+import com.wandr.domain.model.Profile
 import com.wandr.domain.usecase.GetProfileUseCase
 import com.wandr.domain.usecase.RefreshProfileUseCase
 import com.wandr.domain.usecase.RemoveAvatarUseCase
@@ -27,6 +28,7 @@ class ProfileViewModel(
     val uiState: StateFlow<ProfileState> = _uiState.asStateFlow()
 
     private var observeJob: Job? = null
+    private var cachedProfile: Profile? = null
 
     fun processIntent(intent: ProfileIntent) {
         when (intent) {
@@ -40,7 +42,10 @@ class ProfileViewModel(
             is ProfileIntent.UploadAvatar -> updateAvatar { uploadAvatarUseCase(intent.userId, intent.jpegBytes) }
             is ProfileIntent.RemoveAvatar -> updateAvatar { removeAvatarUseCase(intent.userId) }
             is ProfileIntent.SaveProfile -> saveProfile()
-            is ProfileIntent.ClearMessages -> _uiState.update { it.copy(errorMessage = null, successMessage = null) }
+            is ProfileIntent.DiscardChanges -> _uiState.update {
+                it.copy(profile = cachedProfile ?: it.profile, hasUnsavedChanges = false)
+            }
+            is ProfileIntent.ClearMessages -> _uiState.update { it.copy(errorMessage = null, success = null) }
         }
     }
 
@@ -51,6 +56,7 @@ class ProfileViewModel(
             // The local cache is the source of truth for the UI; the remote pull only feeds the cache.
             launch { refreshProfileUseCase(userId) }
             getProfileUseCase(userId).collect { cached ->
+                cachedProfile = cached
                 _uiState.update { state ->
                     val draft = state.profile
                     val merged = if (state.hasUnsavedChanges && draft != null && cached != null) {
@@ -64,12 +70,12 @@ class ProfileViewModel(
 
     private fun saveProfile() {
         val currentProfile = _uiState.value.profile ?: return
-        _uiState.update { it.copy(isSaving = true, errorMessage = null, successMessage = null) }
+        _uiState.update { it.copy(isSaving = true, errorMessage = null, success = null) }
         scope.launch {
             updateProfileUseCase(currentProfile)
                 .onSuccess { updated ->
                     _uiState.update {
-                        it.copy(profile = updated, isSaving = false, hasUnsavedChanges = false, successMessage = "Profile saved!")
+                        it.copy(profile = updated, isSaving = false, hasUnsavedChanges = false, success = ProfileSuccess.PROFILE_SAVED)
                     }
                 }
                 .onFailure { error ->
@@ -79,7 +85,7 @@ class ProfileViewModel(
     }
 
     private fun updateAvatar(action: suspend () -> Result<com.wandr.domain.model.Profile>) {
-        _uiState.update { it.copy(isAvatarUpdating = true, errorMessage = null, successMessage = null) }
+        _uiState.update { it.copy(isAvatarUpdating = true, errorMessage = null, success = null) }
         scope.launch {
             action()
                 .onSuccess { updated ->
@@ -89,7 +95,7 @@ class ProfileViewModel(
                         val merged = if (state.hasUnsavedChanges && draft != null) {
                             updated.copy(displayName = draft.displayName, bio = draft.bio)
                         } else updated
-                        state.copy(profile = merged, isAvatarUpdating = false, successMessage = "Avatar updated!")
+                        state.copy(profile = merged, isAvatarUpdating = false, success = ProfileSuccess.AVATAR_UPDATED)
                     }
                 }
                 .onFailure { error ->

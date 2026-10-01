@@ -9,5 +9,8 @@ sealed interface ProfileIntent {
     data class UploadAvatar(val userId: String, val jpegBytes: ByteArray) : ProfileIntent
     data class RemoveAvatar(val userId: String) : ProfileIntent
     data object SaveProfile : ProfileIntent
+
+    /** Drops unsaved name/bio edits and shows the stored profile again. */
+    data object DiscardChanges : ProfileIntent
     data object ClearMessages : ProfileIntent
 }

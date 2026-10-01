@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +30,8 @@ fun CreateTeamScreen(
     state: TeamState,
     onIntent: (TeamIntent) -> Unit,
     creatorId: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCancel: (() -> Unit)? = null
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -98,6 +100,13 @@ fun CreateTeamScreen(
                         .height(50.dp)
                 ) {
                     Text(stringResource(R.string.create_team_button))
+                }
+            }
+
+            onCancel?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(onClick = it, enabled = !state.isLoading) {
+                    Text(stringResource(R.string.cancel_button))
                 }
             }
         }

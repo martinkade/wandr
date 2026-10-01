@@ -55,7 +55,7 @@
 "manual_entry" = "Manueller Eintrag";
 "gps_tracked" = "GPS Ausgezeichnet";
 
-/* Start & Dashboard */
+/* Start & Hauptbildschirm */
 "init_loading" = "WANDR wird vorbereitet…";
 "init_failed_title" = "Start fehlgeschlagen";
 "retry_button" = "Erneut versuchen";
@@ -88,3 +88,32 @@
 "permission_camera_title" = "Kamerazugriff";
 "permission_camera_message" = "WANDR nutzt die Kamera nur, um dein Profilfoto aufzunehmen. Du kannst es vor dem Hochladen zuschneiden, und es wird nichts in deiner Fotomediathek gespeichert.";
 "permission_camera_denied" = "Der Kamerazugriff ist ausgeschaltet. Aktiviere ihn in den Einstellungen, um ein Profilfoto aufzunehmen, oder wähle eines aus deiner Mediathek.";
+
+/* Gruppen (Manager) */
+"tab_groups" = "Gruppen";
+"groups_empty" = "Noch keine Gruppen. Lege deine erste Gruppe an, um Mitglieder einzuladen.";
+"groups_new_button" = "Neue Gruppe";
+"group_invite_code" = "Einladungscode: %@";
+
+/* Profil bearbeiten */
+"profile_edit_button" = "Bearbeiten";
+"profile_saved_message" = "Profil gespeichert";
+"profile_avatar_updated_message" = "Profilfoto aktualisiert";
+
+/* Gruppendetails */
+"team_photo_title" = "Gruppenbild";
+"team_cover_title" = "Titelbild";
+"team_cover_change" = "Titelbild ändern";
+"team_cover_content_description" = "Titelbild";
+"team_members_count" = "Mitglieder (%lld)";
+"team_no_members" = "Noch keine Mitglieder.";
+"team_saved_message" = "Gruppe gespeichert";
+"team_image_updated_message" = "Bild aktualisiert";
+"role_admin" = "Admin";
+"role_member" = "Mitglied";
+
+/* Bearbeiten-Sheets */
+"profile_edit_title" = "Profil bearbeiten";
+"team_edit_title" = "Gruppe bearbeiten";
+"empty_value_placeholder" = "—";
+"team_details_title" = "Gruppendetails";

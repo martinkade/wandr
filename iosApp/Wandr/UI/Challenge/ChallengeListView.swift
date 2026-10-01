@@ -3,10 +3,6 @@ import SwiftUI
 struct ChallengeListView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(LocalizedStringKey("challenges_title"))
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(.primary)
-
             ScrollView {
                 VStack(spacing: 12) {
                     ChallengeCardView(

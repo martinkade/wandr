@@ -112,6 +112,28 @@ Brand: **gold `#FFD700`** (from the legacy Flutter app: launcher icon background
 
 ---
 
+## 🧭 Screen Structure (Main Screen & Tabs)
+
+The post-login root is the **Main screen** (`MainScreen` / `MainView`, `MainViewModel`, `MainRoute`): it only owns the bottom tab bar and the tab selection. **Every content screen inside a tab owns its own top app bar**; the main screen does not draw one.
+
+- Android: wrap each screen in `ScreenScaffold(title, onBack?, actions, snackbarHost, floatingActionButton)` (`ui/common/ScreenScaffold.kt`). It applies no window insets to the content, because the main screen's tab bar is outside; pass the returned padding to the content. Drill-down screens (e.g. group details) pass `onBack`.
+- iOS: every tab root is its own `NavigationStack` with `.navigationTitle` and `.toolbar` items (edit, sign out, ...). Drill-down uses `navigationDestination` inside that stack; do not hide the navigation bar.
+- Screen-level actions (Edit, Sign out) go into the top app bar / toolbar, not into the content body, and the screen title is not repeated in the body.
+
+---
+
+## ✏️ Edit Flows (Detail Screens)
+
+Detail screens (profile, team/group, ...) are **read-only**. Editing happens in a **separate edit screen presented in a bottom sheet**, opened by an "Edit" button (shown only when the user may edit).
+
+- Read-only screen: `LabeledValue` (Android) / `LabeledValueView` (iOS) rows, non-interactive avatar/cover, snackbar host.
+- Edit screen = its own component with Cancel / Save buttons and its own snackbar host (e.g. `ProfileEditScreen`, `TeamEditScreen` / `ProfileEditView`, `TeamEditView`).
+- Android: `ModalBottomSheet` with `skipPartiallyExpanded = true`; block swipe-away while saving (`confirmValueChange`); close with `sheetState.hide()` before removing it from composition. iOS: `.sheet` with `.presentationDetents([.large])` and `.interactiveDismissDisabled(isSaving)`.
+- Dismissing the sheet (Cancel, swipe, scrim) discards unsaved edits (`DiscardChanges` intent); a successful save closes it and shows a "saved" snackbar on the read-only screen. Errors and image updates show on the sheet.
+- Image fields use the reusable crop flow (`rememberImagePickerFlow` / `.imagePickerFlow`) with the specs from `AvatarImageSpec` (1:1, 512 px) and `CoverImageSpec` (4:3, max 1024 px wide).
+
+---
+
 ## 🔐 Permission Disclosure (Strict Rule)
 
 **Never trigger a system permission prompt cold.** If a permission is not granted yet, first show a *disclosure dialog* that explains **why** WANDR needs it, **what** data is used, and **when** it is collected. Only after the user confirms ("Continue") request the permission from the system.

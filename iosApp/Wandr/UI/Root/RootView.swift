@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Init → (Login | Dashboard).
+/// Init → (Login | Main).
 struct RootView: View {
     @StateObject private var viewModel = RootViewModel()
 
@@ -21,8 +21,8 @@ struct RootView: View {
                     onRegister: viewModel.register,
                     onNavigateToLogin: { viewModel.destination = .login }
                 )
-            case .dashboard:
-                DashboardView(onLoggedOut: { viewModel.destination = .login })
+            case .main:
+                MainView(onLoggedOut: { viewModel.destination = .login })
             }
         }
         .animation(.default, value: String(describing: viewModel.destination))

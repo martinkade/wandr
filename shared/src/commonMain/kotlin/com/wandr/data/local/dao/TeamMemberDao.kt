@@ -15,6 +15,9 @@ interface TeamMemberDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMember(member: TeamMemberEntity)
 
+    @Query("DELETE FROM team_members WHERE team_id = :teamId")
+    suspend fun deleteMembersForTeam(teamId: String)
+
     @Query("DELETE FROM team_members WHERE team_id = :teamId AND user_id = :userId")
     suspend fun deleteMember(teamId: String, userId: String)
 }

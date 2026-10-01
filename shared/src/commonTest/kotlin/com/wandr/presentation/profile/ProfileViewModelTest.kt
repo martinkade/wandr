@@ -126,6 +126,41 @@ class ProfileViewModelTest {
     }
 
     @Test
+    fun discardChangesRestoresStoredProfile() = runTest {
+        val repo = FakeProfileRepository(profile)
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ProfileIntent.LoadProfile("u1"))
+        vm.processIntent(ProfileIntent.DisplayNameChanged("Changed"))
+        assertTrue(vm.uiState.value.hasUnsavedChanges)
+
+        vm.processIntent(ProfileIntent.DiscardChanges)
+
+        assertEquals("Martin", vm.uiState.value.profile?.displayName)
+        assertFalse(vm.uiState.value.hasUnsavedChanges)
+    }
+
+    @Test
+    fun saveReportsSuccessAndClearMessagesResetsIt() = runTest {
+        val repo = FakeProfileRepository(profile)
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ProfileIntent.LoadProfile("u1"))
+        vm.processIntent(ProfileIntent.SaveProfile)
+        assertEquals(ProfileSuccess.PROFILE_SAVED, vm.uiState.value.success)
+
+        vm.processIntent(ProfileIntent.ClearMessages)
+        assertNull(vm.uiState.value.success)
+    }
+
+    @Test
+    fun avatarUpdateReportsAvatarSuccess() = runTest {
+        val repo = FakeProfileRepository(profile)
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ProfileIntent.LoadProfile("u1"))
+        vm.processIntent(ProfileIntent.UploadAvatar("u1", byteArrayOf(1)))
+        assertEquals(ProfileSuccess.AVATAR_UPDATED, vm.uiState.value.success)
+    }
+
+    @Test
     fun saveClearsUnsavedFlag() = runTest {
         val repo = FakeProfileRepository(profile)
         val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

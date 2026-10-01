@@ -94,4 +94,17 @@ class ImageCropperTest {
         assertNear(before.top, after.top, 0.01f)
         assertNear(before.width, after.width, 0.01f)
     }
+
+    @Test
+    fun coverSpecProduces4to3OutputAtMost1024Wide() {
+        val cropper = ImageCropper(4000, 3000, CoverImageSpec.ASPECT_RATIO, windowInset = 0f).also { it.layout(400f, 800f) }
+        val out = cropper.outputSize(CoverImageSpec.MAX_EDGE_PX)
+        assertEquals(CropOutputSize(1024, 768), out)
+    }
+
+    @Test
+    fun coverSpecDoesNotUpscaleSmallImages() {
+        val cropper = ImageCropper(800, 600, CoverImageSpec.ASPECT_RATIO, windowInset = 0f).also { it.layout(400f, 800f) }
+        assertEquals(CropOutputSize(800, 600), cropper.outputSize(CoverImageSpec.MAX_EDGE_PX))
+    }
 }

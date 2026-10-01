@@ -4,6 +4,7 @@ struct AvatarPickerView: View {
     let displayName: String
     var avatarUrl: String? = nil
     var isBusy: Bool = false
+    var isEnabled: Bool = true
     var onPick: () -> Void = {}
 
     var body: some View {
@@ -36,7 +37,7 @@ struct AvatarPickerView: View {
             }
         }
         .onTapGesture {
-            if !isBusy { onPick() }
+            if isEnabled && !isBusy { onPick() }
         }
     }
 }

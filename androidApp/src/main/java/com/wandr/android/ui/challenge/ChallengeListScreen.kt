@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
+import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.domain.model.Challenge
 
 @Composable
@@ -28,23 +29,13 @@ fun ChallengeListScreen(
     onJoinChallenge: (Challenge) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    ScreenScaffold(title = stringResource(R.string.challenges_title), modifier = modifier) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(padding)
+                .padding(horizontal = 24.dp, vertical = 8.dp)
         ) {
-            Text(
-                text = stringResource(R.string.challenges_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.tertiary
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
             ) {

@@ -10,13 +10,13 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.wandr.android.ui.auth.LoginScreen
 import com.wandr.android.ui.auth.RegisterScreen
-import com.wandr.android.ui.dashboard.DashboardScreen
+import com.wandr.android.ui.main.MainScreen
 import com.wandr.android.ui.startup.InitScreen
 import com.wandr.presentation.activity.ActivityViewModel
 import com.wandr.presentation.auth.LoginViewModel
 import com.wandr.presentation.challenge.ChallengeViewModel
-import com.wandr.presentation.dashboard.DashboardViewModel
-import com.wandr.presentation.navigation.DashboardRoute
+import com.wandr.presentation.main.MainViewModel
+import com.wandr.presentation.navigation.MainRoute
 import com.wandr.presentation.navigation.InitRoute
 import com.wandr.presentation.navigation.LoginRoute
 import com.wandr.presentation.navigation.RegisterRoute
@@ -26,9 +26,11 @@ import com.wandr.presentation.profile.ProfileViewModel
 import com.wandr.presentation.startup.StartupIntent
 import com.wandr.presentation.startup.StartupState
 import com.wandr.presentation.startup.StartupViewModel
+import com.wandr.presentation.team.TeamViewModel
+import com.wandr.presentation.teamdetails.TeamDetailsViewModel
 import org.koin.compose.koinInject
 
-/** Root of the app: Init → (Login | Dashboard). */
+/** Root of the app: Init → (Login | Main). */
 @Composable
 fun WandrApp() {
     val backStack = rememberNavBackStack(wandrNavConfig, InitRoute)
@@ -44,7 +46,7 @@ fun WandrApp() {
                 LaunchedEffect(Unit) { viewModel.processIntent(StartupIntent.Start) }
                 LaunchedEffect(state) {
                     when (state) {
-                        StartupState.Authenticated -> navigator.replaceRoot(DashboardRoute)
+                        StartupState.Authenticated -> navigator.replaceRoot(MainRoute)
                         StartupState.Unauthenticated -> navigator.replaceRoot(LoginRoute)
                         else -> Unit
                     }
@@ -55,7 +57,7 @@ fun WandrApp() {
                 val viewModel = koinInject<LoginViewModel>()
                 val state by viewModel.uiState.collectAsState()
                 LaunchedEffect(state.isAuthenticated) {
-                    if (state.isAuthenticated) navigator.replaceRoot(DashboardRoute)
+                    if (state.isAuthenticated) navigator.replaceRoot(MainRoute)
                 }
                 LoginScreen(
                     state = state,
@@ -67,7 +69,7 @@ fun WandrApp() {
                 val viewModel = koinInject<LoginViewModel>()
                 val state by viewModel.uiState.collectAsState()
                 LaunchedEffect(state.isAuthenticated) {
-                    if (state.isAuthenticated) navigator.replaceRoot(DashboardRoute)
+                    if (state.isAuthenticated) navigator.replaceRoot(MainRoute)
                 }
                 RegisterScreen(
                     state = state,
@@ -75,21 +77,27 @@ fun WandrApp() {
                     onNavigateToLogin = { navigator.popBackStack() }
                 )
             }
-            entry<DashboardRoute> {
-                val dashboardViewModel = koinInject<DashboardViewModel>()
+            entry<MainRoute> {
+                val mainViewModel = koinInject<MainViewModel>()
                 val activityViewModel = koinInject<ActivityViewModel>()
                 val challengeViewModel = koinInject<ChallengeViewModel>()
                 val profileViewModel = koinInject<ProfileViewModel>()
-                LaunchedEffect(Unit) { dashboardViewModel.load() }
-                DashboardScreen(
-                    dashboardState = dashboardViewModel.uiState.collectAsState().value,
+                val teamViewModel = koinInject<TeamViewModel>()
+                val teamDetailsViewModel = koinInject<TeamDetailsViewModel>()
+                LaunchedEffect(Unit) { mainViewModel.load() }
+                MainScreen(
+                    mainState = mainViewModel.uiState.collectAsState().value,
                     activityState = activityViewModel.state.collectAsState().value,
                     challengeState = challengeViewModel.uiState.collectAsState().value,
                     profileState = profileViewModel.uiState.collectAsState().value,
+                    teamState = teamViewModel.uiState.collectAsState().value,
+                    teamDetailsState = teamDetailsViewModel.uiState.collectAsState().value,
                     onActivityIntent = activityViewModel::processIntent,
                     onChallengeIntent = challengeViewModel::processIntent,
                     onProfileIntent = profileViewModel::processIntent,
-                    onLogout = { dashboardViewModel.logout { navigator.replaceRoot(LoginRoute) } }
+                    onTeamIntent = teamViewModel::processIntent,
+                    onTeamDetailsIntent = teamDetailsViewModel::processIntent,
+                    onLogout = { mainViewModel.logout { navigator.replaceRoot(LoginRoute) } }
                 )
             }
         }

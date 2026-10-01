@@ -7,10 +7,6 @@ struct ActivityHistoryView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(LocalizedStringKey("activities_title"))
-                .font(.title2)
-                .bold()
-
             if activities.isEmpty {
                 Text("No activities recorded yet.")
                     .font(.body)
