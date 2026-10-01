@@ -267,6 +267,58 @@ CREATE POLICY "Users can join team via invite"
     WITH CHECK (auth.uid() = user_id);
 
 -- ----------------------------------------------------------------------------
+-- Challenges & Challenge Participants Policies (Admin Rights & Privacy-First)
+-- ----------------------------------------------------------------------------
+CREATE POLICY "Team members or creators can view challenges"
+    ON public.challenges FOR SELECT TO authenticated
+    USING (
+        auth.uid() = created_by OR
+        (team_id IS NOT NULL AND public.is_team_member(team_id, auth.uid()))
+    );
+
+CREATE POLICY "Group admins can create team challenges"
+    ON public.challenges FOR INSERT TO authenticated
+    WITH CHECK (
+        auth.uid() = created_by AND (
+            team_id IS NULL OR EXISTS (
+                SELECT 1 FROM public.team_members
+                WHERE team_id = challenges.team_id AND user_id = auth.uid() AND role = 'admin'
+            )
+        )
+    );
+
+CREATE POLICY "Group admins can update team challenges"
+    ON public.challenges FOR UPDATE TO authenticated
+    USING (
+        auth.uid() = created_by OR (
+            team_id IS NOT NULL AND EXISTS (
+                SELECT 1 FROM public.team_members
+                WHERE team_id = challenges.team_id AND user_id = auth.uid() AND role = 'admin'
+            )
+        )
+    );
+
+CREATE POLICY "Team members can view challenge participants (Privacy-First Leaderboards)"
+    ON public.challenge_participants FOR SELECT TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.challenges c
+            WHERE c.id = challenge_id AND (
+                c.created_by = auth.uid() OR
+                (c.team_id IS NOT NULL AND public.is_team_member(c.team_id, auth.uid()))
+            )
+        )
+    );
+
+CREATE POLICY "Users can join challenges"
+    ON public.challenge_participants FOR INSERT TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Participants can update their own progress"
+    ON public.challenge_participants FOR UPDATE TO authenticated
+    USING (auth.uid() = user_id);
+
+-- ----------------------------------------------------------------------------
 -- Activities Policies (Privacy First)
 -- ----------------------------------------------------------------------------
 CREATE POLICY "Users can view their own activities or team members' activities"

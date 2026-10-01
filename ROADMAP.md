@@ -125,16 +125,16 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 ### 🏆 Phase 5: Challenges & Team-Scoped Leaderboards (Privacy-First)
 
-- [ ] **Step 5.1: Challenge Domain Models & Lifecycle**
+- [x] **Step 5.1: Challenge Domain Models & Lifecycle**
   - Define `Challenge` (Types: Distance, Elevation, Time; Scope: Group, Individual; Option: `requireAllMembersCompletion` for All-or-Nothing team completion).
   - Implement status evaluation (Planned, Active, Completed [requiring 100% member completion when enabled], Expired/Failed).
-- [ ] **Step 5.2: Challenge Management & Admin Rights**
+- [x] **Step 5.2: Challenge Management & Admin Rights**
   - Restrict challenge creation and user participation to group admins.
   - Add cover photo upload to Supabase Storage (`challenge-covers` bucket).
-- [ ] **Step 5.3: Privacy-First Leaderboards**
+- [x] **Step 5.3: Privacy-First Leaderboards**
   - Calculate leaderboard rankings strictly within team scope (`WHERE team_id = :teamId`).
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).
-- [ ] **Step 5.4: Challenge & Leaderboard UI**
+- [x] **Step 5.4: Challenge & Leaderboard UI**
   - Build `ChallengeListScreen`/`View`, `ChallengeCard.kt`/`.swift`, `LeaderboardRow.kt`/`.swift`.
 
 ---

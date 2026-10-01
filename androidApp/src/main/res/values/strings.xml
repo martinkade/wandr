@@ -29,4 +29,13 @@
     <string name="qr_invite_title">Team QR Code Invite</string>
     <string name="scan_qr_to_join">Scan this QR Code with WANDR to join the team!</string>
     <string name="team_members_title">Team Members</string>
+
+    <!-- Challenge & Leaderboard Localization -->
+    <string name="challenges_title">Team Challenges</string>
+    <string name="create_challenge_title">Create Challenge</string>
+    <string name="challenge_title_label">Challenge Title</string>
+    <string name="challenge_target_label">Target Value</string>
+    <string name="require_all_members_label">Require All Members to Complete (All-or-Nothing)</string>
+    <string name="leaderboard_title">Team Leaderboard</string>
+    <string name="join_challenge_button">Join Challenge</string>
 </resources>

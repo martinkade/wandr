@@ -8,10 +8,12 @@ import com.wandr.data.remote.SupabaseClientFactory
 import com.wandr.data.remote.SupabaseTokenProvider
 import com.wandr.data.remote.TokenProvider
 import com.wandr.data.repository.AuthRepositoryImpl
+import com.wandr.data.repository.ChallengeRepositoryImpl
 import com.wandr.data.repository.ProfileRepositoryImpl
 import com.wandr.data.repository.TeamRepositoryImpl
 import com.wandr.data.sync.SyncManager
 import com.wandr.domain.repository.AuthRepository
+import com.wandr.domain.repository.ChallengeRepository
 import com.wandr.domain.repository.ProfileRepository
 import com.wandr.domain.repository.TeamRepository
 import org.koin.dsl.module
@@ -22,18 +24,21 @@ val dataModule = module {
     single { KtorClientFactory(get()).create() }
     single { getWandrDatabase(get<DatabaseBuilderFactory>().create()) }
     
-    // LRU File Cache with adjustable limit & journaling
+    // LRU File Cache
     single { LruFileCache(initialMaxSizeBytes = 50 * 1024 * 1024L) }
     
     // DAOs
     single { get<com.wandr.data.local.WandrDatabase>().profileDao() }
     single { get<com.wandr.data.local.WandrDatabase>().teamDao() }
+    single { get<com.wandr.data.local.WandrDatabase>().teamMemberDao() }
     single { get<com.wandr.data.local.WandrDatabase>().challengeDao() }
+    single { get<com.wandr.data.local.WandrDatabase>().challengeParticipantDao() }
     single { get<com.wandr.data.local.WandrDatabase>().activityDao() }
     
     // Repositories & Sync
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<ProfileRepository> { ProfileRepositoryImpl(get(), get()) }
     single<TeamRepository> { TeamRepositoryImpl(get(), get(), get()) }
+    single<ChallengeRepository> { ChallengeRepositoryImpl(get(), get(), get()) }
     single { SyncManager(get(), get(), get(), get(), get()) }
 }

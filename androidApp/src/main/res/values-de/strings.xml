@@ -29,4 +29,13 @@
     <string name="qr_invite_title">Team QR-Code Einladung</string>
     <string name="scan_qr_to_join">Scanne diesen QR-Code mit WANDR, um dem Team beizutreten!</string>
     <string name="team_members_title">Team-Mitglieder</string>
+
+    <!-- Challenge & Leaderboard Localization -->
+    <string name="challenges_title">Team-Challenges</string>
+    <string name="create_challenge_title">Challenge erstellen</string>
+    <string name="challenge_title_label">Challenge-Titel</string>
+    <string name="challenge_target_label">Zielwert</string>
+    <string name="require_all_members_label">Alle Mitglieder müssen abschließen (Alles-oder-Nichts)</string>
+    <string name="leaderboard_title">Team-Bestenliste</string>
+    <string name="join_challenge_button">Challenge beitreten</string>
 </resources>

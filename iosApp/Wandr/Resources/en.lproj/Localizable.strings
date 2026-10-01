@@ -27,3 +27,12 @@
 "qr_invite_title" = "Team QR Code Invite";
 "scan_qr_to_join" = "Scan this QR Code with WANDR to join the team!";
 "team_members_title" = "Team Members";
+
+/* Challenge & Leaderboard Localization */
+"challenges_title" = "Team Challenges";
+"create_challenge_title" = "Create Challenge";
+"challenge_title_label" = "Challenge Title";
+"challenge_target_label" = "Target Value";
+"require_all_members_label" = "Require All Members to Complete (All-or-Nothing)";
+"leaderboard_title" = "Team Leaderboard";
+"join_challenge_button" = "Join Challenge";

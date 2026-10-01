@@ -106,6 +106,6 @@ This repository is optimized for AI-assisted development (Antigravity / Gemini, 
 
 ---
 
-## 📄 Specifications
+## 📄 Roadmap
 
-For full business requirements and detailed specs, see **[`SPECS.md`](file:///Users/martinkade/wandr/SPECS.md)**.
+For full business requirements and detailed specs, see **[`ROADMAP.md`](file:///Users/martinkade/wandr/ROADMAP.md)**.
