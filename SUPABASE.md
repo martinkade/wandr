@@ -230,6 +230,24 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ----------------------------------------------------------------------------
+-- Helper Function: Check Team Ownership / Admin Role
+-- SECURITY DEFINER so it also works inside storage policies, independent of the caller's table visibility.
+-- check_team_id is TEXT so storage folder names (text) can be compared without a failing uuid cast.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_team_admin(check_team_id TEXT, check_user_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.teams t
+        WHERE t.id::text = check_team_id AND t.created_by = check_user_id
+    ) OR EXISTS (
+        SELECT 1 FROM public.team_members m
+        WHERE m.team_id::text = check_team_id AND m.user_id = check_user_id AND m.role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
+
+-- ----------------------------------------------------------------------------
 -- Profiles Policies
 -- ----------------------------------------------------------------------------
 CREATE POLICY "Public profiles are readable by authenticated users"
@@ -258,13 +276,7 @@ CREATE POLICY "Only managers can create teams"
 
 CREATE POLICY "Team owners and admins can edit team"
     ON public.teams FOR UPDATE TO authenticated
-    USING (
-        auth.uid() = created_by OR
-        EXISTS (
-            SELECT 1 FROM public.team_members
-            WHERE team_id = id AND user_id = auth.uid() AND role = 'admin'
-        )
-    );
+    USING (public.is_team_admin(id::text, auth.uid()));
 
 CREATE POLICY "Only managers can delete teams"
     ON public.teams FOR DELETE TO authenticated
@@ -451,24 +463,14 @@ CREATE POLICY "Avatar Upload Access" ON storage.objects FOR INSERT TO authentica
 -- Required by the profile avatar feature, which deletes the previous avatar file after an update/removal.
 CREATE POLICY "Avatar Delete Access" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 
--- Team avatar / cover: only the team owner and team admins may add or remove images in the folder <team_id>/...
--- Required by the group details feature (upload new image, delete the previous one).
-CREATE POLICY "Team Image Upload Access" ON storage.objects FOR INSERT TO authenticated WITH CHECK (
-    bucket_id = 'team-covers' AND EXISTS (
-        SELECT 1 FROM public.teams t
-        WHERE t.id::text = (storage.foldername(name))[1]
-          AND (t.created_by = auth.uid() OR EXISTS (
-              SELECT 1 FROM public.team_members m WHERE m.team_id = t.id AND m.user_id = auth.uid() AND m.role = 'admin'))
-    )
-);
-CREATE POLICY "Team Image Delete Access" ON storage.objects FOR DELETE TO authenticated USING (
-    bucket_id = 'team-covers' AND EXISTS (
-        SELECT 1 FROM public.teams t
-        WHERE t.id::text = (storage.foldername(name))[1]
-          AND (t.created_by = auth.uid() OR EXISTS (
-              SELECT 1 FROM public.team_members m WHERE m.team_id = t.id AND m.user_id = auth.uid() AND m.role = 'admin'))
-    )
-);
+-- Team avatar / cover (folder <team_id>/...): everyone signed in can read, only the team owner and admins can add or remove.
+-- IMPORTANT: the SELECT policy is also required for uploads. Storage inserts with RETURNING, and without a
+-- matching SELECT policy Postgres rejects the upload with "new row violates row-level security policy".
+CREATE POLICY "Team Image Read Access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'team-covers');
+CREATE POLICY "Team Image Upload Access" ON storage.objects FOR INSERT TO authenticated
+    WITH CHECK (bucket_id = 'team-covers' AND public.is_team_admin((storage.foldername(name))[1], auth.uid()));
+CREATE POLICY "Team Image Delete Access" ON storage.objects FOR DELETE TO authenticated
+    USING (bucket_id = 'team-covers' AND public.is_team_admin((storage.foldername(name))[1], auth.uid()));
 
 CREATE POLICY "FIT File Upload Access" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'fit-files' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "FIT File Read Access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'fit-files' AND auth.uid()::text = (storage.foldername(name))[1]);
