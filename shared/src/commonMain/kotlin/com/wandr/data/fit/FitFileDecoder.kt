@@ -13,7 +13,7 @@ object FitFileDecoder {
         if (headerSize < 12) return emptyList()
         
         // Verify magic bytes ".FIT"
-        val magic = String(fitBytes, 8, 4, Charsets.UTF_8)
+        val magic = fitBytes.decodeToString(8, 12)
         if (magic != ".FIT") return emptyList()
 
         val trackpoints = mutableListOf<GpsTrackpoint>()

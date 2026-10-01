@@ -1,7 +1,7 @@
 package com.wandr.data.remote
 
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.gotrue.auth
+import io.github.jan.supabase.auth.auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 
 class SupabaseTokenProvider(

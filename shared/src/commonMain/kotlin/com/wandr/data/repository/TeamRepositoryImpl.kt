@@ -124,7 +124,7 @@ class TeamRepositoryImpl(
     override suspend fun uploadTeamCover(teamId: String, bytes: ByteArray, fileName: String): Result<String> = runCatching {
         val bucket = supabase.storage.from("team-covers")
         val path = "$teamId/$fileName"
-        bucket.upload(path, bytes, upsert = true)
+        bucket.upload(path, bytes) { upsert = true }
         val publicUrl = bucket.publicUrl(path)
         publicUrl
     }

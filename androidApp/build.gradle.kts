@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 val keystoreDebugPropertiesFile = rootProject.file("androidApp/signing/debug.key.properties")
@@ -94,6 +95,10 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.ui)
     implementation(libs.jetbrains.ui.tooling.preview)
-    implementation(libs.ui.tooling.preview)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
+    implementation(libs.navigation.compose)
     debugImplementation(libs.ui.tooling)
 }
+

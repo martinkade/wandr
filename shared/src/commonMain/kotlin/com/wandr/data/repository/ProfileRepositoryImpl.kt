@@ -58,7 +58,7 @@ class ProfileRepositoryImpl(
     override suspend fun uploadAvatar(userId: String, byteArray: ByteArray, fileName: String): Result<String> = runCatching {
         val bucket = supabase.storage.from("avatars")
         val path = "$userId/$fileName"
-        bucket.upload(path, byteArray, upsert = true)
+        bucket.upload(path, byteArray) { upsert = true }
         val publicUrl = bucket.publicUrl(path)
         publicUrl
     }

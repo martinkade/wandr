@@ -135,7 +135,7 @@ class ChallengeRepositoryImpl(
     override suspend fun uploadChallengeCover(challengeId: String, bytes: ByteArray, fileName: String): Result<String> = runCatching {
         val bucket = supabase.storage.from("challenge-covers")
         val path = "$challengeId/$fileName"
-        bucket.upload(path, bytes, upsert = true)
+        bucket.upload(path, bytes) { upsert = true }
         val publicUrl = bucket.publicUrl(path)
         publicUrl
     }

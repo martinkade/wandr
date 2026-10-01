@@ -22,7 +22,6 @@ kotlin {
     }
     
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -43,12 +42,14 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
 
-            // Compose Multiplatform UI
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
+            // Compose Multiplatform UI & Navigation 3
+            implementation(libs.runtime)
+            implementation(libs.foundation)
+            implementation(libs.material3)
+            implementation(libs.jetbrains.navigation3.ui)
 
-            // Room 3 / 2.7+ Multiplatform Database & Bundled SQLite Driver
+
+            // Room 3 Multiplatform Database & Bundled SQLite Driver
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
 
@@ -90,7 +91,6 @@ kotlin {
 dependencies {
     add("kspCommonMainMetadata", libs.room.compiler)
     add("kspAndroid", libs.room.compiler)
-    add("kspIosX64", libs.room.compiler)
     add("kspIosArm64", libs.room.compiler)
     add("kspIosSimulatorArm64", libs.room.compiler)
 }
@@ -107,6 +107,6 @@ android {
     }
 }
 
-room {
+room3 {
     schemaDirectory("$projectDir/schemas")
 }

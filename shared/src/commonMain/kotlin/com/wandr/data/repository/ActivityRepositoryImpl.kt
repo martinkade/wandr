@@ -53,7 +53,7 @@ class ActivityRepositoryImpl(
                 
                 try {
                     val bucket = supabase.storage.from("fit-files")
-                    bucket.upload(cacheKey, fitBytes, upsert = true)
+                    bucket.upload(cacheKey, fitBytes) { upsert = true }
                     fitFilePath = bucket.publicUrl(cacheKey)
                 } catch (e: Exception) {
                     fitFilePath = cacheKey
