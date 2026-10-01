@@ -118,4 +118,8 @@
     <string name="empty_value_placeholder">—</string>
 
     <string name="team_details_title">Group Details</string>
+
+    <!-- Profile stats -->
+    <string name="profile_stats_activities">Activities</string>
+    <string name="profile_stats_member_since">Active since</string>
 </resources>

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ActivityRepository {
     fun getUserActivities(userId: String): Flow<List<Activity>>
+    fun getUserActivityCount(userId: String): Flow<Int>
     fun getTeamActivities(teamId: String): Flow<List<Activity>>
     suspend fun getOverlappingActivities(userId: String, startTime: Long, endTime: Long): List<Activity>
     suspend fun saveActivity(activity: Activity, trackpoints: List<GpsTrackpoint>?): Result<Activity>

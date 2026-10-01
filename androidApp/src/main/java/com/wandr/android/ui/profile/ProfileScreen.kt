@@ -3,13 +3,12 @@ package com.wandr.android.ui.profile
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -30,13 +29,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
-import com.wandr.android.ui.common.LabeledValue
+import com.wandr.android.ui.common.LabeledLoading
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.profile.components.ProfileHeaderRow
+import com.wandr.android.ui.profile.components.ProfileStatsRow
 import com.wandr.android.ui.theme.WandrTheme
+import com.wandr.android.util.AppDateFormatter
 import com.wandr.domain.model.Profile
 import com.wandr.presentation.profile.ProfileIntent
 import com.wandr.presentation.profile.ProfileState
@@ -54,7 +57,12 @@ fun ProfileScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(userId) { viewModel.processIntent(ProfileIntent.LoadProfile(userId)) }
-    ProfileScreenContent(state = state, onIntent = viewModel::processIntent, onLogout = onLogout, modifier = modifier)
+    ProfileScreenContent(
+        state = state,
+        onIntent = viewModel::processIntent,
+        onLogout = onLogout,
+        modifier = modifier
+    )
 }
 
 /**
@@ -108,33 +116,51 @@ private fun ProfileScreenContent(
         title = stringResource(R.string.user_profile_title),
         modifier = modifier,
         actions = {
-            TextButton(onClick = { isEditing = true }, enabled = state.profile != null) {
-                Text(stringResource(R.string.profile_edit_button))
-            }
-            TextButton(onClick = onLogout) { Text(stringResource(R.string.logout_button)) }
+            Button(onClick = onLogout) { Text(stringResource(R.string.logout_button)) }
         },
         // While the sheet is open, its own host shows the messages.
         snackbarHost = { if (!isEditing) SnackbarHost(snackbarHostState) }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            if (state.isLoading) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            val profile = state.profile
+            if (state.isLoading || profile == null) {
+                LabeledLoading(
+                    isLoading = true,
+                    title = stringResource(R.string.init_loading),
+                    modifier = Modifier.fillMaxSize()
+                )
             } else {
                 Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    AvatarPicker(
-                        avatarUrl = state.profile?.avatarUrl,
-                        displayName = state.profile?.displayName ?: "User",
-                        onPickAvatar = {},
-                        enabled = false
+                    ProfileHeaderRow(
+                        profile = profile,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
                     )
 
-                    Spacer(Modifier.height(24.dp))
-
-                    LabeledValue(stringResource(R.string.display_name_label), state.profile?.displayName)
-                    LabeledValue(stringResource(R.string.bio_label), state.profile?.bio)
+                    // Re-format when the system language changes; a timestamp <= 0 means "unknown".
+                    val locale = LocalConfiguration.current.locales[0]
+                    val memberSince = remember(profile.createdAt, locale) {
+                        profile.createdAt.takeIf { it > 0 }
+                            ?.let { AppDateFormatter.formatDate(it, locale = locale) }
+                    }
+                    ProfileStatsRow(
+                        activityCount = state.activityCount,
+                        memberSince = memberSince,
+                        onEnterEditMode = { isEditing = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 8.dp)
+                    )
                 }
             }
         }
@@ -168,7 +194,7 @@ private fun ProfileScreenContent(
 
 private val previewProfile = Profile(
     id = "1", username = "martinkade", displayName = "Martin Kade", avatarUrl = null,
-    bio = "Outdoor hiker & developer.", createdAt = 0L, updatedAt = 0L
+    bio = "Outdoor hiker & developer.", createdAt = 1_768_435_200_000L, updatedAt = 0L
 )
 
 @Preview(name = "Light Mode", showBackground = true)
@@ -177,5 +203,10 @@ private val previewProfile = Profile(
 @Preview(name = "Tablet", widthDp = 840, heightDp = 900, showBackground = true)
 @Composable
 private fun ProfileScreenPreview() {
-    WandrTheme { ProfileScreenContent(state = ProfileState(profile = previewProfile), onIntent = {}, onLogout = {}) }
+    WandrTheme {
+        ProfileScreenContent(
+            state = ProfileState(profile = previewProfile, activityCount = 123),
+            onIntent = {},
+            onLogout = {})
+    }
 }

@@ -1,6 +1,11 @@
 package com.wandr.presentation.profile
 
+import com.wandr.domain.model.Activity
+import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.model.Profile
+import com.wandr.domain.repository.ActivityRepository
+import com.wandr.domain.usecase.GetUserActivityCountUseCase
+import kotlinx.coroutines.flow.emptyFlow
 import com.wandr.domain.repository.ProfileRepository
 import com.wandr.domain.usecase.GetProfileUseCase
 import com.wandr.domain.usecase.RefreshProfileUseCase
@@ -19,6 +24,18 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+
+private class FakeActivityRepository(count: Int = 0) : ActivityRepository {
+    val activityCount = MutableStateFlow(count)
+
+    override fun getUserActivities(userId: String): Flow<List<Activity>> = emptyFlow()
+    override fun getUserActivityCount(userId: String): Flow<Int> = activityCount
+    override fun getTeamActivities(teamId: String): Flow<List<Activity>> = emptyFlow()
+    override suspend fun getOverlappingActivities(userId: String, startTime: Long, endTime: Long): List<Activity> = emptyList()
+    override suspend fun saveActivity(activity: Activity, trackpoints: List<GpsTrackpoint>?): Result<Activity> =
+        Result.success(activity)
+    override suspend fun deleteActivity(id: String): Result<Unit> = Result.success(Unit)
+}
 
 private class FakeProfileRepository(initial: Profile?) : ProfileRepository {
     val profile = MutableStateFlow(initial)
@@ -61,9 +78,13 @@ class ProfileViewModelTest {
         createdAt = 0, updatedAt = 0
     )
 
-    private fun viewModel(repo: FakeProfileRepository, scope: CoroutineScope) = ProfileViewModel(
+    private fun viewModel(
+        repo: FakeProfileRepository,
+        scope: CoroutineScope,
+        activities: FakeActivityRepository = FakeActivityRepository()
+    ) = ProfileViewModel(
         GetProfileUseCase(repo), UpdateProfileUseCase(repo), UploadAvatarUseCase(repo),
-        RemoveAvatarUseCase(repo), RefreshProfileUseCase(repo), scope
+        RemoveAvatarUseCase(repo), RefreshProfileUseCase(repo), GetUserActivityCountUseCase(activities), scope
     )
 
     @Test
@@ -74,6 +95,17 @@ class ProfileViewModelTest {
         assertEquals("Martin", vm.uiState.value.profile?.displayName)
         assertEquals(1, repo.refreshed)
         assertFalse(vm.uiState.value.isLoading)
+    }
+
+    @Test
+    fun loadExposesActivityCountAndKeepsItLive() = runTest {
+        val activities = FakeActivityRepository(count = 3)
+        val vm = viewModel(FakeProfileRepository(profile), CoroutineScope(UnconfinedTestDispatcher(testScheduler)), activities)
+        vm.processIntent(ProfileIntent.LoadProfile("u1"))
+        assertEquals(3, vm.uiState.value.activityCount)
+
+        activities.activityCount.value = 4
+        assertEquals(4, vm.uiState.value.activityCount)
     }
 
     @Test

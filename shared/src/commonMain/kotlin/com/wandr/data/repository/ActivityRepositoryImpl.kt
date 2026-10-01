@@ -24,6 +24,8 @@ class ActivityRepositoryImpl(
         }
     }
 
+    override fun getUserActivityCount(userId: String): Flow<Int> = activityDao.getActivityCountForUser(userId)
+
     override fun getTeamActivities(teamId: String): Flow<List<Activity>> {
         return activityDao.getActivitiesForTeam(teamId).map { list ->
             list.map { it.toDomain() }

@@ -6,6 +6,8 @@ enum class ProfileSuccess { PROFILE_SAVED, AVATAR_UPDATED }
 
 data class ProfileState(
     val profile: Profile? = null,
+    /** Number of recorded activities, shown in the profile stats. */
+    val activityCount: Int = 0,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isAvatarUpdating: Boolean = false,

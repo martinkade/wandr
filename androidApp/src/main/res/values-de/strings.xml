@@ -118,4 +118,8 @@
     <string name="empty_value_placeholder">—</string>
 
     <string name="team_details_title">Gruppendetails</string>
+
+    <!-- Profil-Statistik -->
+    <string name="profile_stats_activities">Aktivitäten</string>
+    <string name="profile_stats_member_since">Aktiv seit</string>
 </resources>

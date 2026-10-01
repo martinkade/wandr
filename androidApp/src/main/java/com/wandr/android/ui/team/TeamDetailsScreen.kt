@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
-import com.wandr.android.ui.profile.AvatarPicker
+import com.wandr.android.ui.profile.components.AvatarPicker
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember

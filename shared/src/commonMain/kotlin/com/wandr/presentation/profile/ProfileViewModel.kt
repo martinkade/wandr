@@ -2,6 +2,7 @@ package com.wandr.presentation.profile
 
 import com.wandr.domain.model.Profile
 import com.wandr.domain.usecase.GetProfileUseCase
+import com.wandr.domain.usecase.GetUserActivityCountUseCase
 import com.wandr.domain.usecase.RefreshProfileUseCase
 import com.wandr.domain.usecase.RemoveAvatarUseCase
 import com.wandr.domain.usecase.UpdateProfileUseCase
@@ -22,6 +23,7 @@ class ProfileViewModel(
     private val uploadAvatarUseCase: UploadAvatarUseCase,
     private val removeAvatarUseCase: RemoveAvatarUseCase,
     private val refreshProfileUseCase: RefreshProfileUseCase,
+    private val getUserActivityCountUseCase: GetUserActivityCountUseCase,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
     private val _uiState = MutableStateFlow(ProfileState())
@@ -55,6 +57,11 @@ class ProfileViewModel(
         observeJob = scope.launch {
             // The local cache is the source of truth for the UI; the remote pull only feeds the cache.
             launch { refreshProfileUseCase(userId) }
+            launch {
+                getUserActivityCountUseCase(userId).collect { count ->
+                    _uiState.update { it.copy(activityCount = count) }
+                }
+            }
             getProfileUseCase(userId).collect { cached ->
                 cachedProfile = cached
                 _uiState.update { state ->

@@ -44,6 +44,7 @@ val domainModule = module {
     factory { com.wandr.domain.usecase.CreateManualActivityUseCase(get()) }
     factory { com.wandr.domain.usecase.RecordGpsActivityUseCase(get()) }
     factory { com.wandr.domain.usecase.GetUserActivitiesUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetUserActivityCountUseCase(get()) }
     factory { com.wandr.domain.usecase.GetTeamActivitiesUseCase(get()) }
     factory { com.wandr.domain.usecase.DeleteActivityUseCase(get()) }
 }
