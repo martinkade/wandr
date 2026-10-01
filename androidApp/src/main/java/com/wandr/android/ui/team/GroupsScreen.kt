@@ -1,6 +1,7 @@
 package com.wandr.android.ui.team
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,20 +13,67 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.wandr.android.R
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
+import com.wandr.presentation.team.TeamIntent
+import com.wandr.presentation.team.TeamViewModel
+import org.koin.compose.koinInject
+
+/** Groups tab for managers: list -> details (drill-down) and a dialog to create a group. */
+@Composable
+fun GroupsScreen(
+    userId: String,
+    modifier: Modifier = Modifier,
+    viewModel: TeamViewModel = koinInject()
+) {
+    val state by viewModel.uiState.collectAsState()
+    var selectedTeamId by rememberSaveable { mutableStateOf<String?>(null) }
+    var showCreate by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(userId) { viewModel.processIntent(TeamIntent.LoadUserTeams(userId)) }
+
+    val teamId = selectedTeamId
+    if (teamId != null) {
+        // Drill-down inside the tab; system back returns to the list.
+        BackHandler { selectedTeamId = null }
+        TeamDetailsScreen(teamId = teamId, userId = userId, onBack = { selectedTeamId = null }, modifier = modifier)
+    } else {
+        GroupList(
+            teams = state.teams,
+            onSelectTeam = { selectedTeamId = it.id },
+            onCreateTeam = { showCreate = true },
+            modifier = modifier
+        )
+    }
+
+    if (showCreate) {
+        Dialog(
+            onDismissRequest = { showCreate = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            CreateTeamScreen(creatorId = userId, onCancel = { showCreate = false }, onCreated = { showCreate = false })
+        }
+    }
+}
 
 /** Groups the signed-in manager belongs to, with a button to create a new one. */
 @Composable
-fun TeamListScreen(
+private fun GroupList(
     teams: List<Team>,
     onSelectTeam: (Team) -> Unit,
     onCreateTeam: () -> Unit,
@@ -74,13 +122,13 @@ private fun sampleTeams() = listOf(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Preview(name = "Tablet", widthDp = 840, heightDp = 600, showBackground = true)
 @Composable
-private fun TeamListScreenPreview() {
-    WandrTheme { TeamListScreen(teams = sampleTeams(), onSelectTeam = {}, onCreateTeam = {}) }
+private fun GroupListPreview() {
+    WandrTheme { GroupList(teams = sampleTeams(), onSelectTeam = {}, onCreateTeam = {}) }
 }
 
 @Preview(name = "Empty", showBackground = true)
 @Preview(name = "Empty Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
-private fun TeamListScreenEmptyPreview() {
-    WandrTheme { TeamListScreen(teams = emptyList(), onSelectTeam = {}, onCreateTeam = {}) }
+private fun GroupListEmptyPreview() {
+    WandrTheme { GroupList(teams = emptyList(), onSelectTeam = {}, onCreateTeam = {}) }
 }

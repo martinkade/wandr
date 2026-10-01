@@ -20,6 +20,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +41,21 @@ import com.wandr.domain.model.Profile
 import com.wandr.presentation.profile.ProfileIntent
 import com.wandr.presentation.profile.ProfileState
 import com.wandr.presentation.profile.ProfileSuccess
+import com.wandr.presentation.profile.ProfileViewModel
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+
+@Composable
+fun ProfileScreen(
+    userId: String,
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = koinInject()
+) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(userId) { viewModel.processIntent(ProfileIntent.LoadProfile(userId)) }
+    ProfileScreenContent(state = state, onIntent = viewModel::processIntent, onLogout = onLogout, modifier = modifier)
+}
 
 /**
  * Read-only profile. "Edit" opens [ProfileEditScreen] in a bottom sheet; saving closes the sheet.
@@ -48,7 +63,7 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
+private fun ProfileScreenContent(
     state: ProfileState,
     onIntent: (ProfileIntent) -> Unit,
     onLogout: () -> Unit,
@@ -162,5 +177,5 @@ private val previewProfile = Profile(
 @Preview(name = "Tablet", widthDp = 840, heightDp = 900, showBackground = true)
 @Composable
 private fun ProfileScreenPreview() {
-    WandrTheme { ProfileScreen(state = ProfileState(profile = previewProfile), onIntent = {}, onLogout = {}) }
+    WandrTheme { ProfileScreenContent(state = ProfileState(profile = previewProfile), onIntent = {}, onLogout = {}) }
 }

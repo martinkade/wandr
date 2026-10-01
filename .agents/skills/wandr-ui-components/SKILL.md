@@ -122,6 +122,33 @@ The post-login root is the **Main screen** (`MainScreen` / `MainView`, `MainView
 
 ---
 
+## 💉 Android: Screens Inject Their ViewModels
+
+`WandrApp` only wires routes and navigation callbacks. It never passes view model state down. Each screen takes its view model as a trailing default parameter and collects the state itself:
+
+```kotlin
+// ProfileScreen.kt: one file per screen
+@Composable
+fun ProfileScreen(userId: String, onLogout: () -> Unit, modifier: Modifier = Modifier,
+                  viewModel: ProfileViewModel = koinInject()) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(userId) { viewModel.processIntent(ProfileIntent.LoadProfile(userId)) }
+    ProfileScreenContent(state = state, onIntent = viewModel::processIntent, onLogout = onLogout, modifier = modifier)
+}
+
+@Composable
+private fun ProfileScreenContent(state: ProfileState, onIntent: (ProfileIntent) -> Unit, onLogout: () -> Unit, modifier: Modifier = Modifier) { … }
+
+@Preview private fun ProfileScreenPreview() { WandrTheme { ProfileScreenContent(state = ProfileState(…), …) } }
+```
+
+- The screen file holds the public `XScreen` (view model wiring: ids to load, navigation callbacks, loading intents) and a **private** stateless `XScreenContent` that the previews call (Koin is not available in previews). There are no separate `*Content.kt` files.
+- Reusable child components (e.g. `ProfileEditScreen` in the bottom sheet, `TeamCard`) stay in their own files and take plain parameters.
+- Screens that must not share state use separate instances (view models are Koin `factory`s); shared data flows through Room.
+- Tab screens are composed only while selected, so their view models are recreated on tab switches; keep durable state in the repository / Room cache, not in the view model.
+
+---
+
 ## ✏️ Edit Flows (Detail Screens)
 
 Detail screens (profile, team/group, ...) are **read-only**. Editing happens in a **separate edit screen presented in a bottom sheet**, opened by an "Edit" button (shown only when the user may edit).

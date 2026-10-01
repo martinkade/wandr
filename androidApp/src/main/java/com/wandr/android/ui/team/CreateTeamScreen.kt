@@ -15,18 +15,43 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.presentation.team.TeamIntent
 import com.wandr.presentation.team.TeamState
+import com.wandr.presentation.team.TeamViewModel
+import org.koin.compose.koinInject
 
+/** Create-group form; [onCreated] is called once the group exists. Uses its own view model instance. */
 @Composable
 fun CreateTeamScreen(
+    creatorId: String,
+    onCancel: () -> Unit,
+    onCreated: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: TeamViewModel = koinInject()
+) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(state.successMessage) { if (state.successMessage != null) onCreated() }
+    CreateTeamScreenContent(
+        state = state,
+        onIntent = viewModel::processIntent,
+        creatorId = creatorId,
+        modifier = modifier,
+        onCancel = onCancel
+    )
+}
+
+@Composable
+private fun CreateTeamScreenContent(
     state: TeamState,
     onIntent: (TeamIntent) -> Unit,
     creatorId: String,
@@ -119,7 +144,7 @@ fun CreateTeamScreen(
 @Composable
 private fun CreateTeamScreenPreview() {
     WandrTheme {
-        CreateTeamScreen(
+        CreateTeamScreenContent(
             state = TeamState(createTeamName = "Alpine Trail Blazers", createTeamDescription = "Hiking group for weekend trips."),
             onIntent = {},
             creatorId = "user_1"

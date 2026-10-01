@@ -16,19 +16,41 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.presentation.auth.LoginIntent
 import com.wandr.presentation.auth.LoginState
+import com.wandr.presentation.auth.LoginViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun RegisterScreen(
+    onAuthenticated: () -> Unit,
+    onNavigateToLogin: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: LoginViewModel = koinInject()
+) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(state.isAuthenticated) { if (state.isAuthenticated) onAuthenticated() }
+    RegisterScreenContent(
+        state = state,
+        onIntent = viewModel::processIntent,
+        onNavigateToLogin = onNavigateToLogin,
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun RegisterScreenContent(
     state: LoginState,
     onIntent: (LoginIntent) -> Unit,
     onNavigateToLogin: () -> Unit,
@@ -116,7 +138,7 @@ fun RegisterScreen(
 @Composable
 private fun RegisterScreenPreview() {
     WandrTheme {
-        RegisterScreen(
+        RegisterScreenContent(
             state = LoginState(emailInput = "newuser@example.com", passwordInput = "secret123"),
             onIntent = {},
             onNavigateToLogin = {}

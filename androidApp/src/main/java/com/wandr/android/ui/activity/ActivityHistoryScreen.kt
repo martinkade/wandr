@@ -14,20 +14,41 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Activity
 import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
+import com.wandr.presentation.activity.ActivityViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun ActivityHistoryScreen(
+    userId: String,
+    modifier: Modifier = Modifier,
+    viewModel: ActivityViewModel = koinInject()
+) {
+    val state by viewModel.state.collectAsState()
+    LaunchedEffect(userId) { viewModel.processIntent(ActivityIntent.LoadUserActivities(userId)) }
+    ActivityHistoryScreenContent(
+        state = state,
+        onIntent = viewModel::processIntent,
+        onSelectActivity = {},
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun ActivityHistoryScreenContent(
     state: ActivityState,
     onIntent: (ActivityIntent) -> Unit,
     onSelectActivity: (Activity) -> Unit,
@@ -70,7 +91,7 @@ fun ActivityHistoryScreen(
 @Composable
 private fun ActivityHistoryScreenPreview() {
     WandrTheme {
-        ActivityHistoryScreen(
+        ActivityHistoryScreenContent(
             state = ActivityState(
                 activities = listOf(
                     Activity(

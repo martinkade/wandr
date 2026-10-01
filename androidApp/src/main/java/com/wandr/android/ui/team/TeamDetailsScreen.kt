@@ -10,26 +10,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import com.wandr.android.ui.profile.AvatarPicker
-import com.wandr.android.ui.common.LabeledValue
-import com.wandr.android.ui.common.ScreenScaffold
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -38,6 +36,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.LabeledValue
+import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.profile.AvatarPicker
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
@@ -45,7 +46,22 @@ import com.wandr.domain.model.TeamRole
 import com.wandr.presentation.teamdetails.TeamDetailsIntent
 import com.wandr.presentation.teamdetails.TeamDetailsState
 import com.wandr.presentation.teamdetails.TeamDetailsSuccess
+import com.wandr.presentation.teamdetails.TeamDetailsViewModel
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+
+@Composable
+fun TeamDetailsScreen(
+    teamId: String,
+    userId: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: TeamDetailsViewModel = koinInject()
+) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(teamId, userId) { viewModel.processIntent(TeamDetailsIntent.Load(teamId, userId)) }
+    TeamDetailsScreenContent(state = state, onIntent = viewModel::processIntent, onBack = onBack, modifier = modifier)
+}
 
 /**
  * Read-only group details with the member list. Owners and admins get an "Edit" button that opens
@@ -54,7 +70,7 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TeamDetailsScreen(
+private fun TeamDetailsScreenContent(
     state: TeamDetailsState,
     onIntent: (TeamDetailsIntent) -> Unit,
     onBack: () -> Unit,
@@ -210,7 +226,7 @@ private val previewMembers = listOf(
 @Composable
 private fun TeamDetailsScreenPreview() {
     WandrTheme {
-        TeamDetailsScreen(
+        TeamDetailsScreenContent(
             state = TeamDetailsState(team = previewTeam, members = previewMembers, canEdit = true),
             onIntent = {}, onBack = {}
         )

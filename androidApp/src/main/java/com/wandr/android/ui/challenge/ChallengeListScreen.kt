@@ -13,17 +13,41 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
+import com.wandr.presentation.challenge.ChallengeIntent
+import com.wandr.presentation.challenge.ChallengeViewModel
+import org.koin.compose.koinInject
 
+/** Challenges of the user's primary team ([teamId] is null while the user has no team yet). */
 @Composable
 fun ChallengeListScreen(
+    userId: String,
+    teamId: String?,
+    modifier: Modifier = Modifier,
+    viewModel: ChallengeViewModel = koinInject()
+) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(teamId) { if (teamId != null) viewModel.processIntent(ChallengeIntent.LoadTeamChallenges(teamId)) }
+    ChallengeListScreenContent(
+        challenges = state.challenges,
+        onSelectChallenge = {},
+        onJoinChallenge = { viewModel.processIntent(ChallengeIntent.JoinChallenge(it.id, userId)) },
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun ChallengeListScreenContent(
     challenges: List<Challenge>,
     onSelectChallenge: (Challenge) -> Unit,
     onJoinChallenge: (Challenge) -> Unit,
@@ -57,7 +81,7 @@ fun ChallengeListScreen(
 @Composable
 private fun ChallengeListScreenPreview() {
     WandrTheme {
-        ChallengeListScreen(
+        ChallengeListScreenContent(
             challenges = listOf(
                 Challenge("c1", "t1", "30-Day 100km Hike", "Hike 100km total.", null, "group", "distance", 100000.0, true, 0L, 0L, "active", "u1", 0L, 0L),
                 Challenge("c2", "t1", "5000m Altitude Climb", "Climb 5000m total.", null, "group", "elevation", 5000.0, false, 0L, 0L, "active", "u1", 0L, 0L)
