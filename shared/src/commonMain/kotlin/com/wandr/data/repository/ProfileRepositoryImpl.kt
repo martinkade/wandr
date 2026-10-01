@@ -25,6 +25,7 @@ class ProfileRepositoryImpl(
                     displayName = it.displayName,
                     avatarUrl = it.avatarUrl,
                     bio = it.bio,
+                    systemRole = it.systemRole,
                     createdAt = it.createdAt,
                     updatedAt = it.updatedAt
                 )
@@ -40,6 +41,7 @@ class ProfileRepositoryImpl(
             displayName = profile.displayName,
             avatarUrl = profile.avatarUrl,
             bio = profile.bio,
+            systemRole = profile.systemRole,
             createdAt = profile.createdAt,
             updatedAt = now,
             syncStatus = "DIRTY"

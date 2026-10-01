@@ -21,6 +21,9 @@ data class ProfileEntity(
     @ColumnInfo(name = "bio")
     val bio: String?,
     
+    @ColumnInfo(name = "system_role")
+    val systemRole: String = "user",
+    
     @ColumnInfo(name = "created_at")
     val createdAt: Long,
     

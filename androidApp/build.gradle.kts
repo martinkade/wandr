@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -22,22 +23,21 @@ if (keystoreReleasePropertiesFile.exists()) {
 
 kotlin {
     androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "21"
-            }
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 }
 
 android {
-    namespace = "com.mediabeam.fitness"
-    compileSdk = 34
+    namespace = "com.wandr.android"
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.mediabeam.fitness"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0.0"
     }
@@ -48,12 +48,13 @@ android {
             val pass = keystoreReleaseProperties.getProperty("keyPassword")
             val storePass = keystoreReleaseProperties.getProperty("storePassword")
             val storePath = keystoreReleaseProperties.getProperty("storeFile")
-            
+
             if (alias != null && pass != null && storePass != null && storePath != null) {
                 keyAlias = alias
                 keyPassword = pass
                 storePassword = storePass
-                storeFile = rootProject.file("androidApp/signing/" + storePath.removePrefix("../signing/"))
+                storeFile =
+                    rootProject.file("androidApp/signing/" + storePath.removePrefix("../signing/"))
             }
         }
     }
@@ -72,6 +73,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+
+    sourceSets {
+        getByName("main") {
+            manifest.srcFile("src/main/AndroidManifest.xml")
+            java.srcDirs("src/main/java")
+            res.srcDirs("src/main/res")
+        }
+    }
 }
 
 dependencies {
@@ -79,7 +88,12 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
-    implementation(compose.runtime)
-    implementation(compose.foundation)
-    implementation(compose.material3)
+    implementation(libs.activity.compose)
+    implementation(libs.runtime)
+    implementation(libs.foundation)
+    implementation(libs.material3)
+    implementation(libs.ui)
+    implementation(libs.jetbrains.ui.tooling.preview)
+    implementation(libs.ui.tooling.preview)
+    debugImplementation(libs.ui.tooling)
 }

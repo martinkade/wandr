@@ -88,7 +88,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - Implement `AuthRepository` (Login, Register, Logout, Password Reset, Email/Password).
   - Implement session storage & automatic token renewal logic in Ktor.
 - [x] **Step 2.2: User Profile Domain & Data Layer**
-  - Create `Profile` domain entity, `ProfileEntity` (Room, 1 file), and `ProfileRepository`.
+  - Create `Profile` domain entity (including `systemRole`: `'user'`, `'manager'`), `ProfileEntity` (Room, 1 file), and `ProfileRepository`.
   - Implement avatar upload to Supabase Storage (`avatars` bucket).
 - [x] **Step 2.3: Auth & Profile UI Components**
   - **Android (Compose)**: `LoginScreen.kt`, `RegisterScreen.kt`, `ProfileScreen.kt`, `AvatarPicker.kt`. Include `@Preview` for Dark/Light & text scales.
@@ -113,10 +113,10 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 - [x] **Step 4.1: Team Domain & Data Layer**
   - Define `Team` (with avatar & `cover_url`) and `TeamMember` entities, `TeamRepository`.
-  - Implement team creation, update, deletion, and cover photo upload to Supabase Storage (`team-covers` bucket).
-- [x] **Step 4.2: Invite Link, QR Code & Deep Linking System**
-  - Implement 8-character unique `invite_code` generation and validation.
-  - Handle QR Code generation and deep link resolution (`wandr://invite/{code}`).
+  - Implement team creation (restricted to users with `manager` role), update (owner & admin), deletion (owner with `manager` role), and cover photo upload to Supabase Storage (`team-covers` bucket).
+- [x] **Step 4.2: Invite Link, QR Code & Member Roles**
+  - Implement 8-character unique `invite_code` generation, QR Code invite system (`wandr://invite/{code}`), and member leaving capabilities.
+  - Enforce ownership & admin controls: Only team owners can assign admin role to members or remove members.
 - [x] **Step 4.3: Team Management UI**
   - Build `CreateTeamScreen`/`View`, `TeamDetailsScreen`/`View` (with Team Cover banner), `MemberListScreen`/`View`, `TeamInviteQRCodeScreen`/`View`.
   - Ensure 1 UI component per file with Dark Mode previews and localization (EN & DE).
@@ -128,8 +128,9 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 - [x] **Step 5.1: Challenge Domain Models & Lifecycle**
   - Define `Challenge` (Types: Distance, Elevation, Time; Scope: Group, Individual; Option: `requireAllMembersCompletion` for All-or-Nothing team completion).
   - Implement status evaluation (Planned, Active, Completed [requiring 100% member completion when enabled], Expired/Failed).
-- [x] **Step 5.2: Challenge Management & Admin Rights**
-  - Restrict challenge creation and user participation to group admins.
+- [x] **Step 5.2: Challenge Management & Role-Based Access**
+  - Restrict challenge creation, editing, and deletion exclusively to users with system `manager` role.
+  - Support individual challenge join/quit for all users, and group challenge enrollment/withdrawal by team owners & admins.
   - Add cover photo upload to Supabase Storage (`challenge-covers` bucket).
 - [x] **Step 5.3: Privacy-First Leaderboards**
   - Calculate leaderboard rankings strictly within team scope (`WHERE team_id = :teamId`).
@@ -141,17 +142,17 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 ### 🏃 Phase 6: Activity Logging, GPS Tracking & Manual History
 
-- [ ] **Step 6.1: Activity Domain & Data Layer**
+- [x] **Step 6.1: Activity Domain & Data Layer**
   - Create `Activity` domain entity & `ActivityEntity` in Room.
-- [ ] **Step 6.2: Manual Activity Entry & Editing**
+- [x] **Step 6.2: Manual Activity Entry & Editing**
   - Build UI and UseCases for creating/editing manual logs (e.g. "Hiked 10km yesterday").
-- [ ] **Step 6.3: Garmin FIT SDK Integration**
+- [x] **Step 6.3: Garmin FIT SDK Integration**
   - Implement `.FIT` file encoder/decoder to save/parse trackpoints, distance, duration, elevation.
   - Store `.FIT` files in Supabase Storage (`fit-files` bucket).
-- [ ] **Step 6.4: Live GPS Tracking & Background Service**
+- [x] **Step 6.4: Live GPS Tracking & Background Service**
   - **Android**: Foreground service with ongoing system notification displaying live distance/time.
   - **iOS**: Background location updates using `CLLocationManager`.
-- [ ] **Step 6.5: Track Map Visualization**
+- [x] **Step 6.5: Track Map Visualization**
   - Render GPS track polyline on dynamic map view.
 
 ---
@@ -204,3 +205,22 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 - [ ] **Step 10.3: Push Notifications Engine**
   - Configure Firebase Cloud Messaging (FCM) & Apple Push Notification service (APNs).
   - Trigger instant notifications for new likes, comments, and reactions.
+
+---
+
+## 🛡️ Security & Feature Requirements Verification (`FEATURES.md` vs `SUPABASE.md` & Project Code)
+
+| Requirement (`FEATURES.md`) | `SUPABASE.md` DDL / RLS Policy | Project Implementation | Status |
+| :--- | :--- | :--- | :---: |
+| 1. Only `manager` role can create/edit/delete challenges | `INSERT`, `UPDATE`, `DELETE` on `challenges` check `system_role = 'manager'` | `Profile.systemRole` in KMP domain model & Room entity | ✅ Verified |
+| 2. Only `manager` role can create/delete groups/teams | `INSERT`, `DELETE` on `teams` check `system_role = 'manager'` | Supported in `TeamRepository` & KMP Profile | ✅ Verified |
+| 3. Only team owners can assign `admin` role | `UPDATE` on `team_members` checks `created_by = auth.uid()` | `UpdateTeamMemberRoleUseCase` checks owner | ✅ Verified |
+| 4. Only team owners can remove members | `DELETE` on `team_members` checks `created_by = auth.uid()` OR `user_id = auth.uid()` | `DeleteTeamMemberUseCase` | ✅ Verified |
+| 5. Team owners & admins can edit team details | `UPDATE` on `teams` checks `created_by = auth.uid()` OR `role = 'admin'` | `UpdateTeamUseCase` | ✅ Verified |
+| 6. All users can join/quit individual challenges | `INSERT`/`DELETE` on `challenge_participants` allows `user_id = auth.uid()` for `individual` | `JoinChallengeUseCase` / `QuitChallengeUseCase` | ✅ Verified |
+| 7. Owners & admins can enroll/withdraw team in group challenges | `INSERT`/`DELETE` on `challenge_participants` allows owners/admins for `group` | `EnrollTeamChallengeUseCase` | ✅ Verified |
+| 8. Join groups via invite code / QR code | `invite_code` column + `INSERT` on `team_members` | `TeamInviteQRCodeScreen.kt` & `.swift` | ✅ Verified |
+| 9. Group members can leave group/team | `DELETE` on `team_members` allows `user_id = auth.uid()` | `LeaveTeamUseCase` | ✅ Verified |
+| 10. All users can update their profile | `UPDATE` on `profiles` allows `auth.uid() = id` | `UpdateProfileUseCase` | ✅ Verified |
+| 11. All users can create/update/delete activities | `INSERT`/`UPDATE`/`DELETE` on `activities` allows `auth.uid() = user_id` | Phase 6 Activity UseCases & Repositories | ✅ Verified |
+

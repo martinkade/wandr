@@ -38,4 +38,22 @@
     <string name="require_all_members_label">Alle Mitglieder müssen abschließen (Alles-oder-Nichts)</string>
     <string name="leaderboard_title">Team-Bestenliste</string>
     <string name="join_challenge_button">Challenge beitreten</string>
+
+    <!-- Activity & GPS Tracking Localization -->
+    <string name="activities_title">Aktivitätsverlauf</string>
+    <string name="log_manual_activity_title">Manuelle Aktivität eintragen</string>
+    <string name="live_gps_tracking_title">Live GPS-Tracking</string>
+    <string name="activity_type_hiking">Wandern</string>
+    <string name="activity_type_running">Laufen</string>
+    <string name="activity_type_cycling">Radsport</string>
+    <string name="distance_label">Distanz (km)</string>
+    <string name="duration_label">Dauer (Min)</string>
+    <string name="elevation_label">Höhenmeter (m)</string>
+    <string name="start_tracking_button">Tracking starten</string>
+    <string name="pause_button">Pause</string>
+    <string name="resume_button">Fortsetzen</string>
+    <string name="stop_save_button">Stoppen &amp; Speichern</string>
+    <string name="save_activity_button">Aktivität speichern</string>
+    <string name="manual_entry">Manueller Eintrag</string>
+    <string name="gps_tracked">GPS Ausgezeichnet</string>
 </resources>

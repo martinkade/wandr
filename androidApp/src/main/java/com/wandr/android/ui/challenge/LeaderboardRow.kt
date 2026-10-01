@@ -30,7 +30,7 @@ fun LeaderboardRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "#${entry.rank}",

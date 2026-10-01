@@ -1,9 +1,7 @@
 package com.wandr.data.local
 
-import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.dao.ChallengeDao
@@ -32,7 +30,6 @@ import kotlinx.coroutines.IO
     version = 1,
     exportSchema = true
 )
-@ConstructedBy(WandrDatabaseConstructor::class)
 abstract class WandrDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
     abstract fun teamDao(): TeamDao
@@ -42,13 +39,6 @@ abstract class WandrDatabase : RoomDatabase() {
     abstract fun activityDao(): ActivityDao
 }
 
-// Room 3 / KMP Database Constructor expectation
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-expect object WandrDatabaseConstructor : RoomDatabaseConstructor<WandrDatabase>
-
-/**
- * Modern Room 3 Database Instantiator using BundledSQLiteDriver & Coroutines IO Dispatcher
- */
 fun getWandrDatabase(builder: RoomDatabase.Builder<WandrDatabase>): WandrDatabase {
     return builder
         .setDriver(BundledSQLiteDriver())

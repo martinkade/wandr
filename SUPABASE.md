@@ -66,6 +66,7 @@ CREATE TABLE public.profiles (
     display_name TEXT NOT NULL,
     avatar_url TEXT,
     bio TEXT,
+    system_role TEXT NOT NULL DEFAULT 'user', -- 'user', 'manager'
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -245,16 +246,33 @@ CREATE POLICY "Users can view teams they are members of"
     ON public.teams FOR SELECT TO authenticated
     USING (public.is_team_member(id, auth.uid()));
 
-CREATE POLICY "Authenticated users can create teams"
+CREATE POLICY "Only managers can create teams"
     ON public.teams FOR INSERT TO authenticated
-    WITH CHECK (auth.uid() = created_by);
+    WITH CHECK (
+        auth.uid() = created_by AND
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND system_role = 'manager'
+        )
+    );
 
-CREATE POLICY "Team admins can update their teams"
+CREATE POLICY "Team owners and admins can edit team"
     ON public.teams FOR UPDATE TO authenticated
     USING (
+        auth.uid() = created_by OR
         EXISTS (
             SELECT 1 FROM public.team_members
             WHERE team_id = id AND user_id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Only managers can delete teams"
+    ON public.teams FOR DELETE TO authenticated
+    USING (
+        auth.uid() = created_by AND
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND system_role = 'manager'
         )
     );
 
@@ -266,8 +284,27 @@ CREATE POLICY "Users can join team via invite"
     ON public.team_members FOR INSERT TO authenticated
     WITH CHECK (auth.uid() = user_id);
 
+CREATE POLICY "Only team owners can assign admin role"
+    ON public.team_members FOR UPDATE TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.teams
+            WHERE id = team_id AND created_by = auth.uid()
+        )
+    );
+
+CREATE POLICY "Team owners can remove members or members can leave"
+    ON public.team_members FOR DELETE TO authenticated
+    USING (
+        auth.uid() = user_id OR
+        EXISTS (
+            SELECT 1 FROM public.teams
+            WHERE id = team_id AND created_by = auth.uid()
+        )
+    );
+
 -- ----------------------------------------------------------------------------
--- Challenges & Challenge Participants Policies (Admin Rights & Privacy-First)
+-- Challenges & Challenge Participants Policies (Manager Rights & Scope Rules)
 -- ----------------------------------------------------------------------------
 CREATE POLICY "Team members or creators can view challenges"
     ON public.challenges FOR SELECT TO authenticated
@@ -276,25 +313,33 @@ CREATE POLICY "Team members or creators can view challenges"
         (team_id IS NOT NULL AND public.is_team_member(team_id, auth.uid()))
     );
 
-CREATE POLICY "Group admins can create team challenges"
+CREATE POLICY "Only managers can create challenges"
     ON public.challenges FOR INSERT TO authenticated
     WITH CHECK (
-        auth.uid() = created_by AND (
-            team_id IS NULL OR EXISTS (
-                SELECT 1 FROM public.team_members
-                WHERE team_id = challenges.team_id AND user_id = auth.uid() AND role = 'admin'
-            )
+        auth.uid() = created_by AND
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND system_role = 'manager'
         )
     );
 
-CREATE POLICY "Group admins can update team challenges"
+CREATE POLICY "Only managers can edit challenges"
     ON public.challenges FOR UPDATE TO authenticated
     USING (
-        auth.uid() = created_by OR (
-            team_id IS NOT NULL AND EXISTS (
-                SELECT 1 FROM public.team_members
-                WHERE team_id = challenges.team_id AND user_id = auth.uid() AND role = 'admin'
-            )
+        auth.uid() = created_by AND
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND system_role = 'manager'
+        )
+    );
+
+CREATE POLICY "Only managers can delete challenges"
+    ON public.challenges FOR DELETE TO authenticated
+    USING (
+        auth.uid() = created_by AND
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND system_role = 'manager'
         )
     );
 
@@ -310,9 +355,33 @@ CREATE POLICY "Team members can view challenge participants (Privacy-First Leade
         )
     );
 
-CREATE POLICY "Users can join challenges"
+CREATE POLICY "Users can join or admins can enroll team in challenges"
     ON public.challenge_participants FOR INSERT TO authenticated
-    WITH CHECK (auth.uid() = user_id);
+    WITH CHECK (
+        (auth.uid() = user_id AND EXISTS (
+            SELECT 1 FROM public.challenges WHERE id = challenge_id AND scope = 'individual'
+        )) OR
+        EXISTS (
+            SELECT 1 FROM public.challenges c
+            JOIN public.teams t ON c.team_id = t.id
+            LEFT JOIN public.team_members tm ON tm.team_id = t.id AND tm.user_id = auth.uid()
+            WHERE c.id = challenge_id AND c.scope = 'group' AND (t.created_by = auth.uid() OR tm.role = 'admin')
+        )
+    );
+
+CREATE POLICY "Users can quit or admins can withdraw team from challenges"
+    ON public.challenge_participants FOR DELETE TO authenticated
+    USING (
+        (auth.uid() = user_id AND EXISTS (
+            SELECT 1 FROM public.challenges WHERE id = challenge_id AND scope = 'individual'
+        )) OR
+        EXISTS (
+            SELECT 1 FROM public.challenges c
+            JOIN public.teams t ON c.team_id = t.id
+            LEFT JOIN public.team_members tm ON tm.team_id = t.id AND tm.user_id = auth.uid()
+            WHERE c.id = challenge_id AND c.scope = 'group' AND (t.created_by = auth.uid() OR tm.role = 'admin')
+        )
+    );
 
 CREATE POLICY "Participants can update their own progress"
     ON public.challenge_participants FOR UPDATE TO authenticated

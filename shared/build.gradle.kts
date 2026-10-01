@@ -1,3 +1,8 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
@@ -10,10 +15,9 @@ plugins {
 
 kotlin {
     androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
     
@@ -63,11 +67,18 @@ kotlin {
 
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
         }
 
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
+        }
+
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(kotlin("test-junit"))
+            }
         }
 
         iosMain.dependencies {
@@ -86,13 +97,13 @@ dependencies {
 
 android {
     namespace = "com.wandr.shared"
-    compileSdk = 34
+    compileSdk = 37
     defaultConfig {
         minSdk = 26
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 

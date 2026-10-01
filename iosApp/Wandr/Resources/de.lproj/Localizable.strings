@@ -36,3 +36,21 @@
 "require_all_members_label" = "Alle Mitglieder müssen abschließen (Alles-oder-Nichts)";
 "leaderboard_title" = "Team-Bestenliste";
 "join_challenge_button" = "Challenge beitreten";
+
+/* Activity & GPS Tracking Localization */
+"activities_title" = "Aktivitätsverlauf";
+"log_manual_activity_title" = "Manuelle Aktivität eintragen";
+"live_gps_tracking_title" = "Live GPS-Tracking";
+"activity_type_hiking" = "Wandern";
+"activity_type_running" = "Laufen";
+"activity_type_cycling" = "Radsport";
+"distance_label" = "Distanz (km)";
+"duration_label" = "Dauer (Min)";
+"elevation_label" = "Höhenmeter (m)";
+"start_tracking_button" = "Tracking starten";
+"pause_button" = "Pause";
+"resume_button" = "Fortsetzen";
+"stop_save_button" = "Stoppen & Speichern";
+"save_activity_button" = "Aktivität speichern";
+"manual_entry" = "Manueller Eintrag";
+"gps_tracked" = "GPS Ausgezeichnet";

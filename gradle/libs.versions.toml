@@ -1,22 +1,32 @@
 [versions]
-agp = "8.5.1"
-kotlin = "2.0.0"
-compose-multiplatform = "1.6.11"
-koin = "3.5.6"
-koin-compose = "1.1.5"
-room = "2.7.0-alpha05"
-sqlite = "2.4.1"
-ktor = "2.3.12"
-supabase = "2.5.0"
-kotlinx-coroutines = "1.8.1"
-kotlinx-datetime = "0.6.0"
-kotlinx-serialization = "1.7.0"
-ksp = "2.0.0-1.0.22"
+activity-compose = "1.13.0"
+agp = "9.4.1"
+foundation = "1.12.1"
+kotlin = "2.4.20"
+compose-multiplatform = "1.12.1"
+koin = "4.2.2"
+koin-compose = "4.2.2"
+material3 = "1.9.0"
+room = "2.8.5"
+runtime = "1.12.1"
+sqlite = "2.7.1"
+ktor = "3.6.0"
+supabase = "3.8.0"
+kotlinx-coroutines = "1.11.0"
+kotlinx-datetime = "0.8.0"
+kotlinx-serialization = "1.11.0"
+ksp = "2.3.10"
+ui = "1.12.1"
+ui-tooling = "1.12.1"
 
 [libraries]
 # Kotlin Coroutines, Datetime & Serialization
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
+jetbrains-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "ui" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
@@ -26,8 +36,10 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin-compose" }
 
 # Room 3 / 2.7+ Multiplatform Database & Bundled SQLite Driver
+material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 
 # Ktor HTTP Client
@@ -43,6 +55,9 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
 supabase-gotrue = { module = "io.github.jan-tennert.supabase:gotrue-kt", version.ref = "supabase" }
 supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "supabase" }
+ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "ui" }
+ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "ui-tooling" }
+ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "ui-tooling" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

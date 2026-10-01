@@ -5,6 +5,7 @@
 *.ipr
 *.iws
 .vscode/
+.kotlin/
 
 # Build & Gradle Output
 build/

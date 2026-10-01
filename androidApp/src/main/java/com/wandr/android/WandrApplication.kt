@@ -9,9 +9,11 @@ class WandrApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        initKoin {
-            androidLogger()
-            androidContext(this@WandrApplication)
-        }
+        initKoin(
+            appDeclaration = {
+                androidLogger()
+                androidContext(this@WandrApplication)
+            }
+        )
     }
 }
