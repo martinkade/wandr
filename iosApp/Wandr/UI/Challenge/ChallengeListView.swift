@@ -30,7 +30,7 @@ struct ChallengeListView: View {
         .padding(24)
         .background(
             LinearGradient(
-                colors: [Color.purple.opacity(0.08), Color.blue.opacity(0.05)],
+                colors: [Color.wandrSecondary.opacity(0.08), Color.wandrPrimary.opacity(0.05)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

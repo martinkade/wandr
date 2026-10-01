@@ -18,7 +18,7 @@ struct ChallengeCardView: View {
                 Text(status.uppercased())
                     .font(.caption)
                     .fontWeight(.bold)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.wandrAccentText)
             }
 
             if let desc = description {
@@ -31,10 +31,10 @@ struct ChallengeCardView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "lock.fill")
                         .font(.caption)
-                        .foregroundColor(.purple)
+                        .foregroundColor(.wandrSecondary)
                     Text(LocalizedStringKey("require_all_members_label"))
                         .font(.caption)
-                        .foregroundColor(.purple)
+                        .foregroundColor(.wandrSecondary)
                 }
             }
 
@@ -42,10 +42,10 @@ struct ChallengeCardView: View {
                 Text(LocalizedStringKey("join_challenge_button"))
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundColor(.wandrOnPrimary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
-                    .background(Color.blue)
+                    .background(Color.wandrPrimary)
                     .cornerRadius(10)
             }
         }

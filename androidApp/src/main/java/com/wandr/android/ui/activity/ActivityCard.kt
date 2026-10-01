@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.domain.model.Activity
 
@@ -45,7 +46,7 @@ fun ActivityCard(
                 Text(
                     text = if (activity.isManualEntry) stringResource(R.string.manual_entry) else stringResource(R.string.gps_tracked),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
 
@@ -87,7 +88,7 @@ fun ActivityCard(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun ActivityCardPreview() {
-    MaterialTheme {
+    WandrTheme {
         ActivityCard(
             activity = Activity(
                 id = "a1",

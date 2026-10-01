@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash_background">#FFFFFFFF</color>
-    <color name="splash_icon">#FF2E7D32</color>
+    <!-- Launcher icon background and splash: WANDR gold (from the legacy app). -->
+    <color name="ic_launcher_background">#FFD700</color>
+    <color name="splash_background">#FFD700</color>
 </resources>

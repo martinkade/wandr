@@ -13,12 +13,12 @@ struct TeamDetailsView: View {
             // Team Cover Header Banner
             ZStack {
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(LinearGradient(colors: [Color.blue, Color.purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .fill(LinearGradient(colors: [Color.wandrPrimary, Color.wandrPrimary.opacity(0.65)], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(height: 140)
 
                 Text(teamName)
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.wandrOnPrimary)
                     .multilineTextAlignment(.center)
                     .padding()
             }
@@ -32,7 +32,7 @@ struct TeamDetailsView: View {
 
                 Text("Invite Code: \(inviteCode)")
                     .font(.headline)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.wandrAccentText)
             }
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -42,17 +42,17 @@ struct TeamDetailsView: View {
             Button(action: onShowQRCode) {
                 Text(LocalizedStringKey("qr_invite_title"))
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.wandrOnPrimary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(Color.blue)
+                    .background(Color.wandrPrimary)
                     .cornerRadius(12)
             }
 
             Button(action: onViewMembers) {
                 Text(LocalizedStringKey("team_members_title"))
                     .font(.headline)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.wandrAccentText)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(.ultraThinMaterial)
@@ -64,7 +64,7 @@ struct TeamDetailsView: View {
         .padding(24)
         .background(
             LinearGradient(
-                colors: [Color.purple.opacity(0.08), Color.blue.opacity(0.05)],
+                colors: [Color.wandrSecondary.opacity(0.08), Color.wandrPrimary.opacity(0.05)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

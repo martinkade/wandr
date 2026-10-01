@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.presentation.auth.LoginIntent
 import com.wandr.presentation.auth.LoginState
@@ -47,7 +48,7 @@ fun LoginScreen(
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.tertiary
             )
             Text(
                 text = stringResource(R.string.app_tagline),
@@ -114,7 +115,7 @@ fun LoginScreen(
 @Preview(name = "Large Font 1.5x", fontScale = 1.5f, showBackground = true)
 @Composable
 private fun LoginScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         LoginScreen(
             state = LoginState(emailInput = "user@example.com", passwordInput = "secret"),
             onIntent = {},

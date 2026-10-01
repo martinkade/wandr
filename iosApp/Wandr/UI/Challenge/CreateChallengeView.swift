@@ -36,10 +36,10 @@ struct CreateChallengeView: View {
             }) {
                 Text(LocalizedStringKey("create_challenge_title"))
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.wandrOnPrimary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(Color.blue)
+                    .background(Color.wandrPrimary)
                     .cornerRadius(12)
             }
 
@@ -48,7 +48,7 @@ struct CreateChallengeView: View {
         .padding(24)
         .background(
             LinearGradient(
-                colors: [Color.blue.opacity(0.08), Color.purple.opacity(0.05)],
+                colors: [Color.wandrPrimary.opacity(0.08), Color.wandrSecondary.opacity(0.05)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

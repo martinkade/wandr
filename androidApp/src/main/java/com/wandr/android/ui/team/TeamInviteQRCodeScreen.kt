@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 
 @Composable
@@ -43,7 +44,7 @@ fun TeamInviteQRCodeScreen(
             Text(
                 text = stringResource(R.string.qr_invite_title),
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.tertiary
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -96,7 +97,7 @@ fun TeamInviteQRCodeScreen(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun TeamInviteQRCodeScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         TeamInviteQRCodeScreen(
             teamName = "Alpine Trail Blazers",
             inviteCode = "X7K9P2W1"

@@ -64,15 +64,15 @@ struct ProfileView: View {
                 Button(action: onSave) {
                     Group {
                         if isSaving {
-                            ProgressView().tint(.white)
+                            ProgressView().tint(.wandrOnPrimary)
                         } else {
                             Text(LocalizedStringKey("save_profile_button")).font(.headline)
                         }
                     }
-                    .foregroundColor(.white)
+                    .foregroundColor(.wandrOnPrimary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(Color.blue)
+                    .background(Color.wandrPrimary)
                     .cornerRadius(12)
                 }
                 .disabled(isSaving)
@@ -81,7 +81,7 @@ struct ProfileView: View {
         }
         .background(
             LinearGradient(
-                colors: [Color.blue.opacity(0.08), Color.purple.opacity(0.05)],
+                colors: [Color.wandrPrimary.opacity(0.08), Color.wandrSecondary.opacity(0.05)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

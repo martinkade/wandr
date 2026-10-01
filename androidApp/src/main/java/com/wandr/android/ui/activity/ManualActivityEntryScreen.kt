@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
@@ -109,7 +110,7 @@ fun ManualActivityEntryScreen(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun ManualActivityEntryScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         ManualActivityEntryScreen(
             state = ActivityState(manualTitle = "Evening Run"),
             userId = "u1",

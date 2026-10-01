@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeState
@@ -46,7 +47,7 @@ fun CreateChallengeScreen(
             Text(
                 text = stringResource(R.string.create_challenge_title),
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.tertiary
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -101,7 +102,7 @@ fun CreateChallengeScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = msg,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.tertiary,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -128,7 +129,7 @@ fun CreateChallengeScreen(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun CreateChallengeScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         CreateChallengeScreen(
             state = ChallengeState(createTitle = "100km October Hike", requireAllMembersCompletion = true),
             onIntent = {},

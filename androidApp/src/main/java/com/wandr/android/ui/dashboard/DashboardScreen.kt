@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.android.ui.activity.ActivityHistoryScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
@@ -130,7 +131,7 @@ fun DashboardScreen(
 @Preview(name = "Tablet", showBackground = true, widthDp = 840, heightDp = 1180)
 @Composable
 private fun DashboardScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         DashboardScreen(
             dashboardState = DashboardState(userId = "u1", teamId = null, isLoading = false),
             activityState = ActivityState(),

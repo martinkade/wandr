@@ -19,7 +19,7 @@ struct ActivityCardView: View {
                 Text(isManualEntry ? LocalizedStringKey("manual_entry") : LocalizedStringKey("gps_tracked"))
                     .font(.caption)
                     .fontWeight(.bold)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.wandrAccentText)
             }
 
             if let desc = description {

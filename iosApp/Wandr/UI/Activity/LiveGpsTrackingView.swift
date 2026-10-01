@@ -28,7 +28,7 @@ struct LiveGpsTrackingView: View {
                         .foregroundColor(.secondary)
                     Text(String(format: "%.2f", distanceMeters / 1000.0))
                         .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(.blue)
+                        .foregroundColor(.wandrAccentText)
                 }
                 .frame(maxWidth: .infinity)
 
@@ -40,7 +40,7 @@ struct LiveGpsTrackingView: View {
                     let secs = Int(durationSeconds.truncatingRemainder(dividingBy: 60.0))
                     Text(String(format: "%02d:%02d", mins, secs))
                         .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(.purple)
+                        .foregroundColor(.wandrSecondary)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -54,10 +54,10 @@ struct LiveGpsTrackingView: View {
                 Button(action: startTrackingIfPermitted) {
                     Text(LocalizedStringKey("start_tracking_button"))
                         .font(.headline)
-                        .foregroundColor(.white)
+                        .foregroundColor(.wandrOnPrimary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
-                        .background(Color.blue)
+                        .background(Color.wandrPrimary)
                         .cornerRadius(14)
                 }
             } else {

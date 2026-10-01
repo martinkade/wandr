@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 
 @Composable
@@ -67,7 +68,7 @@ fun AvatarPicker(
 @Preview(name = "Busy", showBackground = true)
 @Composable
 private fun AvatarPickerPreview() {
-    MaterialTheme {
+    WandrTheme {
         AvatarPicker(
             avatarUrl = null,
             displayName = "Martin Kade",
@@ -80,5 +81,5 @@ private fun AvatarPickerPreview() {
 @Preview(name = "Busy Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun AvatarPickerBusyPreview() {
-    MaterialTheme { AvatarPicker(avatarUrl = null, displayName = "Martin Kade", onPickAvatar = {}, isBusy = true) }
+    WandrTheme { AvatarPicker(avatarUrl = null, displayName = "Martin Kade", onPickAvatar = {}, isBusy = true) }
 }

@@ -22,7 +22,7 @@ struct TeamInviteQRCodeView: View {
 
                 VStack(spacing: 16) {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.blue)
+                        .fill(Color.wandrPrimary)
                         .frame(width: 140, height: 140)
 
                     Text(inviteCode)
@@ -42,7 +42,7 @@ struct TeamInviteQRCodeView: View {
         .padding(24)
         .background(
             LinearGradient(
-                colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.05)],
+                colors: [Color.wandrPrimary.opacity(0.1), Color.wandrSecondary.opacity(0.05)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

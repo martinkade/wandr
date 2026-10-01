@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.presentation.imagecrop.CropState
 
 /** Dims everything outside the crop window and draws its border and thirds grid. */
@@ -48,7 +49,7 @@ fun CropOverlay(state: CropState, modifier: Modifier = Modifier) {
 @Preview(name = "Wide Tablet", widthDp = 840, heightDp = 600)
 @Composable
 private fun CropOverlayPreview() {
-    MaterialTheme {
+    WandrTheme {
         val cropper = com.wandr.presentation.imagecrop.ImageCropper(2000, 1500, aspectRatio = 1f)
         androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Color.DarkGray)) {
             val density = androidx.compose.ui.platform.LocalDensity.current

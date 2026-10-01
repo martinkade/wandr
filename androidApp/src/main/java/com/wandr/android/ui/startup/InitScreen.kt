@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.presentation.startup.StartupState
 
@@ -60,7 +61,7 @@ fun InitScreen(
 @Preview(name = "Loading Tablet", showBackground = true, widthDp = 840, heightDp = 1180)
 @Composable
 private fun InitScreenLoadingPreview() {
-    MaterialTheme { InitScreen(state = StartupState.Loading, onRetry = {}) }
+    WandrTheme { InitScreen(state = StartupState.Loading, onRetry = {}) }
 }
 
 @Preview(name = "Failed", showBackground = true, widthDp = 360, heightDp = 640)
@@ -68,5 +69,5 @@ private fun InitScreenLoadingPreview() {
 @Preview(name = "Failed Tablet", showBackground = true, widthDp = 840, heightDp = 1180)
 @Composable
 private fun InitScreenFailedPreview() {
-    MaterialTheme { InitScreen(state = StartupState.Failed("Database could not be opened"), onRetry = {}) }
+    WandrTheme { InitScreen(state = StartupState.Failed("Database could not be opened"), onRetry = {}) }
 }

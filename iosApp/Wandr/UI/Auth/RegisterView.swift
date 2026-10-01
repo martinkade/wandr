@@ -39,10 +39,10 @@ struct RegisterView: View {
             }) {
                 Text(LocalizedStringKey("create_account_button"))
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.wandrOnPrimary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(Color.blue)
+                    .background(Color.wandrPrimary)
                     .cornerRadius(12)
             }
             .padding(.top, 12)
@@ -50,7 +50,7 @@ struct RegisterView: View {
             Button(action: onNavigateToLogin) {
                 Text(LocalizedStringKey("already_have_account"))
                     .font(.footnote)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.wandrAccentText)
             }
 
             Spacer()
@@ -58,7 +58,7 @@ struct RegisterView: View {
         .padding(24)
         .background(
             LinearGradient(
-                colors: [Color.purple.opacity(0.1), Color.blue.opacity(0.05)],
+                colors: [Color.wandrSecondary.opacity(0.1), Color.wandrPrimary.opacity(0.05)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

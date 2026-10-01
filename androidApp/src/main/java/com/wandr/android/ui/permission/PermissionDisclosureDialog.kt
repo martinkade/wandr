@@ -8,6 +8,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 
 /** Explains why a permission is needed. Shown BEFORE the system permission dialog. */
@@ -32,7 +33,7 @@ fun PermissionDisclosureDialog(
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true)
 @Composable
 private fun PermissionDisclosureDialogPreview() {
-    MaterialTheme {
+    WandrTheme {
         PermissionDisclosureDialog(
             title = "Location access",
             message = "WANDR uses your location to record the route and distance of your activity.",

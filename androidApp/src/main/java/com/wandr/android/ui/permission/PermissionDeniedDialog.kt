@@ -8,6 +8,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 
 /** Shown when the system no longer asks for a permission; leads the user to the app settings. */
@@ -31,7 +32,7 @@ fun PermissionDeniedDialog(
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true)
 @Composable
 private fun PermissionDeniedDialogPreview() {
-    MaterialTheme {
+    WandrTheme {
         PermissionDeniedDialog(
             message = "Location access is turned off. Enable it in the settings to record activities.",
             onOpenSettings = {},

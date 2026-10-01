@@ -65,10 +65,10 @@ struct ManualActivityEntryView: View {
                 }) {
                     Text(LocalizedStringKey("save_activity_button"))
                         .font(.headline)
-                        .foregroundColor(.white)
+                        .foregroundColor(.wandrOnPrimary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.blue)
+                        .background(Color.wandrPrimary)
                         .cornerRadius(12)
                 }
             }

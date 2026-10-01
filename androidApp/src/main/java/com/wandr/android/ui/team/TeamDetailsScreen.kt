@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.domain.model.Team
 
@@ -109,7 +110,7 @@ fun TeamDetailsScreen(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun TeamDetailsScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         TeamDetailsScreen(
             team = Team(
                 id = "1",

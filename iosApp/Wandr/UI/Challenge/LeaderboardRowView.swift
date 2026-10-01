@@ -9,7 +9,7 @@ struct LeaderboardRowView: View {
         HStack {
             Text("#\(rank)")
                 .font(.headline)
-                .foregroundColor(.blue)
+                .foregroundColor(.wandrAccentText)
                 .frame(width: 36, alignment: .leading)
 
             Text(displayName)
@@ -20,7 +20,7 @@ struct LeaderboardRowView: View {
 
             Text("\(progressPercentage)%")
                 .font(.headline)
-                .foregroundColor(.purple)
+                .foregroundColor(.wandrSecondary)
         }
         .padding()
         .background(.ultraThinMaterial)

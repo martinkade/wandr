@@ -27,7 +27,7 @@ struct AvatarPickerView: View {
             } else {
                 Text(initials.isEmpty ? "WA" : initials)
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.wandrAccentText)
             }
 
             if isBusy {

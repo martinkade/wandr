@@ -18,6 +18,7 @@
 		3502985CB1B306B97F2DBDD4 /* AvatarEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */; };
 		3B53D12A92684B33CAC5F342 /* ActivityCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */; };
 		51E8EBA85C5623C246A74684 /* CreateChallengeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2741336658B6AA6AB793949 /* CreateChallengeView.swift */; };
+		5867506F8E60AB2766E53377 /* WandrColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8AA9573F81E6187BFCB89A /* WandrColors.swift */; };
 		5E265CC2DDA312CF134C2C0C /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5E1F68001D71B090D6C82D /* DashboardView.swift */; };
 		66C1D311F99A8E0E794FFA84 /* ActivityHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */; };
 		78A62356EAA8B83EADF3BB14 /* ChallengeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91E44C9A43FEFC228879856C /* ChallengeCardView.swift */; };
@@ -65,6 +66,7 @@
 		7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarEditorView.swift; sourceTree = "<group>"; };
 		8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTrackingManager.swift; sourceTree = "<group>"; };
 		91E44C9A43FEFC228879856C /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
+		9A8AA9573F81E6187BFCB89A /* WandrColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrColors.swift; sourceTree = "<group>"; };
 		A4B93108E53344CEAF07D265 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveGpsTrackingView.swift; sourceTree = "<group>"; };
 		AD1FCD9F98E116AC4C303D3B /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 				7B526A3074F62AF2C651EBBE /* Root */,
 				09DCF1018674678848DC7E13 /* Startup */,
 				92B7A2BF04C0C33D8737B497 /* Team */,
+				76BB7398115F785FC273437F /* Theme */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -185,6 +188,14 @@
 				44B2FE98DB2578F585436D0F /* PermissionDisclosureAlert.swift */,
 			);
 			path = Common;
+			sourceTree = "<group>";
+		};
+		76BB7398115F785FC273437F /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				9A8AA9573F81E6187BFCB89A /* WandrColors.swift */,
+			);
+			path = Theme;
 			sourceTree = "<group>";
 		};
 		7B526A3074F62AF2C651EBBE /* Root */ = {
@@ -358,6 +369,7 @@
 				8934816DC76780DF6A1D8EAF /* TeamInviteQRCodeView.swift in Sources */,
 				1C645D40B7090B847F0F175B /* TrackMapView.swift in Sources */,
 				A5AB48F938600C9DF53545CB /* WandrApp.swift in Sources */,
+				5867506F8E60AB2766E53377 /* WandrColors.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.LeaderboardEntry
 
 @Composable
@@ -35,7 +36,7 @@ fun LeaderboardRow(
             Text(
                 text = "#${entry.rank}",
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.tertiary
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
@@ -57,7 +58,7 @@ fun LeaderboardRow(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun LeaderboardRowPreview() {
-    MaterialTheme {
+    WandrTheme {
         LeaderboardRow(
             entry = LeaderboardEntry(
                 rank = 1,

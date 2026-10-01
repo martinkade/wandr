@@ -9,6 +9,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 
 @Composable
@@ -46,7 +47,7 @@ fun AvatarSourceDialog(
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true)
 @Composable
 private fun AvatarSourceDialogPreview() {
-    MaterialTheme {
+    WandrTheme {
         AvatarSourceDialog(
             canTakePhoto = true, canRemove = true,
             onChooseFromLibrary = {}, onTakePhoto = {}, onRemove = {}, onDismiss = {}

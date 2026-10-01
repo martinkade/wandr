@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.material3.MaterialTheme
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.ui.navigation.WandrApp
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            WandrTheme {
                 WandrApp()
             }
         }

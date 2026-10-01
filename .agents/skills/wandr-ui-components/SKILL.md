@@ -96,6 +96,22 @@ struct ChallengeCardView: View {
 
 ---
 
+## 🎨 Theme & Colors (Light / Dark)
+
+Brand: **gold `#FFD700`** (from the legacy Flutter app: launcher icon background, logo), black ink, black dark-mode background. Never hard-code `blue` / `purple` / raw hex in components; use theme tokens.
+
+- **Fills** (buttons, banners, selected states): primary gold with **black** content on top.
+  - Android: `MaterialTheme.colorScheme.primary` / `onPrimary`
+  - iOS: `Color.wandrPrimary` / `Color.wandrOnPrimary`
+- **Coloured text, links, thin icons**: gold on white is unreadable, so use the text-safe accent (deep gold in light mode, gold in dark mode).
+  - Android: `MaterialTheme.colorScheme.tertiary` (NOT `primary`)
+  - iOS: `Color.wandrAccentText` (= `Color.accentColor`)
+- **Secondary accent** (legacy blue in light, soft yellow in dark): Android `colorScheme.secondary`, iOS `Color.wandrSecondary`.
+- Wrap Android screens and previews in `WandrTheme { }` (`ui/theme/Theme.kt`), not plain `MaterialTheme`. Colors live in `ui/theme/Color.kt` and `Assets.xcassets` (`BrandPrimary`, `OnBrandPrimary`, `BrandSecondary`, `AccentColor`, `LaunchBackground`).
+- App icons and splash come from the legacy app (`mipmap-*` on Android, `AppIcon` on iOS); do not regenerate them.
+
+---
+
 ## 🔐 Permission Disclosure (Strict Rule)
 
 **Never trigger a system permission prompt cold.** If a permission is not granted yet, first show a *disclosure dialog* that explains **why** WANDR needs it, **what** data is used, and **when** it is collected. Only after the user confirms ("Continue") request the permission from the system.
@@ -153,5 +169,6 @@ Notes:
 - [ ] Is the component contained in its own dedicated file?
 - [ ] Are all UI strings localized in both English (`en`) and German (`de`)?
 - [ ] Are previews provided for both Light and Dark mode?
+- [ ] Are colors taken from theme tokens (gold for fills, `tertiary` / `wandrAccentText` for coloured text)?
 - [ ] Are state changes handled cleanly via lambdas / intents?
 - [ ] Is every system permission request preceded by a localized disclosure dialog (unless already granted), with an "Open Settings" fallback when permanently denied?

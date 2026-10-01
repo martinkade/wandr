@@ -30,7 +30,7 @@ struct MemberListView: View {
         .padding(24)
         .background(
             LinearGradient(
-                colors: [Color.blue.opacity(0.08), Color.purple.opacity(0.05)],
+                colors: [Color.wandrPrimary.opacity(0.08), Color.wandrSecondary.opacity(0.05)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

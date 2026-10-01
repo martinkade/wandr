@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.domain.model.Profile
 import com.wandr.presentation.profile.ProfileIntent
@@ -52,7 +53,7 @@ fun ProfileScreen(
                 Text(
                     text = stringResource(R.string.user_profile_title),
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.tertiary
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -103,7 +104,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = msg,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.tertiary,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -132,7 +133,7 @@ fun ProfileScreen(
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true)
 @Composable
 private fun ProfileScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         ProfileScreen(
             state = ProfileState(
                 profile = Profile(

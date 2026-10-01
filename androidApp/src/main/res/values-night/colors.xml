@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash_background">#FF101410</color>
-    <color name="splash_icon">#FF81C784</color>
+    <color name="ic_launcher_background">#FFD700</color>
+    <!-- Dark mode: black, like the legacy app. -->
+    <color name="splash_background">#FF000000</color>
 </resources>

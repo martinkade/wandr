@@ -9,7 +9,7 @@ struct TrackMapView: View {
         Map {
             if trackpoints.count >= 2 {
                 MapPolyline(coordinates: trackpoints.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) })
-                    .stroke(.blue, lineWidth: 4)
+                    .stroke(Color.wandrAccentText, lineWidth: 4)
             }
         }
         .frame(height: 200)

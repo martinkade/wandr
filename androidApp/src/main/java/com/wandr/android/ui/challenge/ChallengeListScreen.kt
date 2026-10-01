@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.domain.model.Challenge
 
@@ -39,7 +40,7 @@ fun ChallengeListScreen(
             Text(
                 text = stringResource(R.string.challenges_title),
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.tertiary
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -64,7 +65,7 @@ fun ChallengeListScreen(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun ChallengeListScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         ChallengeListScreen(
             challenges = listOf(
                 Challenge("c1", "t1", "30-Day 100km Hike", "Hike 100km total.", null, "group", "distance", 100000.0, true, 0L, 0L, "active", "u1", 0L, 0L),

@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.android.ui.permission.rememberPermissionGate
 import com.wandr.presentation.activity.ActivityIntent
@@ -74,7 +75,7 @@ fun LiveGpsTrackingScreen(
                 Text(
                     text = "%.2f".format(state.liveDistanceMeters / 1000.0),
                     style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -129,7 +130,7 @@ fun LiveGpsTrackingScreen(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun LiveGpsTrackingScreenPreview() {
-    MaterialTheme {
+    WandrTheme {
         LiveGpsTrackingScreen(
             state = ActivityState(
                 isTracking = true,

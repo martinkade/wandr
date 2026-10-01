@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.android.util.ImageProcessing
 import com.wandr.presentation.imagecrop.CropState
@@ -198,7 +199,7 @@ private fun previewBitmap(): ImageBitmap {
 
 @Composable
 private fun CropperPreviewContent(aspectRatio: Float) {
-    MaterialTheme {
+    WandrTheme {
         val bitmap = remember { previewBitmap() }
         val cropper = remember(aspectRatio) { ImageCropper(400, 300, aspectRatio) }
         var state by remember { mutableStateOf(cropper.state) }
