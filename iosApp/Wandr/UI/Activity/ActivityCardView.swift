@@ -32,13 +32,13 @@ struct ActivityCardView: View {
                 let km = distanceMeters / 1000.0
                 let mins = Int(durationSeconds / 60.0)
 
-                Label(String(format: "%.2f km", km), systemName: "ruler")
+                Label(String(format: "%.2f km", km), systemImage: "ruler")
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Label("\(mins) min", systemName: "clock")
+                Label("\(mins) min", systemImage: "clock")
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Label("\(Int(elevationGainMeters)) m", systemName: "mountain.2")
+                Label("\(Int(elevationGainMeters)) m", systemImage: "mountain.2")
                     .font(.subheadline)
             }
         }

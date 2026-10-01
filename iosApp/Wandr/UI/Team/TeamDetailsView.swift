@@ -74,11 +74,11 @@ struct TeamDetailsView: View {
 }
 
 #Preview("Light Mode") {
-    TeamDetailsView(teamName: "Alpine Trail Blazers", description: "Weekend hiking group.", coverUrl: null, inviteCode: "X7K9P2W1")
+    TeamDetailsView(teamName: "Alpine Trail Blazers", description: "Weekend hiking group.", coverUrl: nil, inviteCode: "X7K9P2W1")
         .preferredColorScheme(.light)
 }
 
 #Preview("Dark Mode") {
-    TeamDetailsView(teamName: "Alpine Trail Blazers", description: "Weekend hiking group.", coverUrl: null, inviteCode: "X7K9P2W1")
+    TeamDetailsView(teamName: "Alpine Trail Blazers", description: "Weekend hiking group.", coverUrl: nil, inviteCode: "X7K9P2W1")
         .preferredColorScheme(.dark)
 }

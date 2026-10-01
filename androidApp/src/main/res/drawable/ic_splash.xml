@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mountain glyph, drawn inside the 288dp splash icon canvas (safe zone: centre 192dp circle). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <path
+        android:fillColor="@color/splash_icon"
+        android:pathData="M96,190 L136,120 L158,158 L172,136 L204,190 Z" />
+</vector>

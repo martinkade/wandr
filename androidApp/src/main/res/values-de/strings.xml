@@ -56,4 +56,13 @@
     <string name="save_activity_button">Aktivität speichern</string>
     <string name="manual_entry">Manueller Eintrag</string>
     <string name="gps_tracked">GPS Ausgezeichnet</string>
+
+    <!-- Start & Dashboard -->
+    <string name="init_loading">WANDR wird vorbereitet…</string>
+    <string name="init_failed_title">Start fehlgeschlagen</string>
+    <string name="retry_button">Erneut versuchen</string>
+    <string name="tab_activity">Aktivitäten</string>
+    <string name="tab_challenges">Challenges</string>
+    <string name="tab_profile">Profil</string>
+    <string name="logout_button">Abmelden</string>
 </resources>

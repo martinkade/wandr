@@ -3,8 +3,8 @@ import SwiftUI
 struct CreateChallengeView: View {
     @State private var titleInput: String = ""
     @State private var descriptionInput: String = ""
-    @State private var requireAllMembers: Boolean = false
-    var onCreateChallenge: (String, String, Boolean) -> Void = { _, _, _ in }
+    @State private var requireAllMembers: Bool = false
+    var onCreateChallenge: (String, String, Bool) -> Void = { _, _, _ in }
 
     var body: some View {
         VStack(spacing: 24) {

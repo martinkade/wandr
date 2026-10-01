@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shown by the official SplashScreen API while the process starts. -->
+    <style name="Theme.Wandr.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.Wandr</item>
+    </style>
+
+    <style name="Theme.Wandr" parent="@android:style/Theme.Material.Light.NoActionBar" />
+</resources>

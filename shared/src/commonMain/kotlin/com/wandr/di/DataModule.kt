@@ -36,6 +36,7 @@ val dataModule = module {
     single { get<com.wandr.data.local.WandrDatabase>().activityDao() }
     
     // Repositories & Sync
+    single<com.wandr.domain.repository.AppStorageRepository> { com.wandr.data.repository.AppStorageRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<ProfileRepository> { ProfileRepositoryImpl(get(), get()) }
     single<TeamRepository> { TeamRepositoryImpl(get(), get(), get()) }

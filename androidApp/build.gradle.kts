@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
     implementation(libs.activity.compose)
+    implementation(libs.core.splashscreen)
     implementation(libs.runtime)
     implementation(libs.foundation)
     implementation(libs.material3)

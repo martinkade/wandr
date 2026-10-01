@@ -1,0 +1,552 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		078F48F905F1A79CB905CFCA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27AAB455008898B195A0E75 /* RootView.swift */; };
+		144EBCCA19CBC96B4643523F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A9D260237F6CBF2BA089595F /* Localizable.strings */; };
+		1C645D40B7090B847F0F175B /* TrackMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */; };
+		1C6B97ADCEB421C75224C991 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008681D41D040CAF4C5B6C1E /* LoginView.swift */; };
+		26707DF661ED5C5E4FBBC469 /* LiveGpsTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */; };
+		29A98F5C8B25168B3748A904 /* LeaderboardRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD8B2D26BA7B27B204E3FFA /* LeaderboardRowView.swift */; };
+		2DB83216CA78AEF78184C80D /* TeamDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D459DE5B1D145306E86952 /* TeamDetailsView.swift */; };
+		3B53D12A92684B33CAC5F342 /* ActivityCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */; };
+		51E8EBA85C5623C246A74684 /* CreateChallengeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2741336658B6AA6AB793949 /* CreateChallengeView.swift */; };
+		5E265CC2DDA312CF134C2C0C /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5E1F68001D71B090D6C82D /* DashboardView.swift */; };
+		66C1D311F99A8E0E794FFA84 /* ActivityHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */; };
+		78A62356EAA8B83EADF3BB14 /* ChallengeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91E44C9A43FEFC228879856C /* ChallengeCardView.swift */; };
+		839DE07AAFE62365616B0827 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A4B93108E53344CEAF07D265 /* Assets.xcassets */; };
+		883012FBA6B614053C9C5A36 /* ChallengeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */; };
+		8934816DC76780DF6A1D8EAF /* TeamInviteQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */; };
+		8B02F63C333462A749131FD7 /* RootViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B6391D165545FF2F9EF648 /* RootViewModel.swift */; };
+		9693FC9BFA957142341044F6 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */; };
+		97A8E758BFB27917E69E8BC3 /* ManualActivityEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */; };
+		A3DFD78FC52B12382EAB883C /* MemberListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D5059C57842B55A82841770 /* MemberListView.swift */; };
+		A58A38F5B42AF95186796227 /* CreateTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */; };
+		A5AB48F938600C9DF53545CB /* WandrApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AED3E697232F3B3088A7AF3 /* WandrApp.swift */; };
+		B5EEFCBBA1510081592EDAA8 /* InitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42152663049BD4302AE8974B /* InitView.swift */; };
+		E37804C242AF6993C13B5F4D /* LocationTrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */; };
+		E87E13069E65E069C7A03EBB /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5619383385D8D00B5FD7FABC /* RegisterView.swift */; };
+		FE7C548F5DAF13847A8DA0B1 /* AvatarPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		008681D41D040CAF4C5B6C1E /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualActivityEntryView.swift; sourceTree = "<group>"; };
+		1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryView.swift; sourceTree = "<group>"; };
+		2AED3E697232F3B3088A7AF3 /* WandrApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrApp.swift; sourceTree = "<group>"; };
+		2D5059C57842B55A82841770 /* MemberListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberListView.swift; sourceTree = "<group>"; };
+		38B6391D165545FF2F9EF648 /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
+		3F93A3A4732FE5FE3552A124 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		42152663049BD4302AE8974B /* InitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitView.swift; sourceTree = "<group>"; };
+		4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCardView.swift; sourceTree = "<group>"; };
+		4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeListView.swift; sourceTree = "<group>"; };
+		5619383385D8D00B5FD7FABC /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		56D459DE5B1D145306E86952 /* TeamDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailsView.swift; sourceTree = "<group>"; };
+		6B5E1F68001D71B090D6C82D /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		7CD8B2D26BA7B27B204E3FFA /* LeaderboardRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardRowView.swift; sourceTree = "<group>"; };
+		8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTrackingManager.swift; sourceTree = "<group>"; };
+		91E44C9A43FEFC228879856C /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
+		A4B93108E53344CEAF07D265 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveGpsTrackingView.swift; sourceTree = "<group>"; };
+		AD1FCD9F98E116AC4C303D3B /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarPickerView.swift; sourceTree = "<group>"; };
+		B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMapView.swift; sourceTree = "<group>"; };
+		C27AAB455008898B195A0E75 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		D2741336658B6AA6AB793949 /* CreateChallengeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChallengeView.swift; sourceTree = "<group>"; };
+		D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTeamView.swift; sourceTree = "<group>"; };
+		E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamInviteQRCodeView.swift; sourceTree = "<group>"; };
+		EF8F681FAE45E23A27F35D1F /* Wandr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wandr.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F754D10490320AE8ECAF9D1A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		09DCF1018674678848DC7E13 /* Startup */ = {
+			isa = PBXGroup;
+			children = (
+				42152663049BD4302AE8974B /* InitView.swift */,
+			);
+			path = Startup;
+			sourceTree = "<group>";
+		};
+		20B68376F03857285799F584 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		252AF8D5F63E356B3391D539 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EF8F681FAE45E23A27F35D1F /* Wandr.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2B1CD3811806AD2CBE8BC32C /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				3F37261E377D95E2E200F708 /* Activity */,
+				AC1870727CC51CA447C19514 /* Auth */,
+				A853F5D660307712FD780CF7 /* Challenge */,
+				5CF1275C50146BED58980C1F /* Dashboard */,
+				5D0B02068DA64A0B850AECAC /* Profile */,
+				7B526A3074F62AF2C651EBBE /* Root */,
+				09DCF1018674678848DC7E13 /* Startup */,
+				92B7A2BF04C0C33D8737B497 /* Team */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		3E4BC0B34AD436C4CF2D2271 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A4B93108E53344CEAF07D265 /* Assets.xcassets */,
+				A9D260237F6CBF2BA089595F /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		3F37261E377D95E2E200F708 /* Activity */ = {
+			isa = PBXGroup;
+			children = (
+				4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */,
+				1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */,
+				A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */,
+				1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */,
+				B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */,
+			);
+			path = Activity;
+			sourceTree = "<group>";
+		};
+		5CF1275C50146BED58980C1F /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				6B5E1F68001D71B090D6C82D /* DashboardView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		5D0B02068DA64A0B850AECAC /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */,
+				E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		5FB5D6C4FFAD050EBB8F042C /* Wandr */ = {
+			isa = PBXGroup;
+			children = (
+				3F93A3A4732FE5FE3552A124 /* Info.plist */,
+				2AED3E697232F3B3088A7AF3 /* WandrApp.swift */,
+				3E4BC0B34AD436C4CF2D2271 /* Resources */,
+				20B68376F03857285799F584 /* Services */,
+				2B1CD3811806AD2CBE8BC32C /* UI */,
+			);
+			path = Wandr;
+			sourceTree = "<group>";
+		};
+		7B526A3074F62AF2C651EBBE /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				C27AAB455008898B195A0E75 /* RootView.swift */,
+				38B6391D165545FF2F9EF648 /* RootViewModel.swift */,
+			);
+			path = Root;
+			sourceTree = "<group>";
+		};
+		92B7A2BF04C0C33D8737B497 /* Team */ = {
+			isa = PBXGroup;
+			children = (
+				D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */,
+				2D5059C57842B55A82841770 /* MemberListView.swift */,
+				56D459DE5B1D145306E86952 /* TeamDetailsView.swift */,
+				E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */,
+			);
+			path = Team;
+			sourceTree = "<group>";
+		};
+		A853F5D660307712FD780CF7 /* Challenge */ = {
+			isa = PBXGroup;
+			children = (
+				91E44C9A43FEFC228879856C /* ChallengeCardView.swift */,
+				4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */,
+				D2741336658B6AA6AB793949 /* CreateChallengeView.swift */,
+				7CD8B2D26BA7B27B204E3FFA /* LeaderboardRowView.swift */,
+			);
+			path = Challenge;
+			sourceTree = "<group>";
+		};
+		AC1870727CC51CA447C19514 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				008681D41D040CAF4C5B6C1E /* LoginView.swift */,
+				5619383385D8D00B5FD7FABC /* RegisterView.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		D6ABC1200B64C0566C03CC1C = {
+			isa = PBXGroup;
+			children = (
+				5FB5D6C4FFAD050EBB8F042C /* Wandr */,
+				252AF8D5F63E356B3391D539 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ABB5BFB31D3910443D8F6810 /* Wandr */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B44786267E0B5E7DCCC36246 /* Build configuration list for PBXNativeTarget "Wandr" */;
+			buildPhases = (
+				D5A54C84CDBAB7C27B639C36 /* Build Kotlin shared framework */,
+				A26ED7843CA56F3398EEC1E3 /* Sources */,
+				E2036483AD86DE93DC8AEDFC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Wandr;
+			packageProductDependencies = (
+			);
+			productName = Wandr;
+			productReference = EF8F681FAE45E23A27F35D1F /* Wandr.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2EEBA0B09FEB8EE8D819C670 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = D897BBECB9717ED4F25B5B06 /* Build configuration list for PBXProject "Wandr" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				de,
+				en,
+			);
+			mainGroup = D6ABC1200B64C0566C03CC1C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 252AF8D5F63E356B3391D539 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ABB5BFB31D3910443D8F6810 /* Wandr */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E2036483AD86DE93DC8AEDFC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				839DE07AAFE62365616B0827 /* Assets.xcassets in Resources */,
+				144EBCCA19CBC96B4643523F /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D5A54C84CDBAB7C27B639C36 /* Build Kotlin shared framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Kotlin shared framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A26ED7843CA56F3398EEC1E3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3B53D12A92684B33CAC5F342 /* ActivityCardView.swift in Sources */,
+				66C1D311F99A8E0E794FFA84 /* ActivityHistoryView.swift in Sources */,
+				FE7C548F5DAF13847A8DA0B1 /* AvatarPickerView.swift in Sources */,
+				78A62356EAA8B83EADF3BB14 /* ChallengeCardView.swift in Sources */,
+				883012FBA6B614053C9C5A36 /* ChallengeListView.swift in Sources */,
+				51E8EBA85C5623C246A74684 /* CreateChallengeView.swift in Sources */,
+				A58A38F5B42AF95186796227 /* CreateTeamView.swift in Sources */,
+				5E265CC2DDA312CF134C2C0C /* DashboardView.swift in Sources */,
+				B5EEFCBBA1510081592EDAA8 /* InitView.swift in Sources */,
+				29A98F5C8B25168B3748A904 /* LeaderboardRowView.swift in Sources */,
+				26707DF661ED5C5E4FBBC469 /* LiveGpsTrackingView.swift in Sources */,
+				E37804C242AF6993C13B5F4D /* LocationTrackingManager.swift in Sources */,
+				1C6B97ADCEB421C75224C991 /* LoginView.swift in Sources */,
+				97A8E758BFB27917E69E8BC3 /* ManualActivityEntryView.swift in Sources */,
+				A3DFD78FC52B12382EAB883C /* MemberListView.swift in Sources */,
+				9693FC9BFA957142341044F6 /* ProfileView.swift in Sources */,
+				E87E13069E65E069C7A03EBB /* RegisterView.swift in Sources */,
+				078F48F905F1A79CB905CFCA /* RootView.swift in Sources */,
+				8B02F63C333462A749131FD7 /* RootViewModel.swift in Sources */,
+				2DB83216CA78AEF78184C80D /* TeamDetailsView.swift in Sources */,
+				8934816DC76780DF6A1D8EAF /* TeamInviteQRCodeView.swift in Sources */,
+				1C645D40B7090B847F0F175B /* TrackMapView.swift in Sources */,
+				A5AB48F938600C9DF53545CB /* WandrApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		A9D260237F6CBF2BA089595F /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AD1FCD9F98E116AC4C303D3B /* de */,
+				F754D10490320AE8ECAF9D1A /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		02E9256170F4E805A6839E6E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = K66M8A88HU;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+				);
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Wandr/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WANDR;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					shared,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness;
+				PRODUCT_NAME = Wandr;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		08112D286DF48D656721CC18 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		749ACE76D5D51BBB981968CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = K66M8A88HU;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+				);
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Wandr/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WANDR;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					shared,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness;
+				PRODUCT_NAME = Wandr;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D027567C18F61558968202F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B44786267E0B5E7DCCC36246 /* Build configuration list for PBXNativeTarget "Wandr" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				02E9256170F4E805A6839E6E /* Debug */,
+				749ACE76D5D51BBB981968CB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D897BBECB9717ED4F25B5B06 /* Build configuration list for PBXProject "Wandr" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				08112D286DF48D656721CC18 /* Debug */,
+				D027567C18F61558968202F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2EEBA0B09FEB8EE8D819C670 /* Project object */;
+}

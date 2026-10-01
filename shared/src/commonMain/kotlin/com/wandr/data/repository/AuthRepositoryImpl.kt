@@ -29,6 +29,11 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun hasActiveSession(): Boolean {
+        supabase.auth.awaitInitialization()
+        return supabase.auth.currentSessionOrNull() != null
+    }
+
     override suspend fun login(email: String, password: String): Result<AuthSession> = runCatching {
         supabase.auth.signInWith(Email) {
             this.email = email

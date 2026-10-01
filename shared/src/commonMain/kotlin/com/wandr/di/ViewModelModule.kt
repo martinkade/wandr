@@ -7,6 +7,8 @@ import com.wandr.presentation.team.TeamViewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
+    factory { com.wandr.presentation.startup.StartupViewModel(get()) }
+    factory { com.wandr.presentation.dashboard.DashboardViewModel(get(), get(), get()) }
     factory { LoginViewModel(get(), get()) }
     factory { ProfileViewModel(get(), get(), get()) }
     factory { TeamViewModel(get(), get(), get(), get()) }

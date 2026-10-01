@@ -17,6 +17,7 @@ import com.wandr.domain.usecase.UploadAvatarUseCase
 import org.koin.dsl.module
 
 val domainModule = module {
+    factory { com.wandr.domain.usecase.InitializeAppUseCase(get(), get()) }
     factory { LoginUseCase(get()) }
     factory { RegisterUseCase(get()) }
     factory { LogoutUseCase(get()) }

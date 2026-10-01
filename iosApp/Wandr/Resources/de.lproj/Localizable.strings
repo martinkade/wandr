@@ -54,3 +54,12 @@
 "save_activity_button" = "Aktivität speichern";
 "manual_entry" = "Manueller Eintrag";
 "gps_tracked" = "GPS Ausgezeichnet";
+
+/* Start & Dashboard */
+"init_loading" = "WANDR wird vorbereitet…";
+"init_failed_title" = "Start fehlgeschlagen";
+"retry_button" = "Erneut versuchen";
+"tab_activity" = "Aktivitäten";
+"tab_challenges" = "Challenges";
+"tab_profile" = "Profil";
+"logout_button" = "Abmelden";

@@ -7,7 +7,7 @@ final class LocationTrackingManager: NSObject, ObservableObject, CLLocationManag
     @Published var currentTrackpoint: GpsTrackpoint?
     @Published var isTracking: Bool = false
     
-    private val locationManager = CLLocationManager()
+    private let locationManager = CLLocationManager()
     
     override init() {
         super.init()

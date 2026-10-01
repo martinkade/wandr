@@ -4,7 +4,7 @@ struct ChallengeCardView: View {
     let title: String
     let description: String?
     let status: String
-    let requireAllMembersCompletion: Boolean
+    let requireAllMembersCompletion: Bool
     var onSelect: () -> Void = {}
     var onJoin: () -> Void = {}
 

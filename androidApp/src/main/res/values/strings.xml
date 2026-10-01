@@ -56,4 +56,13 @@
     <string name="save_activity_button">Save Activity</string>
     <string name="manual_entry">Manual Entry</string>
     <string name="gps_tracked">GPS Tracked</string>
+
+    <!-- Start-up & dashboard -->
+    <string name="init_loading">Preparing WANDR…</string>
+    <string name="init_failed_title">Start-up failed</string>
+    <string name="retry_button">Try Again</string>
+    <string name="tab_activity">Activities</string>
+    <string name="tab_challenges">Challenges</string>
+    <string name="tab_profile">Profile</string>
+    <string name="logout_button">Sign Out</string>
 </resources>

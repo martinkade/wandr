@@ -1,10 +1,9 @@
 package com.wandr.presentation.navigation
 
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.navigation3.runtime.NavKey
 
 class WandrNavigator(
-    val backStack: SnapshotStateList<NavKey>
+    val backStack: MutableList<NavKey>
 ) {
     fun navigateTo(route: Route) {
         backStack.add(route)

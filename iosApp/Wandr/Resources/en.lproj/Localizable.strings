@@ -54,3 +54,12 @@
 "save_activity_button" = "Save Activity";
 "manual_entry" = "Manual Entry";
 "gps_tracked" = "GPS Tracked";
+
+/* Start-up & dashboard */
+"init_loading" = "Preparing WANDR…";
+"init_failed_title" = "Start-up failed";
+"retry_button" = "Try Again";
+"tab_activity" = "Activities";
+"tab_challenges" = "Challenges";
+"tab_profile" = "Profile";
+"logout_button" = "Sign Out";
