@@ -2,7 +2,7 @@ package com.wandr.domain.usecase
 
 import com.wandr.domain.model.Activity
 import com.wandr.domain.repository.ActivityRepository
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.random.Random
 
 class CreateManualActivityUseCase(

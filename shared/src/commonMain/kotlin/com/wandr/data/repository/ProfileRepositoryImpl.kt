@@ -9,7 +9,7 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class ProfileRepositoryImpl(
     private val profileDao: ProfileDao,

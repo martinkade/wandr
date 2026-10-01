@@ -2,7 +2,7 @@ package com.wandr.data.cache
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class LruFileCache(
     initialMaxSizeBytes: Long = 50 * 1024 * 1024L // Default 50 MB
