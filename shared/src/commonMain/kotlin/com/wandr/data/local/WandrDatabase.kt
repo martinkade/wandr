@@ -4,6 +4,7 @@ import androidx.room3.ConstructedBy
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import androidx.room3.RoomDatabaseConstructor
+import androidx.room3.ColumnTypeConverters
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.dao.ChallengeDao
@@ -32,6 +33,7 @@ import kotlinx.coroutines.IO
     version = 1,
     exportSchema = true
 )
+@ColumnTypeConverters(Converters::class)
 @ConstructedBy(WandrDatabaseConstructor::class)
 abstract class WandrDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao

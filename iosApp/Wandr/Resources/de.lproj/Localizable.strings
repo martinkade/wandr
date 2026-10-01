@@ -63,3 +63,28 @@
 "tab_challenges" = "Challenges";
 "tab_profile" = "Profil";
 "logout_button" = "Abmelden";
+
+/* Avatar & Bildzuschnitt */
+"avatar_change_title" = "Profilfoto";
+"avatar_choose_library" = "Aus Mediathek wählen";
+"avatar_take_photo" = "Foto aufnehmen";
+"avatar_remove" = "Foto entfernen";
+"cancel_button" = "Abbrechen";
+"crop_title" = "Foto zuschneiden";
+"crop_done" = "Fertig";
+"crop_reset" = "Zurücksetzen";
+"crop_hint" = "Zum Anpassen ziehen und zoomen";
+"image_load_failed" = "Das Bild konnte nicht geladen werden.";
+"avatar_content_description" = "Profilfoto";
+
+/* Hinweise zu Berechtigungen */
+"permission_continue" = "Weiter";
+"permission_not_now" = "Nicht jetzt";
+"permission_denied_title" = "Berechtigung erforderlich";
+"permission_open_settings" = "Einstellungen öffnen";
+"permission_location_title" = "Standortzugriff";
+"permission_location_message" = "WANDR zeichnet Strecke, Distanz und Höhenmeter deiner Aktivität anhand deines genauen Standorts auf, auch bei ausgeschaltetem Bildschirm. Dein Standort wird nur erfasst, solange eine Aufzeichnung läuft.";
+"permission_location_denied" = "Der Standortzugriff ist ausgeschaltet. Aktiviere ihn in den Einstellungen, um GPS-Aktivitäten aufzuzeichnen.";
+"permission_camera_title" = "Kamerazugriff";
+"permission_camera_message" = "WANDR nutzt die Kamera nur, um dein Profilfoto aufzunehmen. Du kannst es vor dem Hochladen zuschneiden, und es wird nichts in deiner Fotomediathek gespeichert.";
+"permission_camera_denied" = "Der Kamerazugriff ist ausgeschaltet. Aktiviere ihn in den Einstellungen, um ein Profilfoto aufzunehmen, oder wähle eines aus deiner Mediathek.";

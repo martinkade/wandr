@@ -3,6 +3,7 @@ package com.wandr.data.local.entity
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
+import com.wandr.domain.model.TeamRole
 
 @Entity(tableName = "team_members")
 data class TeamMemberEntity(
@@ -16,7 +17,7 @@ data class TeamMemberEntity(
     val userId: String,
     
     @ColumnInfo(name = "role")
-    val role: String, // admin, member
+    val role: TeamRole,
     
     @ColumnInfo(name = "joined_at")
     val joinedAt: Long,

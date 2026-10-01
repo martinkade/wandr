@@ -65,4 +65,26 @@
     <string name="tab_challenges">Challenges</string>
     <string name="tab_profile">Profil</string>
     <string name="logout_button">Abmelden</string>
+
+    <!-- Avatar & Bildzuschnitt -->
+    <string name="avatar_change_title">Profilfoto</string>
+    <string name="avatar_choose_library">Aus Mediathek wählen</string>
+    <string name="avatar_take_photo">Foto aufnehmen</string>
+    <string name="avatar_remove">Foto entfernen</string>
+    <string name="cancel_button">Abbrechen</string>
+    <string name="crop_title">Foto zuschneiden</string>
+    <string name="crop_done">Fertig</string>
+    <string name="crop_reset">Zurücksetzen</string>
+    <string name="crop_hint">Zum Anpassen ziehen und zoomen</string>
+    <string name="image_load_failed">Das Bild konnte nicht geladen werden.</string>
+    <string name="avatar_content_description">Profilfoto</string>
+
+    <!-- Hinweise zu Berechtigungen -->
+    <string name="permission_continue">Weiter</string>
+    <string name="permission_not_now">Nicht jetzt</string>
+    <string name="permission_denied_title">Berechtigung erforderlich</string>
+    <string name="permission_open_settings">Einstellungen öffnen</string>
+    <string name="permission_location_title">Standortzugriff</string>
+    <string name="permission_location_message">WANDR zeichnet Strecke, Distanz und Höhenmeter deiner Aktivität anhand deines genauen Standorts auf, auch bei ausgeschaltetem Bildschirm. Dein Standort wird nur erfasst, solange eine Aufzeichnung läuft.\n\nAuf dem nächsten Bildschirm wirst du eventuell auch gefragt, ob Benachrichtigungen erlaubt sind. Sie zeigen an, dass eine Aufzeichnung aktiv ist.</string>
+    <string name="permission_location_denied">Der Standortzugriff ist ausgeschaltet. Aktiviere ihn in den App-Einstellungen, um GPS-Aktivitäten aufzuzeichnen.</string>
 </resources>

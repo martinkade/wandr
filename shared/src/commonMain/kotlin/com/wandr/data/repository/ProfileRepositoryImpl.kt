@@ -2,64 +2,80 @@ package com.wandr.data.repository
 
 import com.wandr.data.local.dao.ProfileDao
 import com.wandr.data.local.entity.ProfileEntity
+import com.wandr.data.remote.ProfileRemoteDataSource
 import com.wandr.domain.model.Profile
 import com.wandr.domain.repository.ProfileRepository
-import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.time.Clock
 
 class ProfileRepositoryImpl(
     private val profileDao: ProfileDao,
-    private val supabase: SupabaseClient
+    private val remote: ProfileRemoteDataSource
 ) : ProfileRepository {
 
-    override fun getProfile(userId: String): Flow<Profile?> {
-        return profileDao.getProfileById(userId).map { entity ->
-            entity?.let {
-                Profile(
-                    id = it.id,
-                    username = it.username,
-                    displayName = it.displayName,
-                    avatarUrl = it.avatarUrl,
-                    bio = it.bio,
-                    systemRole = it.systemRole,
-                    createdAt = it.createdAt,
-                    updatedAt = it.updatedAt
-                )
-            }
+    override fun getProfile(userId: String): Flow<Profile?> =
+        profileDao.getProfileById(userId).map { it?.toDomain() }
+
+    override suspend fun refreshProfile(userId: String): Result<Unit> = runCatching {
+        val local = profileDao.getProfileOnce(userId)
+        if (local != null && local.syncStatus != SYNCED) {
+            // Unsynced local edits win; try to push them instead.
+            runCatching { remote.push(local) }.onSuccess { profileDao.insertProfile(local.copy(syncStatus = SYNCED)) }
+            return@runCatching
         }
+        remote.fetch(userId)?.let { profileDao.insertProfile(it.toEntity()) }
     }
 
     override suspend fun updateProfile(profile: Profile): Result<Profile> = runCatching {
-        val now = Clock.System.now().toEpochMilliseconds()
+        val existing = profileDao.getProfileOnce(profile.id)
         val entity = ProfileEntity(
             id = profile.id,
-            username = profile.username,
+            username = existing?.username ?: profile.username,
             displayName = profile.displayName,
             avatarUrl = profile.avatarUrl,
-            bio = profile.bio,
-            systemRole = profile.systemRole,
-            createdAt = profile.createdAt,
-            updatedAt = now,
-            syncStatus = "DIRTY"
+            bio = profile.bio?.takeIf { it.isNotBlank() },
+            systemRole = existing?.systemRole ?: profile.systemRole,
+            createdAt = existing?.createdAt ?: profile.createdAt,
+            updatedAt = Clock.System.now().toEpochMilliseconds(),
+            syncStatus = DIRTY
         )
-        // Local first write
-        profileDao.insertProfile(entity)
-
-        // Remote push to Supabase
-        supabase.postgrest.from("profiles").upsert(entity)
-        profileDao.insertProfile(entity.copy(syncStatus = "SYNCED"))
-        profile.copy(updatedAt = now)
+        profileDao.insertProfile(entity) // local first
+        runCatching { remote.push(entity) }
+            .onSuccess { profileDao.insertProfile(entity.copy(syncStatus = SYNCED)) }
+        entity.toDomain()
     }
 
-    override suspend fun uploadAvatar(userId: String, byteArray: ByteArray, fileName: String): Result<String> = runCatching {
-        val bucket = supabase.storage.from("avatars")
-        val path = "$userId/$fileName"
-        bucket.upload(path, byteArray) { upsert = true }
-        val publicUrl = bucket.publicUrl(path)
-        publicUrl
+    override suspend fun setAvatar(userId: String, jpegBytes: ByteArray): Result<Profile> = runCatching {
+        val current = requireNotNull(profileDao.getProfileOnce(userId)) { "Profile is not loaded yet" }
+        val fileName = "avatar_${Clock.System.now().toEpochMilliseconds()}.jpg"
+        val url = remote.uploadAvatar(userId, jpegBytes, fileName)
+        val updated = updateProfile(current.toDomain().copy(avatarUrl = url)).getOrThrow()
+        // Best effort: stale files are harmless, a failed cleanup must not fail the update.
+        runCatching { remote.deleteAvatars(userId, keepFileName = fileName) }
+        updated
+    }
+
+    override suspend fun removeAvatar(userId: String): Result<Profile> = runCatching {
+        val current = requireNotNull(profileDao.getProfileOnce(userId)) { "Profile is not loaded yet" }
+        val updated = updateProfile(current.toDomain().copy(avatarUrl = null)).getOrThrow()
+        runCatching { remote.deleteAvatars(userId) }
+        updated
+    }
+
+    private fun ProfileEntity.toDomain() = Profile(
+        id = id,
+        username = username,
+        displayName = displayName,
+        avatarUrl = avatarUrl,
+        bio = bio,
+        systemRole = systemRole,
+        createdAt = createdAt,
+        updatedAt = updatedAt
+    )
+
+    private companion object {
+        const val SYNCED = "SYNCED"
+        const val DIRTY = "DIRTY"
     }
 }

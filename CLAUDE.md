@@ -15,6 +15,7 @@ WANDR is a cross-platform fitness app (iOS & Android) built with Kotlin Multipla
   - **Jetpack Compose** (Android): Native Material 3 Expressive aesthetic.
   - **Strict rule**: 1 file per UI component.
   - **Strict rule**: Every component MUST provide previews for Dark Mode and multiple display sizes.
+  - **Strict rule**: Show a disclosure dialog explaining *why* before any system permission prompt (location, camera, notifications, health data) — see `wandr-ui-components` skill, "Permission Disclosure".
 - **Testing**: Write Unit tests for UseCases, Repositories, and Sync logic in `commonTest`.
 
 ## Skills Directory

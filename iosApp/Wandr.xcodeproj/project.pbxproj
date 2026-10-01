@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		05A61831C37988D1FAC2AB31 /* ProfileObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2861791F7133FCA4CC705363 /* ProfileObserver.swift */; };
 		078F48F905F1A79CB905CFCA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27AAB455008898B195A0E75 /* RootView.swift */; };
 		144EBCCA19CBC96B4643523F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A9D260237F6CBF2BA089595F /* Localizable.strings */; };
 		1C645D40B7090B847F0F175B /* TrackMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */; };
@@ -14,6 +15,7 @@
 		26707DF661ED5C5E4FBBC469 /* LiveGpsTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */; };
 		29A98F5C8B25168B3748A904 /* LeaderboardRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD8B2D26BA7B27B204E3FFA /* LeaderboardRowView.swift */; };
 		2DB83216CA78AEF78184C80D /* TeamDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D459DE5B1D145306E86952 /* TeamDetailsView.swift */; };
+		3502985CB1B306B97F2DBDD4 /* AvatarEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */; };
 		3B53D12A92684B33CAC5F342 /* ActivityCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */; };
 		51E8EBA85C5623C246A74684 /* CreateChallengeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2741336658B6AA6AB793949 /* CreateChallengeView.swift */; };
 		5E265CC2DDA312CF134C2C0C /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5E1F68001D71B090D6C82D /* DashboardView.swift */; };
@@ -23,45 +25,59 @@
 		883012FBA6B614053C9C5A36 /* ChallengeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */; };
 		8934816DC76780DF6A1D8EAF /* TeamInviteQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */; };
 		8B02F63C333462A749131FD7 /* RootViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B6391D165545FF2F9EF648 /* RootViewModel.swift */; };
+		8C3233F73D055926E4428424 /* CameraPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AE875EA3BFD456B8D487396 /* CameraPermission.swift */; };
+		932EEDB086286F47A67BFDDB /* PermissionDeniedAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = C773A7258331A26CA44463C5 /* PermissionDeniedAlert.swift */; };
+		9478CB3A4731560C9DB82C28 /* ImageCropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115EB2163FD8A62DE4182546 /* ImageCropperView.swift */; };
 		9693FC9BFA957142341044F6 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */; };
 		97A8E758BFB27917E69E8BC3 /* ManualActivityEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */; };
+		9B1BE991623B66EA359F4157 /* PermissionDisclosureAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44B2FE98DB2578F585436D0F /* PermissionDisclosureAlert.swift */; };
 		A3DFD78FC52B12382EAB883C /* MemberListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D5059C57842B55A82841770 /* MemberListView.swift */; };
 		A58A38F5B42AF95186796227 /* CreateTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */; };
 		A5AB48F938600C9DF53545CB /* WandrApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AED3E697232F3B3088A7AF3 /* WandrApp.swift */; };
 		B5EEFCBBA1510081592EDAA8 /* InitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42152663049BD4302AE8974B /* InitView.swift */; };
+		B990EB2EC2155D8298E270A4 /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3653ED86BC7CE2C6050FD9E /* CameraPickerView.swift */; };
 		E37804C242AF6993C13B5F4D /* LocationTrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */; };
 		E87E13069E65E069C7A03EBB /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5619383385D8D00B5FD7FABC /* RegisterView.swift */; };
+		FAE069674DEF9E6E64EB88C8 /* ImagePipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B20117AAFAC0D8D9881F9E0 /* ImagePipeline.swift */; };
 		FE7C548F5DAF13847A8DA0B1 /* AvatarPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		008681D41D040CAF4C5B6C1E /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		115EB2163FD8A62DE4182546 /* ImageCropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropperView.swift; sourceTree = "<group>"; };
 		1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualActivityEntryView.swift; sourceTree = "<group>"; };
 		1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryView.swift; sourceTree = "<group>"; };
+		2861791F7133FCA4CC705363 /* ProfileObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileObserver.swift; sourceTree = "<group>"; };
 		2AED3E697232F3B3088A7AF3 /* WandrApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrApp.swift; sourceTree = "<group>"; };
 		2D5059C57842B55A82841770 /* MemberListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberListView.swift; sourceTree = "<group>"; };
 		38B6391D165545FF2F9EF648 /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
 		3F93A3A4732FE5FE3552A124 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		42152663049BD4302AE8974B /* InitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitView.swift; sourceTree = "<group>"; };
+		44B2FE98DB2578F585436D0F /* PermissionDisclosureAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDisclosureAlert.swift; sourceTree = "<group>"; };
 		4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCardView.swift; sourceTree = "<group>"; };
 		4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeListView.swift; sourceTree = "<group>"; };
 		5619383385D8D00B5FD7FABC /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
 		56D459DE5B1D145306E86952 /* TeamDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailsView.swift; sourceTree = "<group>"; };
+		5B20117AAFAC0D8D9881F9E0 /* ImagePipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePipeline.swift; sourceTree = "<group>"; };
 		6B5E1F68001D71B090D6C82D /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		7AE875EA3BFD456B8D487396 /* CameraPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPermission.swift; sourceTree = "<group>"; };
 		7CD8B2D26BA7B27B204E3FFA /* LeaderboardRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardRowView.swift; sourceTree = "<group>"; };
+		7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarEditorView.swift; sourceTree = "<group>"; };
 		8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTrackingManager.swift; sourceTree = "<group>"; };
 		91E44C9A43FEFC228879856C /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
 		A4B93108E53344CEAF07D265 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveGpsTrackingView.swift; sourceTree = "<group>"; };
 		AD1FCD9F98E116AC4C303D3B /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B3653ED86BC7CE2C6050FD9E /* CameraPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPickerView.swift; sourceTree = "<group>"; };
 		B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarPickerView.swift; sourceTree = "<group>"; };
 		B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMapView.swift; sourceTree = "<group>"; };
 		C27AAB455008898B195A0E75 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		C773A7258331A26CA44463C5 /* PermissionDeniedAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDeniedAlert.swift; sourceTree = "<group>"; };
 		D2741336658B6AA6AB793949 /* CreateChallengeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChallengeView.swift; sourceTree = "<group>"; };
 		D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTeamView.swift; sourceTree = "<group>"; };
 		E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamInviteQRCodeView.swift; sourceTree = "<group>"; };
-		EF8F681FAE45E23A27F35D1F /* Wandr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wandr.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF8F681FAE45E23A27F35D1F /* Wandr.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Wandr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F754D10490320AE8ECAF9D1A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,6 +93,7 @@
 		20B68376F03857285799F584 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				7AE875EA3BFD456B8D487396 /* CameraPermission.swift */,
 				8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */,
 			);
 			path = Services;
@@ -96,6 +113,7 @@
 				3F37261E377D95E2E200F708 /* Activity */,
 				AC1870727CC51CA447C19514 /* Auth */,
 				A853F5D660307712FD780CF7 /* Challenge */,
+				69D069A79B00B313BFE91DF5 /* Common */,
 				5CF1275C50146BED58980C1F /* Dashboard */,
 				5D0B02068DA64A0B850AECAC /* Profile */,
 				7B526A3074F62AF2C651EBBE /* Root */,
@@ -137,7 +155,9 @@
 		5D0B02068DA64A0B850AECAC /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */,
 				B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */,
+				2861791F7133FCA4CC705363 /* ProfileObserver.swift */,
 				E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */,
 			);
 			path = Profile;
@@ -153,6 +173,18 @@
 				2B1CD3811806AD2CBE8BC32C /* UI */,
 			);
 			path = Wandr;
+			sourceTree = "<group>";
+		};
+		69D069A79B00B313BFE91DF5 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				B3653ED86BC7CE2C6050FD9E /* CameraPickerView.swift */,
+				115EB2163FD8A62DE4182546 /* ImageCropperView.swift */,
+				5B20117AAFAC0D8D9881F9E0 /* ImagePipeline.swift */,
+				C773A7258331A26CA44463C5 /* PermissionDeniedAlert.swift */,
+				44B2FE98DB2578F585436D0F /* PermissionDisclosureAlert.swift */,
+			);
+			path = Common;
 			sourceTree = "<group>";
 		};
 		7B526A3074F62AF2C651EBBE /* Root */ = {
@@ -233,6 +265,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = D897BBECB9717ED4F25B5B06 /* Build configuration list for PBXProject "Wandr" */;
 			developmentRegion = en;
@@ -295,12 +329,17 @@
 			files = (
 				3B53D12A92684B33CAC5F342 /* ActivityCardView.swift in Sources */,
 				66C1D311F99A8E0E794FFA84 /* ActivityHistoryView.swift in Sources */,
+				3502985CB1B306B97F2DBDD4 /* AvatarEditorView.swift in Sources */,
 				FE7C548F5DAF13847A8DA0B1 /* AvatarPickerView.swift in Sources */,
+				8C3233F73D055926E4428424 /* CameraPermission.swift in Sources */,
+				B990EB2EC2155D8298E270A4 /* CameraPickerView.swift in Sources */,
 				78A62356EAA8B83EADF3BB14 /* ChallengeCardView.swift in Sources */,
 				883012FBA6B614053C9C5A36 /* ChallengeListView.swift in Sources */,
 				51E8EBA85C5623C246A74684 /* CreateChallengeView.swift in Sources */,
 				A58A38F5B42AF95186796227 /* CreateTeamView.swift in Sources */,
 				5E265CC2DDA312CF134C2C0C /* DashboardView.swift in Sources */,
+				9478CB3A4731560C9DB82C28 /* ImageCropperView.swift in Sources */,
+				FAE069674DEF9E6E64EB88C8 /* ImagePipeline.swift in Sources */,
 				B5EEFCBBA1510081592EDAA8 /* InitView.swift in Sources */,
 				29A98F5C8B25168B3748A904 /* LeaderboardRowView.swift in Sources */,
 				26707DF661ED5C5E4FBBC469 /* LiveGpsTrackingView.swift in Sources */,
@@ -308,6 +347,9 @@
 				1C6B97ADCEB421C75224C991 /* LoginView.swift in Sources */,
 				97A8E758BFB27917E69E8BC3 /* ManualActivityEntryView.swift in Sources */,
 				A3DFD78FC52B12382EAB883C /* MemberListView.swift in Sources */,
+				932EEDB086286F47A67BFDDB /* PermissionDeniedAlert.swift in Sources */,
+				9B1BE991623B66EA359F4157 /* PermissionDisclosureAlert.swift in Sources */,
+				05A61831C37988D1FAC2AB31 /* ProfileObserver.swift in Sources */,
 				9693FC9BFA957142341044F6 /* ProfileView.swift in Sources */,
 				E87E13069E65E069C7A03EBB /* RegisterView.swift in Sources */,
 				078F48F905F1A79CB905CFCA /* RootView.swift in Sources */,
@@ -340,24 +382,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = K66M8A88HU;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Wandr/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = WANDR;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-framework",
-					shared,
-				);
+				OTHER_LDFLAGS = "$(inherited) -framework shared";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness;
 				PRODUCT_NAME = Wandr;
 				SDKROOT = iphoneos;
@@ -439,24 +471,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = K66M8A88HU;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Wandr/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = WANDR;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-framework",
-					shared,
-				);
+				OTHER_LDFLAGS = "$(inherited) -framework shared";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness;
 				PRODUCT_NAME = Wandr;
 				SDKROOT = iphoneos;

@@ -57,10 +57,16 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                AvatarPicker(
+                AvatarEditor(
                     avatarUrl = state.profile?.avatarUrl,
                     displayName = state.profile?.displayName ?: "User",
-                    onPickAvatar = { }
+                    isBusy = state.isAvatarUpdating || state.profile == null,
+                    onAvatarReady = { jpeg ->
+                        state.profile?.let { onIntent(ProfileIntent.UploadAvatar(it.id, jpeg)) }
+                    },
+                    onRemoveAvatar = {
+                        state.profile?.let { onIntent(ProfileIntent.RemoveAvatar(it.id)) }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))

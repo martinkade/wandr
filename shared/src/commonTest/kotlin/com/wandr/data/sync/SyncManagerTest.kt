@@ -20,6 +20,7 @@ private class FakeProfileDao : ProfileDao {
     private val dirtyProfiles = mutableListOf<ProfileEntity>()
     fun addDirty(profile: ProfileEntity) { dirtyProfiles.add(profile) }
     override fun getProfileById(id: String): Flow<ProfileEntity?> = flowOf(null)
+    override suspend fun getProfileOnce(id: String): ProfileEntity? = null
     override suspend fun insertProfile(profile: ProfileEntity) { }
     override suspend fun updateProfile(profile: ProfileEntity) { }
     override suspend fun getDirtyProfiles(): List<ProfileEntity> = dirtyProfiles

@@ -13,6 +13,9 @@ interface ProfileDao {
     @Query("SELECT * FROM profiles WHERE id = :id")
     fun getProfileById(id: String): Flow<ProfileEntity?>
 
+    @Query("SELECT * FROM profiles WHERE id = :id")
+    suspend fun getProfileOnce(id: String): ProfileEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProfile(profile: ProfileEntity)
 

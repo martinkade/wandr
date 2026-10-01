@@ -1,6 +1,8 @@
 package com.wandr.android.ui.activity
 
+import android.Manifest
 import android.content.res.Configuration
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.permission.rememberPermissionGate
 import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
 
@@ -32,6 +35,18 @@ fun LiveGpsTrackingScreen(
     onIntent: (ActivityIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Disclosure first, then the system dialog; the foreground-service notification is optional (Android 13+).
+    val locationPermission = rememberPermissionGate(
+        required = listOf(Manifest.permission.ACCESS_FINE_LOCATION),
+        optional = buildList {
+            add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
+        },
+        disclosureTitle = R.string.permission_location_title,
+        disclosureMessage = R.string.permission_location_message,
+        deniedMessage = R.string.permission_location_denied
+    )
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -78,7 +93,7 @@ fun LiveGpsTrackingScreen(
 
         if (!state.isTracking) {
             Button(
-                onClick = { onIntent(ActivityIntent.StartGpsTracking("hiking")) },
+                onClick = { locationPermission.request { onIntent(ActivityIntent.StartGpsTracking("hiking")) } },
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
                 Text(stringResource(R.string.start_tracking_button))

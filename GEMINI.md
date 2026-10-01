@@ -9,4 +9,5 @@ Refer to [`AGENTS.md`](file:///Users/martinkade/wandr/AGENTS.md) for full projec
 4. **Room Entities**: 1 entity class per file.
 5. **Offline-First & Auto Token Refresh**: Room DB writes first, sync to Supabase with automatic 401 token renewal in Ktor.
 6. **Privacy First**: Group leaderboards are scoped to the team only.
-7. **Skills**: Modular workflows are available under [`.agents/skills/`](file:///Users/martinkade/wandr/.agents/skills/).
+7. **Permission Disclosure**: Show a localized dialog explaining *why* before any system permission prompt (location, camera, notifications, health data); see the `wandr-ui-components` skill.
+8. **Skills**: Modular workflows are available under [`.agents/skills/`](file:///Users/martinkade/wandr/.agents/skills/).

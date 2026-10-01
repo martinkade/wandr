@@ -6,7 +6,7 @@ data class Profile(
     val displayName: String,
     val avatarUrl: String?,
     val bio: String?,
-    val systemRole: String = "user",
+    val systemRole: SystemRole = SystemRole.USER,
     val createdAt: Long,
     val updatedAt: Long
 )

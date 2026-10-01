@@ -447,6 +447,9 @@ INSERT INTO storage.buckets (id, name, public) VALUES ('fit-files', 'fit-files',
 -- Storage Policies
 CREATE POLICY "Avatar Read Access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'avatars');
 CREATE POLICY "Avatar Upload Access" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+-- Avatar replace/remove: users manage only files in their own folder (<user_id>/...).
+-- Required by the profile avatar feature, which deletes the previous avatar file after an update/removal.
+CREATE POLICY "Avatar Delete Access" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "FIT File Upload Access" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'fit-files' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "FIT File Read Access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'fit-files' AND auth.uid()::text = (storage.foldername(name))[1]);

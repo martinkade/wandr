@@ -6,6 +6,7 @@ import com.wandr.data.local.entity.TeamEntity
 import com.wandr.data.local.entity.TeamMemberEntity
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
+import com.wandr.domain.model.TeamRole
 import com.wandr.domain.repository.TeamRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
@@ -97,7 +98,7 @@ class TeamRepositoryImpl(
             id = "member_${teamId}_$creatorId",
             teamId = teamId,
             userId = creatorId,
-            role = "admin",
+            role = TeamRole.ADMIN,
             joinedAt = now,
             syncStatus = "DIRTY"
         )
@@ -139,7 +140,7 @@ class TeamRepositoryImpl(
             id = "member_${remoteTeam.id}_$userId",
             teamId = remoteTeam.id,
             userId = userId,
-            role = "member",
+            role = TeamRole.MEMBER,
             joinedAt = now,
             syncStatus = "DIRTY"
         )

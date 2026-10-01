@@ -1,5 +1,6 @@
 package com.wandr.presentation.dashboard
 
+import com.wandr.data.sync.SyncManager
 import com.wandr.domain.repository.AuthRepository
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.LogoutUseCase
@@ -17,12 +18,14 @@ class DashboardViewModel(
     private val authRepository: AuthRepository,
     private val getUserTeamsUseCase: GetUserTeamsUseCase,
     private val logoutUseCase: LogoutUseCase,
+    private val syncManager: SyncManager,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 ) {
     private val _uiState = MutableStateFlow(DashboardState())
     val uiState: StateFlow<DashboardState> = _uiState.asStateFlow()
 
     fun load() {
+        syncManager.triggerSync() // pushes edits made offline (e.g. profile changes)
         scope.launch {
             val userId = authRepository.currentSession().first()?.user?.id
             val teamId = userId?.let { runCatching { getUserTeamsUseCase(it).first().firstOrNull()?.id }.getOrNull() }

@@ -16,7 +16,7 @@ struct DashboardView: View {
                 .tabItem { Label(LocalizedStringKey("tab_challenges"), systemImage: "trophy") }
 
             VStack {
-                ProfileView()
+                ProfileContainerView(userId: viewModel.userId)
                 Button(role: .destructive) {
                     viewModel.logout(onLoggedOut)
                 } label: {
@@ -33,6 +33,7 @@ struct DashboardView: View {
 @MainActor
 final class DashboardObserver: ObservableObject {
     @Published var activities: [Activity] = []
+    @Published var userId: String?
 
     private let dashboard = IosDependencies.shared.dashboardViewModel()
     private let activity = IosDependencies.shared.activityViewModel()
@@ -42,6 +43,7 @@ final class DashboardObserver: ObservableObject {
         jobs.append(FlowObserverKt.watch(dashboard.uiState) { [weak self] value in
             guard let state = value as? DashboardState, let userId = state.userId else { return }
             Task { @MainActor in
+                self?.userId = userId
                 self?.activity.processIntent(intent: ActivityIntentLoadUserActivities(userId: userId))
             }
         })

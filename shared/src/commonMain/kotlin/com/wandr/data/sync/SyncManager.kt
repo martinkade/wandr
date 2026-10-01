@@ -4,6 +4,7 @@ import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.dao.ChallengeDao
 import com.wandr.data.local.dao.ProfileDao
 import com.wandr.data.local.dao.TeamDao
+import com.wandr.data.remote.toUpdatePayload
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.CoroutineScope
@@ -36,7 +37,9 @@ class SyncManager(
                 // 1. Sync Profiles
                 val dirtyProfiles = profileDao.getDirtyProfiles()
                 for (profile in dirtyProfiles) {
-                    supabase.postgrest.from("profiles").upsert(profile)
+                    supabase.postgrest.from("profiles").update(profile.toUpdatePayload()) {
+                        filter { eq("id", profile.id) }
+                    }
                     profileDao.insertProfile(profile.copy(syncStatus = "SYNCED"))
                     totalSynced++
                 }

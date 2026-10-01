@@ -5,6 +5,16 @@ import kotlinx.coroutines.flow.Flow
 
 interface ProfileRepository {
     fun getProfile(userId: String): Flow<Profile?>
+
+    /** Pulls the remote profile into the local cache (never overwrites unsynced local edits). */
+    suspend fun refreshProfile(userId: String): Result<Unit>
+
+    /** Saves locally first; if the remote push fails the profile stays queued for [com.wandr.data.sync.SyncManager]. */
     suspend fun updateProfile(profile: Profile): Result<Profile>
-    suspend fun uploadAvatar(userId: String, byteArray: ByteArray, fileName: String): Result<String>
+
+    /** Uploads [jpegBytes] as the new avatar, links it to the profile and removes previous avatar files. */
+    suspend fun setAvatar(userId: String, jpegBytes: ByteArray): Result<Profile>
+
+    /** Clears the avatar on the profile and deletes the stored avatar files. */
+    suspend fun removeAvatar(userId: String): Result<Profile>
 }

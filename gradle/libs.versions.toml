@@ -1,6 +1,8 @@
 [versions]
 activity-compose = "1.13.0"
 core-splashscreen = "1.2.0"
+coil = "3.6.3"
+exifinterface = "1.4.2"
 agp = "9.4.1"
 foundation = "1.12.1"
 kotlin = "2.4.20"
@@ -25,6 +27,9 @@ ui-tooling = "1.12.1"
 
 [libraries]
 # Kotlin Coroutines, Datetime & Serialization
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "exifinterface" }
 core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }

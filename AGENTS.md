@@ -38,6 +38,8 @@ WANDR uses **Kotlin Multiplatform (KMP)** with **Clean Architecture** and **MVI 
 3. **Design Aesthetic**:
    - Android: Modern Material 3 Expressive, dynamic colors, glassmorphism cards.
    - iOS: Native SwiftUI with Liquid Glass blur effects, smooth spring animations.
+4. **Permission Disclosure**:
+   - Before any system permission prompt (location, camera, notifications, health data) that is not granted yet, show a localized disclosure dialog explaining *why* the permission is needed. Only then request it; offer "Open Settings" when it was permanently denied. See the `wandr-ui-components` skill, "Permission Disclosure".
 
 ---
 

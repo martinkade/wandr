@@ -1,12 +1,20 @@
 package com.wandr.domain.usecase
 
+import com.wandr.domain.model.Profile
 import com.wandr.domain.repository.ProfileRepository
 
 class UploadAvatarUseCase(private val profileRepository: ProfileRepository) {
-    suspend operator fun invoke(userId: String, bytes: ByteArray, fileName: String): Result<String> {
-        if (bytes.isEmpty()) {
+    suspend operator fun invoke(userId: String, jpegBytes: ByteArray): Result<Profile> {
+        if (jpegBytes.isEmpty()) {
             return Result.failure(IllegalArgumentException("Avatar image file is empty"))
         }
-        return profileRepository.uploadAvatar(userId, bytes, fileName)
+        if (jpegBytes.size > MAX_AVATAR_BYTES) {
+            return Result.failure(IllegalArgumentException("Avatar image is too large"))
+        }
+        return profileRepository.setAvatar(userId, jpegBytes)
+    }
+
+    companion object {
+        const val MAX_AVATAR_BYTES = 2 * 1024 * 1024
     }
 }

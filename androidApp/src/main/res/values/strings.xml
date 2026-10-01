@@ -65,4 +65,26 @@
     <string name="tab_challenges">Challenges</string>
     <string name="tab_profile">Profile</string>
     <string name="logout_button">Sign Out</string>
+
+    <!-- Avatar & image cropping -->
+    <string name="avatar_change_title">Profile Photo</string>
+    <string name="avatar_choose_library">Choose from Library</string>
+    <string name="avatar_take_photo">Take Photo</string>
+    <string name="avatar_remove">Remove Photo</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="crop_title">Crop Photo</string>
+    <string name="crop_done">Done</string>
+    <string name="crop_reset">Reset</string>
+    <string name="crop_hint">Drag and pinch to adjust</string>
+    <string name="image_load_failed">The image could not be loaded.</string>
+    <string name="avatar_content_description">Profile photo</string>
+
+    <!-- Permission disclosures -->
+    <string name="permission_continue">Continue</string>
+    <string name="permission_not_now">Not Now</string>
+    <string name="permission_denied_title">Permission Required</string>
+    <string name="permission_open_settings">Open Settings</string>
+    <string name="permission_location_title">Location Access</string>
+    <string name="permission_location_message">WANDR records the route, distance and elevation of your activity using your precise location, including while the screen is off. Your location is only collected while a recording is running.\n\nOn the next screen you may also be asked to allow notifications, which show that a recording is active.</string>
+    <string name="permission_location_denied">Location access is turned off. Enable it in the app settings to record GPS activities.</string>
 </resources>

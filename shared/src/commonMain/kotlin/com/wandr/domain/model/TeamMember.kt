@@ -4,7 +4,7 @@ data class TeamMember(
     val id: String,
     val teamId: String,
     val userId: String,
-    val role: String, // admin, member
+    val role: TeamRole,
     val username: String,
     val displayName: String,
     val avatarUrl: String?,

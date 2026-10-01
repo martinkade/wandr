@@ -6,19 +6,24 @@ import shared
 final class LocationTrackingManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var currentTrackpoint: GpsTrackpoint?
     @Published var isTracking: Bool = false
+    @Published var authorizationStatus: CLAuthorizationStatus
     
     private let locationManager = CLLocationManager()
     
     override init() {
+        authorizationStatus = CLLocationManager().authorizationStatus
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.allowsBackgroundLocationUpdates = true
         locationManager.pausesLocationUpdatesAutomatically = false
+        locationManager.showsBackgroundLocationIndicator = true
     }
     
+    /// Call only after the location disclosure was confirmed (or access is already granted).
     func startTracking() {
-        locationManager.requestAlwaysAuthorization()
+        // "While Using" is enough for background recording with the `location` background mode.
+        locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
         isTracking = true
     }
@@ -28,6 +33,10 @@ final class LocationTrackingManager: NSObject, ObservableObject, CLLocationManag
         isTracking = false
     }
     
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        authorizationStatus = manager.authorizationStatus
+    }
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         let trackpoint = GpsTrackpoint(

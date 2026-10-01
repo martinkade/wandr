@@ -3,6 +3,7 @@ package com.wandr.data.local.entity
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
+import com.wandr.domain.model.SystemRole
 
 @Entity(tableName = "profiles")
 data class ProfileEntity(
@@ -22,7 +23,7 @@ data class ProfileEntity(
     val bio: String?,
     
     @ColumnInfo(name = "system_role")
-    val systemRole: String = "user",
+    val systemRole: SystemRole = SystemRole.USER,
     
     @ColumnInfo(name = "created_at")
     val createdAt: Long,

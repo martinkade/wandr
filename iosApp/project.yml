@@ -49,6 +49,7 @@ targets:
           - UIInterfaceOrientationLandscapeRight
         UIBackgroundModes:
           - location
+        NSCameraUsageDescription: WANDR uses the camera to take your profile photo.
         NSLocationWhenInUseUsageDescription: WANDR uses your location to record your outdoor activities.
         NSLocationAlwaysAndWhenInUseUsageDescription: WANDR uses your location to keep recording your activity while the screen is off.
     preBuildScripts:

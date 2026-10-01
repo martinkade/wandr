@@ -8,9 +8,9 @@ import org.koin.dsl.module
 
 val viewModelModule = module {
     factory { com.wandr.presentation.startup.StartupViewModel(get()) }
-    factory { com.wandr.presentation.dashboard.DashboardViewModel(get(), get(), get()) }
+    factory { com.wandr.presentation.dashboard.DashboardViewModel(get(), get(), get(), get()) }
     factory { LoginViewModel(get(), get()) }
-    factory { ProfileViewModel(get(), get(), get()) }
+    factory { ProfileViewModel(get(), get(), get(), get(), get()) }
     factory { TeamViewModel(get(), get(), get(), get()) }
     factory { ChallengeViewModel(get(), get(), get(), get()) }
     factory { com.wandr.presentation.activity.ActivityViewModel(get(), get(), get(), get(), get()) }

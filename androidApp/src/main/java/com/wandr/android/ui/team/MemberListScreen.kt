@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.domain.model.TeamMember
+import com.wandr.domain.model.TeamRole
 
 @Composable
 fun MemberListScreen(
@@ -68,7 +69,7 @@ fun MemberListScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = member.role.uppercase(),
+                                text = member.role.name,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary
                             )
@@ -87,8 +88,8 @@ private fun MemberListScreenPreview() {
     MaterialTheme {
         MemberListScreen(
             members = listOf(
-                TeamMember("1", "t1", "u1", "admin", "martinkade", "Martin Kade", null, 0L),
-                TeamMember("2", "t1", "u2", "member", "runner99", "Alex Runner", null, 0L)
+                TeamMember("1", "t1", "u1", TeamRole.ADMIN, "martinkade", "Martin Kade", null, 0L),
+                TeamMember("2", "t1", "u2", TeamRole.MEMBER, "runner99", "Alex Runner", null, 0L)
             )
         )
     }

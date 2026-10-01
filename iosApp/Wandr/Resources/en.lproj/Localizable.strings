@@ -63,3 +63,28 @@
 "tab_challenges" = "Challenges";
 "tab_profile" = "Profile";
 "logout_button" = "Sign Out";
+
+/* Avatar & image cropping */
+"avatar_change_title" = "Profile Photo";
+"avatar_choose_library" = "Choose from Library";
+"avatar_take_photo" = "Take Photo";
+"avatar_remove" = "Remove Photo";
+"cancel_button" = "Cancel";
+"crop_title" = "Crop Photo";
+"crop_done" = "Done";
+"crop_reset" = "Reset";
+"crop_hint" = "Drag and pinch to adjust";
+"image_load_failed" = "The image could not be loaded.";
+"avatar_content_description" = "Profile photo";
+
+/* Permission disclosures */
+"permission_continue" = "Continue";
+"permission_not_now" = "Not Now";
+"permission_denied_title" = "Permission Required";
+"permission_open_settings" = "Open Settings";
+"permission_location_title" = "Location Access";
+"permission_location_message" = "WANDR records the route, distance and elevation of your activity using your precise location, including while the screen is off. Your location is only collected while a recording is running.";
+"permission_location_denied" = "Location access is turned off. Enable it in Settings to record GPS activities.";
+"permission_camera_title" = "Camera Access";
+"permission_camera_message" = "WANDR uses the camera only to take your profile photo. You can crop it before it is uploaded, and nothing is saved to your photo library.";
+"permission_camera_denied" = "Camera access is turned off. Enable it in Settings to take a profile photo, or choose one from your library.";

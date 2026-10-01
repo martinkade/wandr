@@ -24,6 +24,8 @@ val domainModule = module {
     factory { GetProfileUseCase(get()) }
     factory { UpdateProfileUseCase(get()) }
     factory { UploadAvatarUseCase(get()) }
+    factory { com.wandr.domain.usecase.RemoveAvatarUseCase(get()) }
+    factory { com.wandr.domain.usecase.RefreshProfileUseCase(get()) }
     factory { CreateTeamUseCase(get()) }
     factory { GetUserTeamsUseCase(get()) }
     factory { JoinTeamViaInviteUseCase(get()) }

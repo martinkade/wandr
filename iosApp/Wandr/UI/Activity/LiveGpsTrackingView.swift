@@ -5,6 +5,8 @@ struct LiveGpsTrackingView: View {
     @StateObject private var locationTracker = LocationTrackingManager()
     @State private var isTracking: Bool = false
     @State private var isPaused: Bool = false
+    @State private var showLocationDisclosure = false
+    @State private var showLocationDenied = false
     @State private var distanceMeters: Double = 0.0
     @State private var durationSeconds: Double = 0.0
     @State private var trackpoints: [GpsTrackpoint] = []
@@ -49,10 +51,7 @@ struct LiveGpsTrackingView: View {
             Spacer()
 
             if !isTracking {
-                Button(action: {
-                    isTracking = true
-                    locationTracker.startTracking()
-                }) {
+                Button(action: startTrackingIfPermitted) {
                     Text(LocalizedStringKey("start_tracking_button"))
                         .font(.headline)
                         .foregroundColor(.white)
@@ -92,10 +91,33 @@ struct LiveGpsTrackingView: View {
             }
         }
         .padding(16)
+        .permissionDisclosure(
+            isPresented: $showLocationDisclosure,
+            title: "permission_location_title",
+            message: "permission_location_message",
+            onContinue: beginTracking
+        )
+        .permissionDeniedAlert(isPresented: $showLocationDenied, message: "permission_location_denied")
         .onReceive(locationTracker.$currentTrackpoint) { tp in
             guard let tp = tp, isTracking, !isPaused else { return }
             trackpoints.append(tp)
         }
+    }
+}
+
+extension LiveGpsTrackingView {
+    /// Disclosure first, then the system prompt; denied access leads to Settings.
+    private func startTrackingIfPermitted() {
+        switch locationTracker.authorizationStatus {
+        case .notDetermined: showLocationDisclosure = true
+        case .denied, .restricted: showLocationDenied = true
+        default: beginTracking()
+        }
+    }
+
+    private func beginTracking() {
+        isTracking = true
+        locationTracker.startTracking()
     }
 }
 
