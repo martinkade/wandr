@@ -30,7 +30,7 @@ import kotlinx.coroutines.IO
         ChallengeParticipantEntity::class,
         ActivityEntity::class
     ],
-    version = 1,
+    version = 2, // 2: challenges lost team_id (teams enroll in group challenges), participants gained team_id
     exportSchema = true
 )
 @ColumnTypeConverters(Converters::class)
@@ -52,5 +52,7 @@ fun getWandrDatabase(builder: RoomDatabase.Builder<WandrDatabase>): WandrDatabas
     return builder
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
+        // The database is a cache of the Supabase data, so a schema change simply rebuilds it from the server.
+        .fallbackToDestructiveMigration(dropAllTables = true)
         .build()
 }

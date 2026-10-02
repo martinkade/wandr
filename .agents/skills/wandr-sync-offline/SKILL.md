@@ -48,9 +48,10 @@ Use this skill when implementing local storage, sync mechanisms, Supabase networ
 
 ---
 
-## 🔒 Privacy-First Leaderboards
+## 🔒 Privacy-First Standings (Team vs. Team)
 
-- **Strict Enclosure**: Leaderboards are strictly calculated within team bounds (`WHERE team_id = :teamId`).
+- **Group = team vs. team**: a group challenge has no single team; several teams enroll (`challenge_teams`) and compete as teams against each other. Members of one team do not compete against each other, they all contribute to their team's result.
+- **Aggregates only across teams**: the team standings come from the server function `challenge_team_standings` (totals per team). Individual member progress (`challenge_participants` rows) is visible within the member's own team only (`WHERE team_id = :teamId`).
 - **No Global Leakage**: Do not expose or aggregate user activities across different teams or global user bases.
 
 ---
@@ -59,4 +60,4 @@ Use this skill when implementing local storage, sync mechanisms, Supabase networ
 - [ ] Are Room DB writes local-first before attempting remote sync?
 - [ ] Is 401 token refresh handled transparently by Ktor client?
 - [ ] Is conflict detection invoked upon activity creation/sync?
-- [ ] Are team leaderboards strictly scoped to the team ID?
+- [ ] Do cross-team standings contain aggregates only, and is member-level progress scoped to the own team ID?

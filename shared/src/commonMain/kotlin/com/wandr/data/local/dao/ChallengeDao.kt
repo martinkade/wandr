@@ -13,8 +13,12 @@ interface ChallengeDao {
     @Query("SELECT * FROM challenges WHERE id = :id")
     fun getChallengeById(id: String): Flow<ChallengeEntity?>
 
-    @Query("SELECT * FROM challenges WHERE team_id = :teamId ORDER BY start_date ASC")
-    fun getChallengesForTeam(teamId: String): Flow<List<ChallengeEntity>>
+    @Query("SELECT * FROM challenges WHERE id = :id")
+    suspend fun getChallengeOnce(id: String): ChallengeEntity?
+
+    /** All challenges are visible to every signed-in user (individual ones and group ones teams can enroll in). */
+    @Query("SELECT * FROM challenges ORDER BY start_date ASC")
+    fun getAllChallenges(): Flow<List<ChallengeEntity>>
 
     @Query("SELECT * FROM challenges WHERE sync_status = 'DIRTY' OR sync_status = 'PENDING'")
     suspend fun getDirtyChallenges(): List<ChallengeEntity>

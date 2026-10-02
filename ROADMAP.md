@@ -39,7 +39,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 └────────────────────────────────────┬────────────────────────────────────┘
                                      │
 ┌────────────────────────────────────▼────────────────────────────────────┐
-│ Phase 5: Challenges & Team-Scoped Leaderboards                          │
+│ Phase 5: Challenges & Team-vs-Team Standings                            │
 └────────────────────────────────────┬────────────────────────────────────┘
                                      │
 ┌────────────────────────────────────▼────────────────────────────────────┐
@@ -123,20 +123,21 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 ---
 
-### 🏆 Phase 5: Challenges & Team-Scoped Leaderboards (Privacy-First)
+### 🏆 Phase 5: Challenges & Team-vs-Team Standings (Privacy-First)
 
 - [x] **Step 5.1: Challenge Domain Models & Lifecycle**
   - Define `Challenge` (Types: Distance, Elevation, Time; Scope: Group, Individual; Option: `requireAllMembersCompletion` for All-or-Nothing team completion).
-  - Implement status evaluation (Planned, Active, Completed [requiring 100% member completion when enabled], Expired/Failed).
+  - **Group means team vs. team**: a group challenge is *not* tied to one team and its members do **not** compete against each other. Several teams enroll and compete as teams against the other enrolled teams; every member contributes to their own team's result. An individual challenge is open to everyone and has no team.
+  - Only `draft` and `active` are stored (`challenge_status`). **Completed and Expired are derived at runtime** from the start/end date and the participants' progress (`EvaluateChallengeStatusUseCase`, Completed requiring every member of a team when `requireAllMembersCompletion` is set), so they can never be stale.
 - [x] **Step 5.2: Challenge Management & Role-Based Access**
   - Restrict challenge creation, editing, and deletion exclusively to users with system `manager` role.
-  - Support individual challenge join/quit for all users, and group challenge enrollment/withdrawal by team owners & admins.
+  - Support individual challenge join/quit for all users, and group challenge **team enrollment/withdrawal by team owners & admins** (`challenge_teams`; enrolling adds all members as participants for their team).
   - Add cover photo upload to Supabase Storage (`challenge-covers` bucket).
-- [x] **Step 5.3: Privacy-First Leaderboards**
-  - Calculate leaderboard rankings strictly within team scope (`WHERE team_id = :teamId`).
+- [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
+  - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).
 - [x] **Step 5.4: Challenge & Leaderboard UI**
-  - Build `ChallengeListScreen`/`View`, `ChallengeCard.kt`/`.swift`, `LeaderboardRow.kt`/`.swift`.
+  - Build `ChallengeListScreen`/`View`, `ChallengeCard.kt`/`.swift` (group challenges: "Enroll Team" instead of "Join"), `LeaderboardRow.kt`/`.swift` (members of the own team).
 
 ---
 
@@ -218,7 +219,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 | 4. Only team owners can remove members | `DELETE` on `team_members` checks `created_by = auth.uid()` OR `user_id = auth.uid()` | `DeleteTeamMemberUseCase` | ✅ Verified |
 | 5. Team owners & admins can edit team details | `UPDATE` on `teams` checks `created_by = auth.uid()` OR `role = 'admin'` | `UpdateTeamUseCase` | ✅ Verified |
 | 6. All users can join/quit individual challenges | `INSERT`/`DELETE` on `challenge_participants` allows `user_id = auth.uid()` for `individual` | `JoinChallengeUseCase` / `QuitChallengeUseCase` | ✅ Verified |
-| 7. Owners & admins can enroll/withdraw team in group challenges | `INSERT`/`DELETE` on `challenge_participants` allows owners/admins for `group` | `EnrollTeamChallengeUseCase` | ✅ Verified |
+| 7. Owners & admins can enroll/withdraw their team in group challenges (teams compete against each other) | `INSERT`/`DELETE` on `challenge_teams` allow owners/admins via `is_team_admin`; triggers add/remove the members as participants | `EnrollTeamInChallengeUseCase` | ✅ Verified |
 | 8. Join groups via invite code / QR code | `invite_code` column + `INSERT` on `team_members` | `TeamInviteQRCodeScreen.kt` & `.swift` | ✅ Verified |
 | 9. Group members can leave group/team | `DELETE` on `team_members` allows `user_id = auth.uid()` | `LeaveTeamUseCase` | ✅ Verified |
 | 10. All users can update their profile | `UPDATE` on `profiles` allows `auth.uid() = id` | `UpdateProfileUseCase` | ✅ Verified |

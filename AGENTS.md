@@ -63,7 +63,7 @@ WANDR uses **Kotlin Multiplatform (KMP)** with **Clean Architecture** and **MVI 
 2. **Minimal Inline Documentation**:
    - Rely on clean, self-documenting code with expressive naming. Limit KDoc/comments to complex edge cases or mathematical algorithms.
 3. **Privacy First**:
-   - Leaderboards are strictly contained within their respective groups/teams. Never write code that exposes cross-group leaderboard data.
+   - Group challenges are **team vs. team**: members of one team do not compete against each other. Standings rank teams using aggregated totals only (`challenge_team_standings`); the progress of individual members is visible within their own team only. Never write code that exposes members of other teams.
 
 ---
 

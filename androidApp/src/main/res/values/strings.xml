@@ -31,11 +31,11 @@
     <string name="team_members_title">Team Members</string>
 
     <!-- Challenge & Leaderboard Localization -->
-    <string name="challenges_title">Team Challenges</string>
+    <string name="challenges_title">Challenges</string>
     <string name="create_challenge_title">Create Challenge</string>
     <string name="challenge_title_label">Challenge Title</string>
     <string name="challenge_target_label">Target Value</string>
-    <string name="require_all_members_label">Require All Members to Complete (All-or-Nothing)</string>
+    <string name="require_all_members_label">Every member of a team must complete the target</string>
     <string name="leaderboard_title">Team Leaderboard</string>
     <string name="join_challenge_button">Join Challenge</string>
 
@@ -122,4 +122,37 @@
     <!-- Profile stats -->
     <string name="profile_stats_activities">Activities</string>
     <string name="profile_stats_member_since">Active since</string>
+
+    <!-- Challenges: create / edit -->
+    <string name="challenge_new_button">New Challenge</string>
+    <string name="challenge_edit_button">Edit</string>
+    <string name="challenge_edit_title">Edit Challenge</string>
+    <string name="challenge_description_label">Description</string>
+    <string name="challenge_type_label">Type</string>
+    <string name="challenge_type_distance">Distance</string>
+    <string name="challenge_type_elevation">Elevation</string>
+    <string name="challenge_type_time">Time</string>
+    <string name="challenge_unit_distance">km</string>
+    <string name="challenge_unit_elevation">m</string>
+    <string name="challenge_unit_time">h</string>
+    <string name="challenge_duration_label">Duration (days)</string>
+    <string name="challenge_scope_label">Mode</string>
+    <string name="challenge_scope_individual">Everyone (individual)</string>
+    <string name="challenge_scope_group">Teams (team vs. team)</string>
+    <string name="challenge_created_message">Challenge created</string>
+    <string name="challenge_updated_message">Challenge saved</string>
+    <string name="challenge_joined_message">Joined challenge</string>
+    <string name="challenges_empty">No challenges yet.</string>
+
+    <string name="challenge_scope_group_hint">Teams enroll and compete against other teams. Members of one team do not compete against each other, they all contribute to their team.</string>
+    <string name="challenge_group_card_hint">Teams compete against each other</string>
+    <string name="challenge_enroll_team_button">Enroll Team</string>
+    <string name="challenge_enroll_dialog_title">Enroll a team</string>
+    <string name="challenge_enroll_dialog_hint">Only the owner or an admin of a team can enroll it. All members then contribute to the team\'s result.</string>
+    <string name="challenge_team_enrolled_message">Team enrolled</string>
+
+    <string name="challenge_status_draft">Draft</string>
+    <string name="challenge_status_active">Active</string>
+    <string name="challenge_status_completed">Completed</string>
+    <string name="challenge_status_expired">Ended</string>
 </resources>

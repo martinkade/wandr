@@ -15,6 +15,10 @@ data class ChallengeParticipantEntity(
     @ColumnInfo(name = "user_id")
     val userId: String,
     
+    /** The team this participant contributes for in a group challenge; null in an individual challenge. */
+    @ColumnInfo(name = "team_id")
+    val teamId: String? = null,
+    
     @ColumnInfo(name = "progress_value")
     val progressValue: Double = 0.0,
     

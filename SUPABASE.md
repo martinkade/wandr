@@ -51,9 +51,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================================================
 -- Custom ENUM Types
 -- ============================================================================
+-- Application-wide role of a user (profiles.system_role); managers create teams and challenges.
+CREATE TYPE system_role AS ENUM ('user', 'manager');
+-- Role of a user inside one team (team_members.role)
 CREATE TYPE team_role AS ENUM ('admin', 'member');
 CREATE TYPE challenge_type AS ENUM ('distance', 'elevation', 'time');
-CREATE TYPE challenge_status AS ENUM ('planned', 'active', 'completed', 'expired');
+-- Only draft / active are stored. 'completed' and 'expired' are derived at runtime from start_date, end_date
+-- (and the participants' progress), so they can never be stale.
+CREATE TYPE challenge_status AS ENUM ('draft', 'active');
 CREATE TYPE challenge_scope AS ENUM ('group', 'individual');
 CREATE TYPE social_entity_type AS ENUM ('activity', 'challenge');
 
@@ -66,7 +71,7 @@ CREATE TABLE public.profiles (
     display_name TEXT NOT NULL,
     avatar_url TEXT,
     bio TEXT,
-    system_role TEXT NOT NULL DEFAULT 'user', -- 'user', 'manager'
+    system_role system_role NOT NULL DEFAULT 'user',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -98,28 +103,46 @@ CREATE TABLE public.team_members (
 -- ============================================================================
 -- 3. Challenges & Participants
 -- ============================================================================
+-- A challenge is NOT bound to a single team.
+--   scope 'individual': open to every user, everybody takes part for themselves.
+--   scope 'group':      TEAMS compete against OTHER TEAMS. Team owners/admins enroll their team (challenge_teams);
+--                       all members then contribute to their team's result. Members of one team do not compete
+--                       against each other; the standings rank teams.
 CREATE TABLE public.challenges (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE, -- NULL for individual
     title TEXT NOT NULL,
     description TEXT,
     cover_url TEXT,
     scope challenge_scope NOT NULL DEFAULT 'group',
     type challenge_type NOT NULL,
     target_value DOUBLE PRECISION NOT NULL, -- Distance in meters, Elevation in meters, Time in seconds
-    require_all_members_completion BOOLEAN NOT NULL DEFAULT FALSE, -- All-or-Nothing group completion mode
+    require_all_members_completion BOOLEAN NOT NULL DEFAULT FALSE, -- All-or-Nothing: a team only completes when EVERY member completed
     start_date TIMESTAMPTZ NOT NULL,
     end_date TIMESTAMPTZ NOT NULL,
-    status challenge_status NOT NULL DEFAULT 'planned',
+    status challenge_status NOT NULL DEFAULT 'draft', -- informational; clients derive the real state from the dates
     created_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Teams taking part in a group challenge.
+CREATE TABLE public.challenge_teams (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    challenge_id UUID NOT NULL REFERENCES public.challenges(id) ON DELETE CASCADE,
+    team_id UUID NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
+    enrolled_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    enrolled_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(challenge_id, team_id)
+);
+
+-- One row per participating user. In a group challenge the rows are created by triggers (see section 5) when
+-- a team is enrolled, and team_id says which team the user contributes for (a user contributes to one team per
+-- challenge). In an individual challenge team_id is NULL.
 CREATE TABLE public.challenge_participants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     challenge_id UUID NOT NULL REFERENCES public.challenges(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE,
     progress_value DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     is_completed BOOLEAN NOT NULL DEFAULT FALSE,
     joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -209,6 +232,7 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.challenges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.challenge_teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.challenge_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.likes ENABLE ROW LEVEL SECURITY;
@@ -318,12 +342,12 @@ CREATE POLICY "Team owners can remove members or members can leave"
 -- ----------------------------------------------------------------------------
 -- Challenges & Challenge Participants Policies (Manager Rights & Scope Rules)
 -- ----------------------------------------------------------------------------
-CREATE POLICY "Team members or creators can view challenges"
+-- A GROUP challenge is not tied to one team: teams enroll and compete AGAINST EACH OTHER. The members of one team
+-- contribute to their team's result and do not compete against each other. Challenges themselves are public,
+-- so team owners/admins can find them and enroll.
+CREATE POLICY "Challenges are visible to every signed-in user"
     ON public.challenges FOR SELECT TO authenticated
-    USING (
-        auth.uid() = created_by OR
-        (team_id IS NOT NULL AND public.is_team_member(team_id, auth.uid()))
-    );
+    USING (true);
 
 CREATE POLICY "Only managers can create challenges"
     ON public.challenges FOR INSERT TO authenticated
@@ -355,45 +379,47 @@ CREATE POLICY "Only managers can delete challenges"
         )
     );
 
-CREATE POLICY "Team members can view challenge participants (Privacy-First Leaderboards)"
+-- Team enrollment: which teams compete is public (it is the competition); only owners/admins enroll or withdraw.
+-- Enrolling inserts the members as participants (trigger in section 5).
+CREATE POLICY "Enrolled teams are visible"
+    ON public.challenge_teams FOR SELECT TO authenticated
+    USING (true);
+
+CREATE POLICY "Team owners and admins can enroll their team"
+    ON public.challenge_teams FOR INSERT TO authenticated
+    WITH CHECK (
+        enrolled_by = auth.uid() AND
+        public.is_team_admin(team_id::text, auth.uid()) AND
+        EXISTS (SELECT 1 FROM public.challenges c WHERE c.id = challenge_id AND c.scope = 'group')
+    );
+
+CREATE POLICY "Team owners and admins can withdraw their team"
+    ON public.challenge_teams FOR DELETE TO authenticated
+    USING (public.is_team_admin(team_id::text, auth.uid()));
+
+-- Privacy first: the progress of a single user is visible to the user, to the members of the team they contribute
+-- for, and to the manager who created the challenge. Other teams only see the aggregated team standings
+-- (function challenge_team_standings, section 5), never individual members of other teams.
+CREATE POLICY "Own and own team's participants are visible (Privacy-First)"
     ON public.challenge_participants FOR SELECT TO authenticated
     USING (
-        EXISTS (
-            SELECT 1 FROM public.challenges c
-            WHERE c.id = challenge_id AND (
-                c.created_by = auth.uid() OR
-                (c.team_id IS NOT NULL AND public.is_team_member(c.team_id, auth.uid()))
-            )
-        )
+        user_id = auth.uid() OR
+        (team_id IS NOT NULL AND public.is_team_member(team_id, auth.uid())) OR
+        EXISTS (SELECT 1 FROM public.challenges c WHERE c.id = challenge_id AND c.created_by = auth.uid())
     );
 
-CREATE POLICY "Users can join or admins can enroll team in challenges"
+-- Individual challenges: users join and quit themselves. Group participants are managed by triggers, which
+-- follow the team's enrollment and membership (they run as SECURITY DEFINER and bypass these policies).
+CREATE POLICY "Users can join individual challenges"
     ON public.challenge_participants FOR INSERT TO authenticated
     WITH CHECK (
-        (auth.uid() = user_id AND EXISTS (
-            SELECT 1 FROM public.challenges WHERE id = challenge_id AND scope = 'individual'
-        )) OR
-        EXISTS (
-            SELECT 1 FROM public.challenges c
-            JOIN public.teams t ON c.team_id = t.id
-            LEFT JOIN public.team_members tm ON tm.team_id = t.id AND tm.user_id = auth.uid()
-            WHERE c.id = challenge_id AND c.scope = 'group' AND (t.created_by = auth.uid() OR tm.role = 'admin')
-        )
+        auth.uid() = user_id AND team_id IS NULL AND
+        EXISTS (SELECT 1 FROM public.challenges WHERE id = challenge_id AND scope = 'individual')
     );
 
-CREATE POLICY "Users can quit or admins can withdraw team from challenges"
+CREATE POLICY "Users can quit individual challenges"
     ON public.challenge_participants FOR DELETE TO authenticated
-    USING (
-        (auth.uid() = user_id AND EXISTS (
-            SELECT 1 FROM public.challenges WHERE id = challenge_id AND scope = 'individual'
-        )) OR
-        EXISTS (
-            SELECT 1 FROM public.challenges c
-            JOIN public.teams t ON c.team_id = t.id
-            LEFT JOIN public.team_members tm ON tm.team_id = t.id AND tm.user_id = auth.uid()
-            WHERE c.id = challenge_id AND c.scope = 'group' AND (t.created_by = auth.uid() OR tm.role = 'admin')
-        )
-    );
+    USING (auth.uid() = user_id AND team_id IS NULL);
 
 CREATE POLICY "Participants can update their own progress"
     ON public.challenge_participants FOR UPDATE TO authenticated
@@ -501,6 +527,98 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+```
+
+### Group challenges: team enrollment & standings
+
+Teams compete against other teams. When a team is enrolled, all its members become participants for that team;
+joining or leaving the team keeps this in sync; withdrawing the team removes them again. A user contributes to one
+team per challenge (`UNIQUE(challenge_id, user_id)`), the first enrolled team wins.
+
+```sql
+-- Enrolling a team adds all current members as participants.
+CREATE OR REPLACE FUNCTION public.enroll_team_members()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.challenge_participants (challenge_id, user_id, team_id)
+    SELECT NEW.challenge_id, tm.user_id, NEW.team_id
+    FROM public.team_members tm WHERE tm.team_id = NEW.team_id
+    ON CONFLICT (challenge_id, user_id) DO NOTHING;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER on_team_enrolled
+    AFTER INSERT ON public.challenge_teams
+    FOR EACH ROW EXECUTE FUNCTION public.enroll_team_members();
+
+-- Withdrawing a team removes its members from that challenge.
+CREATE OR REPLACE FUNCTION public.withdraw_team_members()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM public.challenge_participants
+    WHERE challenge_id = OLD.challenge_id AND team_id = OLD.team_id;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER on_team_withdrawn
+    AFTER DELETE ON public.challenge_teams
+    FOR EACH ROW EXECUTE FUNCTION public.withdraw_team_members();
+
+-- A new team member joins the challenges of the team that are not over yet.
+CREATE OR REPLACE FUNCTION public.join_team_challenges()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.challenge_participants (challenge_id, user_id, team_id)
+    SELECT ct.challenge_id, NEW.user_id, NEW.team_id
+    FROM public.challenge_teams ct
+    JOIN public.challenges c ON c.id = ct.challenge_id
+    WHERE ct.team_id = NEW.team_id AND c.end_date >= NOW() -- not over yet (status is derived, not stored)
+    ON CONFLICT (challenge_id, user_id) DO NOTHING;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER on_team_member_added
+    AFTER INSERT ON public.team_members
+    FOR EACH ROW EXECUTE FUNCTION public.join_team_challenges();
+
+-- A member who leaves a team stops contributing for it.
+CREATE OR REPLACE FUNCTION public.leave_team_challenges()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM public.challenge_participants WHERE user_id = OLD.user_id AND team_id = OLD.team_id;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER on_team_member_removed
+    AFTER DELETE ON public.team_members
+    FOR EACH ROW EXECUTE FUNCTION public.leave_team_challenges();
+
+-- Team vs. team standings: only aggregates per team, so nobody sees individual members of other teams.
+CREATE OR REPLACE FUNCTION public.challenge_team_standings(p_challenge_id UUID)
+RETURNS TABLE (
+    team_id UUID,
+    team_name TEXT,
+    team_avatar_url TEXT,
+    total_progress DOUBLE PRECISION,
+    member_count INTEGER,
+    completed_count INTEGER
+) AS $$
+    SELECT t.id, t.name, t.avatar_url,
+           COALESCE(SUM(p.progress_value), 0)::double precision,
+           COUNT(p.id)::integer,
+           (COUNT(p.id) FILTER (WHERE p.is_completed))::integer
+    FROM public.challenge_teams ct
+    JOIN public.teams t ON t.id = ct.team_id
+    LEFT JOIN public.challenge_participants p
+        ON p.challenge_id = ct.challenge_id AND p.team_id = ct.team_id
+    WHERE ct.challenge_id = p_challenge_id
+    GROUP BY t.id, t.name, t.avatar_url
+    ORDER BY 4 DESC;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
 ```
 
 ---

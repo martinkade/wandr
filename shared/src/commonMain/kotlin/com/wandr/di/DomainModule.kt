@@ -5,7 +5,6 @@ import com.wandr.domain.usecase.CreateTeamUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
 import com.wandr.domain.usecase.GetChallengeLeaderboardUseCase
 import com.wandr.domain.usecase.GetProfileUseCase
-import com.wandr.domain.usecase.GetTeamChallengesUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
 import com.wandr.domain.usecase.JoinTeamViaInviteUseCase
@@ -37,7 +36,11 @@ val domainModule = module {
     factory { com.wandr.domain.usecase.RefreshUserTeamsUseCase(get()) }
     factory { JoinTeamViaInviteUseCase(get()) }
     factory { CreateChallengeUseCase(get()) }
-    factory { GetTeamChallengesUseCase(get()) }
+    factory { com.wandr.domain.usecase.UpdateChallengeUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetChallengesUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetTeamStandingsUseCase(get()) }
+    factory { com.wandr.domain.usecase.EnrollTeamInChallengeUseCase(get()) }
+    factory { com.wandr.domain.usecase.RefreshChallengesUseCase(get()) }
     factory { GetChallengeLeaderboardUseCase(get()) }
     factory { JoinChallengeUseCase(get()) }
     factory { EvaluateChallengeStatusUseCase() }

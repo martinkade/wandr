@@ -57,7 +57,9 @@ class SyncManager(
                 // 3. Sync Challenges
                 val dirtyChallenges = challengeDao.getDirtyChallenges()
                 for (challenge in dirtyChallenges) {
-                    supabase.postgrest.from("challenges").upsert(challenge)
+                    supabase.postgrest.from("challenges").update(challenge.toUpdatePayload()) {
+                        filter { eq("id", challenge.id) }
+                    }
                     challengeDao.insertChallenge(challenge.copy(syncStatus = "SYNCED"))
                     totalSynced++
                 }

@@ -64,7 +64,7 @@ fun MainScreen(
             if (userId != null) {
                 when (tab) {
                     MainTab.Activities -> ActivityHistoryScreen(userId = userId)
-                    MainTab.Challenges -> ChallengeListScreen(userId = userId, teamId = state.teamId)
+                    MainTab.Challenges -> ChallengeListScreen(userId = userId, isManager = state.isManager)
                     MainTab.Groups -> GroupsScreen(userId = userId, onOpenTeam = { openTeamId = it })
                     MainTab.Profile -> ProfileScreen(userId = userId, onLogout = { viewModel.logout(onLogout) })
                 }

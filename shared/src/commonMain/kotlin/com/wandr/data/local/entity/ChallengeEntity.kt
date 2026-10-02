@@ -9,9 +9,6 @@ data class ChallengeEntity(
     @PrimaryKey
     val id: String,
     
-    @ColumnInfo(name = "team_id")
-    val teamId: String?,
-    
     @ColumnInfo(name = "title")
     val title: String,
     
@@ -40,7 +37,7 @@ data class ChallengeEntity(
     val endDate: Long,
     
     @ColumnInfo(name = "status")
-    val status: String, // planned, active, completed, expired
+    val status: String, // stored: draft or active only; completed / expired are derived at runtime
     
     @ColumnInfo(name = "created_by")
     val createdBy: String,

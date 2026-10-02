@@ -1,0 +1,296 @@
+package com.wandr.presentation.challenge
+
+import com.wandr.domain.model.Challenge
+import com.wandr.domain.model.ChallengeParticipant
+import com.wandr.domain.model.ChallengeScope
+import com.wandr.domain.model.ChallengeStatus
+import com.wandr.domain.model.ChallengeType
+import com.wandr.domain.model.LeaderboardEntry
+import com.wandr.domain.model.Team
+import com.wandr.domain.model.TeamStanding
+import com.wandr.domain.model.TeamImageKind
+import com.wandr.domain.model.TeamMember
+import com.wandr.domain.repository.ChallengeRepository
+import com.wandr.domain.repository.TeamRepository
+import com.wandr.domain.usecase.CreateChallengeUseCase
+import com.wandr.domain.usecase.GetChallengeLeaderboardUseCase
+import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
+import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
+import com.wandr.domain.usecase.GetChallengesUseCase
+import com.wandr.domain.usecase.GetTeamStandingsUseCase
+import com.wandr.domain.usecase.GetUserTeamsUseCase
+import com.wandr.domain.usecase.JoinChallengeUseCase
+import com.wandr.domain.usecase.RefreshChallengesUseCase
+import com.wandr.domain.usecase.UpdateChallengeUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : ChallengeRepository {
+    val challenges = MutableStateFlow(initial)
+    var created: Challenge? = null
+    var updated: Challenge? = null
+    var refreshed = 0
+    var enrolled: Triple<String, String, String>? = null
+    var failEnroll = false
+    var standings: List<TeamStanding> = emptyList()
+    val contributions = MutableStateFlow<List<LeaderboardEntry>>(emptyList())
+
+    override fun getChallengeById(challengeId: String): Flow<Challenge?> = emptyFlow()
+    override fun getChallenges(): Flow<List<Challenge>> = challenges
+    override suspend fun refreshChallenges(): Result<Unit> {
+        refreshed++
+        return Result.success(Unit)
+    }
+    override fun getChallengeParticipants(challengeId: String): Flow<List<ChallengeParticipant>> = emptyFlow()
+    override fun getTeamContributions(challengeId: String, teamId: String): Flow<List<LeaderboardEntry>> = contributions
+    override suspend fun getTeamStandings(challengeId: String): Result<List<TeamStanding>> = Result.success(standings)
+    override suspend fun createChallenge(challenge: Challenge): Result<Challenge> {
+        created = challenge
+        challenges.value = challenges.value + challenge
+        return Result.success(challenge)
+    }
+    override suspend fun updateChallenge(challenge: Challenge): Result<Challenge> {
+        updated = challenge
+        challenges.value = challenges.value.map { if (it.id == challenge.id) challenge else it }
+        return Result.success(challenge)
+    }
+    override suspend fun uploadChallengeCover(challengeId: String, bytes: ByteArray, fileName: String): Result<String> =
+        Result.failure(UnsupportedOperationException())
+    override suspend fun joinChallenge(challengeId: String, userId: String): Result<Unit> = Result.success(Unit)
+    override suspend fun enrollTeam(challengeId: String, teamId: String, enrolledBy: String): Result<Unit> {
+        if (failEnroll) return Result.failure(IllegalStateException("not allowed"))
+        enrolled = Triple(challengeId, teamId, enrolledBy)
+        return Result.success(Unit)
+    }
+    override suspend fun updateParticipantProgress(challengeId: String, userId: String, additionalProgress: Double): Result<Unit> =
+        Result.success(Unit)
+}
+
+private class FakeTeamRepository(teams: List<Team>) : TeamRepository {
+    private val teamList = MutableStateFlow(teams)
+    override fun getTeamById(teamId: String): Flow<Team?> = emptyFlow()
+    override fun getUserTeams(userId: String): Flow<List<Team>> = teamList
+    override suspend fun refreshUserTeams(userId: String): Result<Unit> = Result.success(Unit)
+    override fun getTeamMembers(teamId: String): Flow<List<TeamMember>> = emptyFlow()
+    override suspend fun createTeam(name: String, description: String?, creatorId: String): Result<Team> = Result.failure(UnsupportedOperationException())
+    override suspend fun refreshTeamDetails(teamId: String): Result<Unit> = Result.success(Unit)
+    override suspend fun updateTeam(team: Team): Result<Team> = Result.success(team)
+    override suspend fun setTeamImage(teamId: String, kind: TeamImageKind, jpegBytes: ByteArray): Result<Team> = Result.failure(UnsupportedOperationException())
+    override suspend fun removeTeamImage(teamId: String, kind: TeamImageKind): Result<Team> = Result.failure(UnsupportedOperationException())
+    override suspend fun joinTeamViaInvite(inviteCode: String, userId: String): Result<Team> = Result.failure(UnsupportedOperationException())
+    override suspend fun generateInviteUrl(inviteCode: String): String = ""
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class ChallengeViewModelTest {
+
+    private val team = Team("t1", "Trail Blazers", null, null, null, "ABCD1234", "u1", 0, 0)
+    private val day = 24 * 60 * 60 * 1000L
+    private val open = Challenge(
+        "c1", "Open 100 km", "desc", null, "individual", "distance", 100_000.0, false,
+        startDate = 0, endDate = 30 * day, createdBy = "u1", createdAt = 0, updatedAt = 0
+    )
+
+    private fun viewModel(
+        repo: FakeChallengeRepository,
+        teams: List<Team>,
+        scope: CoroutineScope
+    ) = ChallengeViewModel(
+        GetChallengesUseCase(repo), EvaluateChallengeStatusUseCase(), RefreshChallengesUseCase(repo), GetUserTeamsUseCase(FakeTeamRepository(teams)),
+        CreateChallengeUseCase(repo), UpdateChallengeUseCase(repo),
+        GetChallengeLeaderboardUseCase(repo), GetTeamStandingsUseCase(repo), EnrollTeamInChallengeUseCase(repo),
+        JoinChallengeUseCase(repo), scope
+    )
+
+    @Test
+    fun loadShowsChallengesTeamsAndRefreshes() = runTest {
+        val repo = FakeChallengeRepository(listOf(open))
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        assertEquals(listOf(open), vm.uiState.value.challenges)
+        assertEquals(listOf(team), vm.uiState.value.teams)
+        assertEquals(1, repo.refreshed)
+    }
+
+    @Test
+    fun statusIsDerivedAtRuntimeFromTheDates() = runTest {
+        val farFuture = 4_000_000_000_000L // year 2096
+        val draft = open.copy(id = "draft", startDate = farFuture, endDate = farFuture + day)
+        val running = open.copy(id = "running", startDate = 0, endDate = farFuture)
+        val over = open.copy(id = "over", startDate = 0, endDate = 1)
+        val vm = viewModel(FakeChallengeRepository(listOf(draft, running, over)), emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+
+        assertEquals(ChallengeStatus.DRAFT, vm.uiState.value.statuses["draft"])
+        assertEquals(ChallengeStatus.ACTIVE, vm.uiState.value.statuses["running"])
+        assertEquals(ChallengeStatus.EXPIRED, vm.uiState.value.statuses["over"])
+    }
+
+    @Test
+    fun createIndividualChallengeHasNoTeam() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TitleChanged("  Summer hike  "))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+
+        val created = assertNotNull(repo.created)
+        assertEquals("Summer hike", created.title)
+        assertEquals("individual", created.scope)
+        assertEquals(30 * day, created.endDate - created.startDate)
+        assertEquals(ChallengeSuccess.CREATED, vm.uiState.value.success)
+        assertFalse(vm.uiState.value.isSaving)
+    }
+
+    @Test
+    fun groupChallengeIsCreatedWithoutATeamBecauseTeamsEnrollLater() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TitleChanged("Team sprint"))
+        vm.processIntent(ChallengeIntent.ScopeChanged(ChallengeScope.GROUP))
+        vm.processIntent(ChallengeIntent.RequireAllMembersCompletionChanged(true))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+
+        val created = assertNotNull(repo.created)
+        assertEquals("group", created.scope)
+        assertTrue(created.requireAllMembersCompletion)
+        assertEquals(ChallengeSuccess.CREATED, vm.uiState.value.success)
+    }
+
+    @Test
+    fun switchingBackToIndividualDropsRequireAll() = runTest {
+        val vm = viewModel(FakeChallengeRepository(), listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.ScopeChanged(ChallengeScope.GROUP))
+        vm.processIntent(ChallengeIntent.RequireAllMembersCompletionChanged(true))
+        vm.processIntent(ChallengeIntent.ScopeChanged(ChallengeScope.INDIVIDUAL))
+
+        assertFalse(assertNotNull(vm.uiState.value.form).requireAllMembersCompletion)
+    }
+
+    @Test
+    fun enrollTeamReportsSuccessAndPassesAllIds() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.EnrollTeam("c2", "t1", "u1"))
+
+        assertEquals(Triple("c2", "t1", "u1"), repo.enrolled)
+        assertEquals(ChallengeSuccess.TEAM_ENROLLED, vm.uiState.value.success)
+    }
+
+    @Test
+    fun enrollTeamFailureIsShownAsError() = runTest {
+        val repo = FakeChallengeRepository().apply { failEnroll = true }
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.EnrollTeam("c2", "t1", "u3"))
+
+        assertEquals("not allowed", vm.uiState.value.errorMessage)
+        assertNull(vm.uiState.value.success)
+    }
+
+    @Test
+    fun selectChallengeLoadsTeamStandingsAndOwnTeamContributions() = runTest {
+        val repo = FakeChallengeRepository().apply {
+            standings = listOf(
+                TeamStanding(1, "t2", "City Runners", null, 80_000.0, 80.0, 4, 1, false),
+                TeamStanding(2, "t1", "Trail Blazers", null, 50_000.0, 50.0, 3, 0, false)
+            )
+            contributions.value = listOf(LeaderboardEntry(1, "u1", "u1", "A", null, 30_000.0, 30.0, false))
+        }
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.SelectChallenge("c2", teamId = "t1"))
+
+        assertEquals(listOf("t2", "t1"), vm.uiState.value.standings.map { it.teamId })
+        assertEquals(1, vm.uiState.value.leaderboard.size)
+        assertFalse(vm.uiState.value.isLoading)
+    }
+
+    @Test
+    fun selectChallengeWithoutTeamShowsNoMemberProgress() = runTest {
+        val repo = FakeChallengeRepository().apply {
+            contributions.value = listOf(LeaderboardEntry(1, "u9", "u9", "Other", null, 1.0, 1.0, false))
+        }
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.SelectChallenge("c2"))
+
+        assertTrue(vm.uiState.value.leaderboard.isEmpty())
+    }
+
+    @Test
+    fun blankTitleAndNonPositiveTargetAreRejected() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+        assertEquals("Challenge title cannot be blank", vm.uiState.value.errorMessage)
+
+        vm.processIntent(ChallengeIntent.TitleChanged("Ok"))
+        vm.processIntent(ChallengeIntent.TargetValueChanged(0.0))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+        assertEquals("Target value must be greater than 0", vm.uiState.value.errorMessage)
+        assertNull(repo.created)
+    }
+
+    @Test
+    fun startEditFillsFormAndSubmitUpdatesInsteadOfCreating() = runTest {
+        val repo = FakeChallengeRepository(listOf(open))
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        vm.processIntent(ChallengeIntent.StartEdit("c1"))
+
+        val form = assertNotNull(vm.uiState.value.form)
+        assertEquals("Open 100 km", form.title)
+        assertEquals(ChallengeType.DISTANCE, form.type)
+        assertEquals(30, form.durationDays)
+        assertTrue(form.isEditing)
+
+        vm.processIntent(ChallengeIntent.TitleChanged("Open 150 km"))
+        vm.processIntent(ChallengeIntent.TargetValueChanged(150_000.0))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+
+        assertNull(repo.created)
+        val updated = assertNotNull(repo.updated)
+        assertEquals("c1", updated.id)
+        assertEquals("Open 150 km", updated.title)
+        assertEquals(150_000.0, updated.targetValue)
+        assertEquals(0L, updated.startDate) // editing keeps the original start
+        assertEquals(ChallengeSuccess.UPDATED, vm.uiState.value.success)
+    }
+
+    @Test
+    fun changingTypeResetsTargetToSensibleDefault() = runTest {
+        val vm = viewModel(FakeChallengeRepository(), emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TypeChanged(ChallengeType.ELEVATION))
+        assertEquals(5_000.0, assertNotNull(vm.uiState.value.form).targetValue)
+    }
+
+    @Test
+    fun discardClosesFormAndClearMessagesResetsSuccess() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TitleChanged("X"))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+        assertEquals(ChallengeSuccess.CREATED, vm.uiState.value.success)
+
+        vm.processIntent(ChallengeIntent.ClearMessages)
+        vm.processIntent(ChallengeIntent.DiscardForm)
+        assertNull(vm.uiState.value.success)
+        assertNull(vm.uiState.value.form)
+    }
+}

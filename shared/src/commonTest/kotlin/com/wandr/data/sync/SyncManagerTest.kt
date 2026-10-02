@@ -38,7 +38,8 @@ private class FakeTeamDao : TeamDao {
 
 private class FakeChallengeDao : ChallengeDao {
     override fun getChallengeById(id: String): Flow<ChallengeEntity?> = flowOf(null)
-    override fun getChallengesForTeam(teamId: String): Flow<List<ChallengeEntity>> = flowOf(emptyList())
+    override suspend fun getChallengeOnce(id: String): ChallengeEntity? = null
+    override fun getAllChallenges(): Flow<List<ChallengeEntity>> = flowOf(emptyList())
     override suspend fun getDirtyChallenges(): List<ChallengeEntity> = emptyList()
     override suspend fun insertChallenge(challenge: ChallengeEntity) { }
     override suspend fun updateChallenge(challenge: ChallengeEntity) { }
