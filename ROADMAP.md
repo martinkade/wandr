@@ -176,14 +176,14 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 ### ⌚ Phase 8: WearOS & WatchOS Companion Tracking Apps
 
-- [ ] **Step 8.1: WatchOS Companion App**
-  - Build WatchOS app using SwiftUI.
-  - Implement `HKWorkoutSession` for live tracking.
-  - Sync metrics with primary iOS app via `WatchConnectivity`.
-- [ ] **Step 8.2: WearOS Companion App**
-  - Build WearOS app using Compose for WearOS.
-  - Integrate Health Services API for real-time tracking.
-  - Sync metrics with primary Android app.
+- [x] **Step 8.1: WatchOS Companion App**
+  - SwiftUI watch app `WandrWatch` (`iosApp/WandrWatch/`, XcodeGen target embedded in `Wandr`, watchOS 11): type picker, live view (time, distance, ascent, heart rate), pause/resume/stop, summary.
+  - `HKWorkoutSession` + `HKLiveWorkoutBuilder` + GPS route (`HKWorkoutRouteBuilder`), `workout-processing` background mode; permission disclosure precedes the HealthKit/location prompts.
+  - Finished workouts go to the iPhone as JSON (`WatchWorkout`, same wire format as shared) via `WCSession.transferUserInfo`, with a persistent outbox re-sent on launch.
+- [x] **Step 8.2: WearOS Companion App**
+  - Module `:wearApp` (Compose for Wear OS Material 3, standalone, same applicationId as the phone app): type picker, start, live workout (pause/resume/stop) and summary screens, permission disclosure before every system prompt.
+  - Health Services `ExerciseClient` (heart rate, distance, ascent, GPS) inside a foreground service; `WorkoutAccumulator` builds the `WatchWorkout`.
+  - Finished workouts go to a file outbox and via Data Layer `/workouts/{id}` (`json` = `WatchWorkoutCodec`); the phone's deletion of the item acknowledges it, unsent entries are re-sent on app start. Unit tests in `wearApp/src/test`.
 
 ---
 

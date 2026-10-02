@@ -4,6 +4,7 @@ import SwiftUI
 struct MainView: View {
     var onLoggedOut: () -> Void = {}
     @StateObject private var viewModel = MainObserver()
+    @StateObject private var watchImport = WatchImportObserver()
 
     var body: some View {
         TabView {
@@ -33,6 +34,14 @@ struct MainView: View {
             .tabItem { Label(LocalizedStringKey("tab_profile"), systemImage: "person.crop.circle") }
         }
         .task { viewModel.start() }
+        .task(id: viewModel.userId) {
+            if let userId = viewModel.userId { watchImport.start(userId: userId, teamId: viewModel.teamId) }
+        }
+        .sheet(isPresented: Binding(get: { watchImport.conflict != nil }, set: { _ in })) {
+            if let conflict = watchImport.conflict {
+                ActivityConflictView(conflict: conflict, isSaving: watchImport.isSaving) { watchImport.resolve($0) }
+            }
+        }
     }
 }
 
@@ -40,6 +49,7 @@ struct MainView: View {
 final class MainObserver: ObservableObject {
     @Published var activities: [Activity] = []
     @Published var userId: String?
+    @Published var teamId: String?
     @Published var isManager = false
 
     private let mainViewModel = IosDependencies.shared.mainViewModel()
@@ -49,7 +59,10 @@ final class MainObserver: ObservableObject {
     func start() {
         jobs.append(FlowObserverKt.watch(mainViewModel.uiState) { [weak self] value in
             guard let state = value as? MainState else { return }
-            Task { @MainActor in self?.isManager = state.isManager }
+            Task { @MainActor in
+                self?.isManager = state.isManager
+                self?.teamId = state.teamId
+            }
             guard let userId = state.userId else { return }
             Task { @MainActor in
                 self?.userId = userId

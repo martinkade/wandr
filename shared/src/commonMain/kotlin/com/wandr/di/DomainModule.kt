@@ -52,6 +52,8 @@ val domainModule = module {
     factory { EvaluateChallengeStatusUseCase() }
     factory { com.wandr.domain.usecase.CreateManualActivityUseCase(get()) }
     factory { com.wandr.domain.usecase.RecordGpsActivityUseCase(get()) }
+    factory { com.wandr.domain.usecase.ImportWatchWorkoutUseCase(get()) }
+    single { com.wandr.domain.watch.WatchWorkoutInbox() }
     factory { com.wandr.domain.usecase.GetUserActivitiesUseCase(get()) }
     factory { com.wandr.domain.usecase.GetActivityUseCase(get()) }
     factory { com.wandr.domain.usecase.GetActivityTrackUseCase(get()) }

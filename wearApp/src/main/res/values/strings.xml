@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WANDR</string>
+
+    <string name="type_hiking">Hiking</string>
+    <string name="type_running">Running</string>
+    <string name="type_cycling">Cycling</string>
+
+    <string name="picker_title">Choose activity</string>
+    <string name="start_button">Start</string>
+    <string name="start_hint">Ready to record</string>
+
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="stop">Stop</string>
+    <string name="paused_label">Paused</string>
+    <string name="starting">Starting…</string>
+    <string name="start_failed">Could not start the workout</string>
+
+    <string name="label_distance">Distance</string>
+    <string name="label_heart_rate">Heart rate</string>
+    <string name="label_elevation">Ascent</string>
+    <string name="label_duration">Time</string>
+    <string name="label_avg_heart_rate">Avg. heart rate</string>
+    <string name="distance_km_format">%1$s km</string>
+    <string name="heart_rate_format">%1$d bpm</string>
+    <string name="elevation_format">%1$d m</string>
+    <string name="value_unavailable">--</string>
+
+    <string name="summary_title">Summary</string>
+    <string name="send_state_pending">Waiting to send to phone</string>
+    <string name="send_state_sent">Sent, waiting for phone</string>
+    <string name="send_state_delivered">Imported on phone</string>
+    <string name="done">Done</string>
+
+    <string name="perm_disclosure_title">Permissions needed</string>
+    <string name="perm_disclosure_message">WANDR records your route with GPS, your heart rate and your movement while you train, and shows a notification while a workout is running. Data stays on your watch and is sent to your phone.</string>
+    <string name="perm_continue">Continue</string>
+    <string name="perm_cancel">Not now</string>
+    <string name="perm_denied_title">Permission denied</string>
+    <string name="perm_denied_message">Without these permissions the workout cannot be recorded. You can allow them in the watch settings.</string>
+    <string name="perm_open_settings">Open settings</string>
+
+    <string name="notification_channel_name">Running workout</string>
+    <string name="notification_title">WANDR workout</string>
+    <string name="notification_text">Recording your workout</string>
+</resources>

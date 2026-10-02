@@ -117,3 +117,16 @@
 "team_edit_title" = "Gruppe bearbeiten";
 "empty_value_placeholder" = "—";
 "team_details_title" = "Gruppendetails";
+
+/* Konflikt-Assistent & Uhr-Import */
+"activity_conflict_title" = "Überlappende Aktivitäten";
+"activity_conflict_message" = "Diese Aktivität überschneidet sich zeitlich mit bestehenden Aktivitäten. Wähle, wie der Konflikt gelöst werden soll.";
+"activity_conflict_merge_title" = "Zusammenführen";
+"activity_conflict_merge_description" = "Distanz, Höhenmeter und Zeit zu einem Workout kombinieren. Die überlappenden Aktivitäten werden ersetzt.";
+"activity_conflict_trim_title" = "Kürzen";
+"activity_conflict_trim_description" = "Diese Aktivität auf den Zeitraum kürzen, den keine andere Aktivität abdeckt.";
+"activity_conflict_trim_unavailable" = "Nicht möglich: Der Zeitraum ist vollständig von bestehenden Aktivitäten abgedeckt.";
+"activity_conflict_discard_title" = "Verwerfen";
+"activity_conflict_discard_description" = "Die bestehenden Aktivitäten behalten und diese verwerfen.";
+"activity_conflict_apply_button" = "Anwenden";
+

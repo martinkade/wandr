@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.wandr.android.ui.activity.ActivityDetailsScreen
 import com.wandr.android.ui.activity.ActivityHistoryScreen
 import com.wandr.android.ui.activity.LiveGpsTrackingScreen
+import com.wandr.android.ui.activity.WatchImportHost
 import com.wandr.android.ui.challenge.ChallengeDetailsScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
 import com.wandr.android.ui.common.SlideInOverlay
@@ -85,6 +86,8 @@ fun MainScreen(
                 }
             }
         }
+
+        if (userId != null) WatchImportHost(userId = userId, teamId = state.teamId)
 
         SlideInOverlay(item = openTeamId.takeIf { userId != null }, onBack = { openTeamId = null }) { teamId ->
             TeamDetailsScreen(teamId = teamId, userId = userId.orEmpty(), onBack = { openTeamId = null })

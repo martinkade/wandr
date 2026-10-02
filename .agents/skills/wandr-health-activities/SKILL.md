@@ -43,9 +43,15 @@ Use this skill when developing Apple Health / Health Connect data readers, backg
 1. **WatchOS Companion**:
    - Standalone tracking session using `HKWorkoutSession`.
    - Sync live heart rate and distance metrics to main iOS app via `WatchConnectivity`.
+   - Implemented in `iosApp/WandrWatch/` (XcodeGen target `WandrWatch`, bundle id `com.mediabeam.fitness.watchkitapp`, does **not** link the Kotlin `shared` framework). Logic lives in pure types (`WorkoutMetrics`, `WorkoutOutbox`, `WatchWorkout`); `WorkoutManager` wraps `HKWorkoutSession`/`HKLiveWorkoutBuilder`/`CLLocationManager`.
+   - Wire format: `WatchWorkout` JSON (snake_case, see `shared/.../domain/watch/WatchWorkout.kt`), sent with `WCSession.transferUserInfo(["workout": json])`; the outbox file is re-sent on launch and cleared in `session(_:didFinish:error:)`. Keep the Swift `CodingKeys` in sync with the Kotlin model.
+   - Show the permission disclosure before HealthKit/location requests (`PermissionDisclosureView`); strings live in `WandrWatch/Resources/{en,de}.lproj`.
 2. **WearOS Companion**:
    - Jetpack Wear Compose UI.
    - Use Health Services API to record workouts and stream live stats to Android phone app.
+   - Module `:wearApp` (`com.wandr.wear`, applicationId equals the phone app's so the Data Layer pairs them). Recording: `ExerciseTracker` (Health Services `ExerciseClient`) + `WorkoutForegroundService`; pure, unit-tested logic in `WorkoutAccumulator` and `WorkoutOutbox`/`OutboxSyncer`.
+   - Transfer: `DataClient.putDataItem` on `/workouts/{id}` (urgent, key `json` = `WatchWorkoutCodec.encode`); the phone deletes the item as acknowledgement (`WorkoutAckService` removes it from the outbox); unacknowledged entries are re-sent on app start.
+   - Only the wire format is shared via `:shared` (`com.wandr.domain.watch`). Wear UI: one composable per file, `@WearPreviews` (small/large round, font scale 1.5), strings in `values` + `values-de`.
 
 ---
 

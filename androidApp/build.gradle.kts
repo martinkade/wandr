@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
+    implementation(libs.play.services.wearable)
     implementation(libs.activity.compose)
     implementation(libs.core.splashscreen)
     implementation(libs.coil.compose)

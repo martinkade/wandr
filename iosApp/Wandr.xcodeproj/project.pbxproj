@@ -7,33 +7,46 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0451A14429D7C6F8665DA3E2 /* PermissionDisclosureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A247968D3B5D7E85101A1760 /* PermissionDisclosureView.swift */; };
 		05A61831C37988D1FAC2AB31 /* ProfileObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2861791F7133FCA4CC705363 /* ProfileObserver.swift */; };
+		05E8E8C10D807B25F4C1E47E /* ActivityConflictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7779D495C80ACD2BAC579A /* ActivityConflictView.swift */; };
 		078F48F905F1A79CB905CFCA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27AAB455008898B195A0E75 /* RootView.swift */; };
+		094B22028AC7F003C207A8FB /* LiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB83B9D146EE3F83E601807 /* LiveWorkoutView.swift */; };
 		144EBCCA19CBC96B4643523F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A9D260237F6CBF2BA089595F /* Localizable.strings */; };
 		14FD2E1610EC716E4BBD95A9 /* GroupsContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 207844348B3B1C21DABF7C63 /* GroupsContainerView.swift */; };
+		1A20FD80F9BE691D4AFF6681 /* WorkoutMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C506924DA47F20EE14FFC8C /* WorkoutMetrics.swift */; };
 		1C645D40B7090B847F0F175B /* TrackMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */; };
 		1C6B97ADCEB421C75224C991 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008681D41D040CAF4C5B6C1E /* LoginView.swift */; };
 		1CED8263C593B457EBFE513E /* TeamObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F8BBAFE852C9E2A4CD85657 /* TeamObserver.swift */; };
+		2133066BEA6ED193BAF34EE5 /* WatchImportObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395BB0E436E0ABA2D07CE76 /* WatchImportObserver.swift */; };
+		237F47BC4C82AB481CF5146D /* WorkoutOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B2E703D952E6CC088E6522 /* WorkoutOutbox.swift */; };
+		24E45B82D28FA1F2B86B7F78 /* ActivityPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD4F0F34D51BA9B11C1472F /* ActivityPickerView.swift */; };
 		26707DF661ED5C5E4FBBC469 /* LiveGpsTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */; };
 		27DCDFB4ABFA0301E95753B9 /* ImagePickerFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBBCE9EA7DDD28A87623108 /* ImagePickerFlow.swift */; };
 		29A98F5C8B25168B3748A904 /* LeaderboardRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD8B2D26BA7B27B204E3FFA /* LeaderboardRowView.swift */; };
 		2DB83216CA78AEF78184C80D /* TeamDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D459DE5B1D145306E86952 /* TeamDetailsView.swift */; };
+		2F43F4A6E5BD7F06FF4545BD /* WatchConnectivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6373693646D0789031D2A278 /* WatchConnectivityService.swift */; };
 		3502985CB1B306B97F2DBDD4 /* AvatarEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */; };
 		3901264F2868CCFD1FB1CC6C /* TeamMemberRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C216C94D1BB3203A8C05BA /* TeamMemberRowView.swift */; };
 		3B53D12A92684B33CAC5F342 /* ActivityCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */; };
 		51E8EBA85C5623C246A74684 /* CreateChallengeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2741336658B6AA6AB793949 /* CreateChallengeView.swift */; };
 		5867506F8E60AB2766E53377 /* WandrColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8AA9573F81E6187BFCB89A /* WandrColors.swift */; };
+		62AC25544D9DEF39E1EA8B3F /* WatchWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004861D686700490F3CBAD1C /* WatchWorkout.swift */; };
 		66C1D311F99A8E0E794FFA84 /* ActivityHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */; };
 		6CAD8DEA746F339390265CEC /* TeamDetailsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5E1946BEF153BD54411032 /* TeamDetailsObserver.swift */; };
+		711781CA7537AED3F094826D /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B3FC168FBD63309A894DB29 /* WorkoutManager.swift */; };
 		72759DFE4370187BDF2C5309 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFB5478137F630B1D7AB56D /* MainView.swift */; };
 		78A62356EAA8B83EADF3BB14 /* ChallengeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91E44C9A43FEFC228879856C /* ChallengeCardView.swift */; };
 		839DE07AAFE62365616B0827 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A4B93108E53344CEAF07D265 /* Assets.xcassets */; };
+		8646FDDB2CC2BD6B43D0676D /* WatchConnectivityReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4474A6197EC42920F413A24C /* WatchConnectivityReceiver.swift */; };
 		883012FBA6B614053C9C5A36 /* ChallengeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */; };
 		8934816DC76780DF6A1D8EAF /* TeamInviteQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */; };
 		8A203D40024D618C1D452630 /* TeamCoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160BDCA3B8C2B858ABCC0BA6 /* TeamCoverView.swift */; };
 		8B02F63C333462A749131FD7 /* RootViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B6391D165545FF2F9EF648 /* RootViewModel.swift */; };
 		8C3233F73D055926E4428424 /* CameraPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AE875EA3BFD456B8D487396 /* CameraPermission.swift */; };
 		932EEDB086286F47A67BFDDB /* PermissionDeniedAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = C773A7258331A26CA44463C5 /* PermissionDeniedAlert.swift */; };
+		9374D0818A3322594F64DDC2 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A1206E61CBE3C615FE343F8 /* Localizable.strings */; };
+		93B93795838B9DAE827B9763 /* MetricFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042424561531E6C842BE618E /* MetricFormatter.swift */; };
 		9478CB3A4731560C9DB82C28 /* ImageCropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115EB2163FD8A62DE4182546 /* ImageCropperView.swift */; };
 		9693FC9BFA957142341044F6 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */; };
 		97A8E758BFB27917E69E8BC3 /* ManualActivityEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */; };
@@ -42,53 +55,121 @@
 		A3DFD78FC52B12382EAB883C /* MemberListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D5059C57842B55A82841770 /* MemberListView.swift */; };
 		A58A38F5B42AF95186796227 /* CreateTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */; };
 		A5AB48F938600C9DF53545CB /* WandrApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AED3E697232F3B3088A7AF3 /* WandrApp.swift */; };
+		ACCA357EBF0C1AD8660332F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 699CCA43CF6AF687DC06B039 /* Assets.xcassets */; };
 		B5EEFCBBA1510081592EDAA8 /* InitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42152663049BD4302AE8974B /* InitView.swift */; };
+		B77F3BD161291DB041841065 /* LiveWorkoutContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A6F29B5A6B94003448C2DD /* LiveWorkoutContainer.swift */; };
 		B990EB2EC2155D8298E270A4 /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3653ED86BC7CE2C6050FD9E /* CameraPickerView.swift */; };
+		BCD1E431624925D253C9C78C /* PermissionDeniedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8DC0AA7048044EF3A52658E /* PermissionDeniedView.swift */; };
+		BE20AFD1D19291A6A51DB18B /* WorkoutKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C4DA371AAC859152784A5B /* WorkoutKind.swift */; };
+		C2530ABF0198B7B51832728D /* WatchWorkoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830456A8D90F27D7B2909FF5 /* WatchWorkoutTests.swift */; };
+		C75644AB091C76D6E9A6153E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030D0E58E4667331C08163F7 /* RootView.swift */; };
+		CAF4E2EA38CABCDB8223DB01 /* PermissionFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E13FF43BEB26A3882E77034 /* PermissionFlowView.swift */; };
 		CFFCEEA267E245DAA09AD031 /* TeamEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B005E538E34F018DF5CCDF17 /* TeamEditView.swift */; };
+		DAEBECD269BBCD914921E961 /* WandrWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E37804C242AF6993C13B5F4D /* LocationTrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */; };
 		E3797D0914B92781A032273B /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDDF344466CF9C080E23ADA /* ProfileEditView.swift */; };
 		E4DBE66F9CC3B2BD68AAEBFB /* TeamCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052F351F50B69C25F4EACC19 /* TeamCardView.swift */; };
+		E52F96EE21035B80EB925116 /* WorkoutSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CDE9170DDAB2D190FD5E07 /* WorkoutSummaryView.swift */; };
 		E87E13069E65E069C7A03EBB /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5619383385D8D00B5FD7FABC /* RegisterView.swift */; };
 		EB47F711C1BCDD7D40F7621C /* LabeledValueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC1A3A2F17BA295EC0FDFFA /* LabeledValueView.swift */; };
 		EE187BBF07ED2F2406D1A0A2 /* TeamListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380DDDFFC40217E0B7081CF3 /* TeamListView.swift */; };
+		F880DE0FC2B8B8972B80A0A7 /* MetricRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8B5A0D127DD0FF62963477 /* MetricRow.swift */; };
 		FAE069674DEF9E6E64EB88C8 /* ImagePipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B20117AAFAC0D8D9881F9E0 /* ImagePipeline.swift */; };
+		FB8F26126A97A88C9668FDE6 /* WandrWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51864558E59285BB52A70D8B /* WandrWatchApp.swift */; };
+		FBB6C1F5AF643CBB4D580684 /* PermissionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA6F3F9FB14EF2A242986141 /* PermissionState.swift */; };
 		FE7C548F5DAF13847A8DA0B1 /* AvatarPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		2CCA40DEE3EA8F48A907B18D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2EEBA0B09FEB8EE8D819C670 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB56287A5FCCD4498462EE43;
+			remoteInfo = WandrWatch;
+		};
+		382D5F551E2C113F7640AF4B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2EEBA0B09FEB8EE8D819C670 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB56287A5FCCD4498462EE43;
+			remoteInfo = WandrWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E12BEB1202A4667B6C39B653 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				DAEBECD269BBCD914921E961 /* WandrWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		004861D686700490F3CBAD1C /* WatchWorkout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWorkout.swift; sourceTree = "<group>"; };
 		008681D41D040CAF4C5B6C1E /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		030D0E58E4667331C08163F7 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		042424561531E6C842BE618E /* MetricFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricFormatter.swift; sourceTree = "<group>"; };
 		052F351F50B69C25F4EACC19 /* TeamCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCardView.swift; sourceTree = "<group>"; };
+		0B3FC168FBD63309A894DB29 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
+		0E13FF43BEB26A3882E77034 /* PermissionFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionFlowView.swift; sourceTree = "<group>"; };
 		0FBBCE9EA7DDD28A87623108 /* ImagePickerFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerFlow.swift; sourceTree = "<group>"; };
 		115EB2163FD8A62DE4182546 /* ImageCropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropperView.swift; sourceTree = "<group>"; };
 		160BDCA3B8C2B858ABCC0BA6 /* TeamCoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCoverView.swift; sourceTree = "<group>"; };
 		1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualActivityEntryView.swift; sourceTree = "<group>"; };
+		1AB83B9D146EE3F83E601807 /* LiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutView.swift; sourceTree = "<group>"; };
 		1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryView.swift; sourceTree = "<group>"; };
 		207844348B3B1C21DABF7C63 /* GroupsContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsContainerView.swift; sourceTree = "<group>"; };
+		20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WandrWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2861791F7133FCA4CC705363 /* ProfileObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileObserver.swift; sourceTree = "<group>"; };
 		2AED3E697232F3B3088A7AF3 /* WandrApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrApp.swift; sourceTree = "<group>"; };
 		2D5059C57842B55A82841770 /* MemberListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberListView.swift; sourceTree = "<group>"; };
 		2FC1A3A2F17BA295EC0FDFFA /* LabeledValueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabeledValueView.swift; sourceTree = "<group>"; };
 		2FFB5478137F630B1D7AB56D /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		35A6F29B5A6B94003448C2DD /* LiveWorkoutContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutContainer.swift; sourceTree = "<group>"; };
 		380DDDFFC40217E0B7081CF3 /* TeamListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamListView.swift; sourceTree = "<group>"; };
 		38B6391D165545FF2F9EF648 /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
 		3F93A3A4732FE5FE3552A124 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		40AECD3F3D385592C1849AAA /* WandrWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WandrWatch.entitlements; sourceTree = "<group>"; };
 		42152663049BD4302AE8974B /* InitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitView.swift; sourceTree = "<group>"; };
+		4474A6197EC42920F413A24C /* WatchConnectivityReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityReceiver.swift; sourceTree = "<group>"; };
 		44B2FE98DB2578F585436D0F /* PermissionDisclosureAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDisclosureAlert.swift; sourceTree = "<group>"; };
+		4B7779D495C80ACD2BAC579A /* ActivityConflictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityConflictView.swift; sourceTree = "<group>"; };
+		4BD4F0F34D51BA9B11C1472F /* ActivityPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPickerView.swift; sourceTree = "<group>"; };
 		4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCardView.swift; sourceTree = "<group>"; };
 		4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeListView.swift; sourceTree = "<group>"; };
+		51864558E59285BB52A70D8B /* WandrWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrWatchApp.swift; sourceTree = "<group>"; };
+		555E057BD69D274330BF1110 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		5619383385D8D00B5FD7FABC /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
 		56D459DE5B1D145306E86952 /* TeamDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailsView.swift; sourceTree = "<group>"; };
 		5B20117AAFAC0D8D9881F9E0 /* ImagePipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePipeline.swift; sourceTree = "<group>"; };
+		5D8B5A0D127DD0FF62963477 /* MetricRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricRow.swift; sourceTree = "<group>"; };
+		6373693646D0789031D2A278 /* WatchConnectivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityService.swift; sourceTree = "<group>"; };
+		699CCA43CF6AF687DC06B039 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6D39BB0D84F519E9EFC20A5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7AE875EA3BFD456B8D487396 /* CameraPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPermission.swift; sourceTree = "<group>"; };
 		7CD8B2D26BA7B27B204E3FFA /* LeaderboardRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardRowView.swift; sourceTree = "<group>"; };
 		7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarEditorView.swift; sourceTree = "<group>"; };
+		830456A8D90F27D7B2909FF5 /* WatchWorkoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWorkoutTests.swift; sourceTree = "<group>"; };
+		8395BB0E436E0ABA2D07CE76 /* WatchImportObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchImportObserver.swift; sourceTree = "<group>"; };
+		86CDE9170DDAB2D190FD5E07 /* WorkoutSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSummaryView.swift; sourceTree = "<group>"; };
 		8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTrackingManager.swift; sourceTree = "<group>"; };
 		8F8BBAFE852C9E2A4CD85657 /* TeamObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamObserver.swift; sourceTree = "<group>"; };
 		91E44C9A43FEFC228879856C /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
 		9A8AA9573F81E6187BFCB89A /* WandrColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrColors.swift; sourceTree = "<group>"; };
+		9C506924DA47F20EE14FFC8C /* WorkoutMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutMetrics.swift; sourceTree = "<group>"; };
+		A00AB15374288E5B4586B035 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A03BB90620AFB62E394CC6CE /* SnackbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnackbarView.swift; sourceTree = "<group>"; };
+		A247968D3B5D7E85101A1760 /* PermissionDisclosureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDisclosureView.swift; sourceTree = "<group>"; };
 		A4B93108E53344CEAF07D265 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveGpsTrackingView.swift; sourceTree = "<group>"; };
+		A8DC0AA7048044EF3A52658E /* PermissionDeniedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDeniedView.swift; sourceTree = "<group>"; };
 		AA5E1946BEF153BD54411032 /* TeamDetailsObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailsObserver.swift; sourceTree = "<group>"; };
 		AD1FCD9F98E116AC4C303D3B /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B005E538E34F018DF5CCDF17 /* TeamEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamEditView.swift; sourceTree = "<group>"; };
@@ -96,15 +177,19 @@
 		B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarPickerView.swift; sourceTree = "<group>"; };
 		B8C216C94D1BB3203A8C05BA /* TeamMemberRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamMemberRowView.swift; sourceTree = "<group>"; };
 		B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMapView.swift; sourceTree = "<group>"; };
+		BA6F3F9FB14EF2A242986141 /* PermissionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionState.swift; sourceTree = "<group>"; };
 		C27AAB455008898B195A0E75 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		C773A7258331A26CA44463C5 /* PermissionDeniedAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDeniedAlert.swift; sourceTree = "<group>"; };
 		D2741336658B6AA6AB793949 /* CreateChallengeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChallengeView.swift; sourceTree = "<group>"; };
+		D7B2E703D952E6CC088E6522 /* WorkoutOutbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutOutbox.swift; sourceTree = "<group>"; };
 		D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTeamView.swift; sourceTree = "<group>"; };
 		DCDDF344466CF9C080E23ADA /* ProfileEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditView.swift; sourceTree = "<group>"; };
 		E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamInviteQRCodeView.swift; sourceTree = "<group>"; };
 		EF8F681FAE45E23A27F35D1F /* Wandr.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Wandr.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F572C10C5B7BCCEA9761D20D /* WandrWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WandrWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F754D10490320AE8ECAF9D1A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		F7C4DA371AAC859152784A5B /* WorkoutKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutKind.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -121,6 +206,7 @@
 			children = (
 				7AE875EA3BFD456B8D487396 /* CameraPermission.swift */,
 				8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */,
+				4474A6197EC42920F413A24C /* WatchConnectivityReceiver.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -129,6 +215,8 @@
 			isa = PBXGroup;
 			children = (
 				EF8F681FAE45E23A27F35D1F /* Wandr.app */,
+				20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */,
+				F572C10C5B7BCCEA9761D20D /* WandrWatchTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -150,6 +238,22 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
+		3978BC31F7AC47F418CA3921 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				4BD4F0F34D51BA9B11C1472F /* ActivityPickerView.swift */,
+				35A6F29B5A6B94003448C2DD /* LiveWorkoutContainer.swift */,
+				1AB83B9D146EE3F83E601807 /* LiveWorkoutView.swift */,
+				5D8B5A0D127DD0FF62963477 /* MetricRow.swift */,
+				A8DC0AA7048044EF3A52658E /* PermissionDeniedView.swift */,
+				A247968D3B5D7E85101A1760 /* PermissionDisclosureView.swift */,
+				0E13FF43BEB26A3882E77034 /* PermissionFlowView.swift */,
+				030D0E58E4667331C08163F7 /* RootView.swift */,
+				86CDE9170DDAB2D190FD5E07 /* WorkoutSummaryView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		3E4BC0B34AD436C4CF2D2271 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -163,12 +267,23 @@
 			isa = PBXGroup;
 			children = (
 				4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */,
+				4B7779D495C80ACD2BAC579A /* ActivityConflictView.swift */,
 				1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */,
 				A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */,
 				1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */,
 				B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */,
+				8395BB0E436E0ABA2D07CE76 /* WatchImportObserver.swift */,
 			);
 			path = Activity;
+			sourceTree = "<group>";
+		};
+		5591AECE1416C497955AF993 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				699CCA43CF6AF687DC06B039 /* Assets.xcassets */,
+				2A1206E61CBE3C615FE343F8 /* Localizable.strings */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		5D0B02068DA64A0B850AECAC /* Profile */ = {
@@ -208,6 +323,20 @@
 				A03BB90620AFB62E394CC6CE /* SnackbarView.swift */,
 			);
 			path = Common;
+			sourceTree = "<group>";
+		};
+		6FDC5CB3F03B2EE1779CCAD8 /* WandrWatch */ = {
+			isa = PBXGroup;
+			children = (
+				6D39BB0D84F519E9EFC20A5D /* Info.plist */,
+				40AECD3F3D385592C1849AAA /* WandrWatch.entitlements */,
+				51864558E59285BB52A70D8B /* WandrWatchApp.swift */,
+				DFF09727974371EDDF32977A /* Model */,
+				5591AECE1416C497955AF993 /* Resources */,
+				A2410788B04B701794246F2B /* Services */,
+				3978BC31F7AC47F418CA3921 /* UI */,
+			);
+			path = WandrWatch;
 			sourceTree = "<group>";
 		};
 		76BB7398115F785FC273437F /* Theme */ = {
@@ -254,6 +383,24 @@
 			path = Main;
 			sourceTree = "<group>";
 		};
+		A2410788B04B701794246F2B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BA6F3F9FB14EF2A242986141 /* PermissionState.swift */,
+				6373693646D0789031D2A278 /* WatchConnectivityService.swift */,
+				0B3FC168FBD63309A894DB29 /* WorkoutManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A3AE349C0A6F2A2DCC7FBE20 /* WandrWatchTests */ = {
+			isa = PBXGroup;
+			children = (
+				830456A8D90F27D7B2909FF5 /* WatchWorkoutTests.swift */,
+			);
+			path = WandrWatchTests;
+			sourceTree = "<group>";
+		};
 		A853F5D660307712FD780CF7 /* Challenge */ = {
 			isa = PBXGroup;
 			children = (
@@ -278,8 +425,22 @@
 			isa = PBXGroup;
 			children = (
 				5FB5D6C4FFAD050EBB8F042C /* Wandr */,
+				6FDC5CB3F03B2EE1779CCAD8 /* WandrWatch */,
+				A3AE349C0A6F2A2DCC7FBE20 /* WandrWatchTests */,
 				252AF8D5F63E356B3391D539 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		DFF09727974371EDDF32977A /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				042424561531E6C842BE618E /* MetricFormatter.swift */,
+				004861D686700490F3CBAD1C /* WatchWorkout.swift */,
+				F7C4DA371AAC859152784A5B /* WorkoutKind.swift */,
+				9C506924DA47F20EE14FFC8C /* WorkoutMetrics.swift */,
+				D7B2E703D952E6CC088E6522 /* WorkoutOutbox.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -292,10 +453,12 @@
 				D5A54C84CDBAB7C27B639C36 /* Build Kotlin shared framework */,
 				A26ED7843CA56F3398EEC1E3 /* Sources */,
 				E2036483AD86DE93DC8AEDFC /* Resources */,
+				E12BEB1202A4667B6C39B653 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				2434996B3EEB57581FD4A8F6 /* PBXTargetDependency */,
 			);
 			name = Wandr;
 			packageProductDependencies = (
@@ -303,6 +466,42 @@
 			productName = Wandr;
 			productReference = EF8F681FAE45E23A27F35D1F /* Wandr.app */;
 			productType = "com.apple.product-type.application";
+		};
+		BB56287A5FCCD4498462EE43 /* WandrWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 53FC4D44DB006A2CB6E0AA4F /* Build configuration list for PBXNativeTarget "WandrWatch" */;
+			buildPhases = (
+				85A41F2A9C27A6B5CC9780B2 /* Sources */,
+				DBA573DBB78C5AA4E249C23C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WandrWatch;
+			packageProductDependencies = (
+			);
+			productName = WandrWatch;
+			productReference = 20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E26402BB45E4D9756638E0E1 /* WandrWatchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 58AD2B1734437F2FB567DC2A /* Build configuration list for PBXNativeTarget "WandrWatchTests" */;
+			buildPhases = (
+				8DD9AE55D7CCB3E17FAA3E16 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA4A4EDE55F31EA60ED17A4C /* PBXTargetDependency */,
+			);
+			name = WandrWatchTests;
+			packageProductDependencies = (
+			);
+			productName = WandrWatchTests;
+			productReference = F572C10C5B7BCCEA9761D20D /* WandrWatchTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -331,11 +530,22 @@
 			projectRoot = "";
 			targets = (
 				ABB5BFB31D3910443D8F6810 /* Wandr */,
+				BB56287A5FCCD4498462EE43 /* WandrWatch */,
+				E26402BB45E4D9756638E0E1 /* WandrWatchTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		DBA573DBB78C5AA4E249C23C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACCA357EBF0C1AD8660332F0 /* Assets.xcassets in Resources */,
+				9374D0818A3322594F64DDC2 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E2036483AD86DE93DC8AEDFC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -370,11 +580,45 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		85A41F2A9C27A6B5CC9780B2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24E45B82D28FA1F2B86B7F78 /* ActivityPickerView.swift in Sources */,
+				B77F3BD161291DB041841065 /* LiveWorkoutContainer.swift in Sources */,
+				094B22028AC7F003C207A8FB /* LiveWorkoutView.swift in Sources */,
+				93B93795838B9DAE827B9763 /* MetricFormatter.swift in Sources */,
+				F880DE0FC2B8B8972B80A0A7 /* MetricRow.swift in Sources */,
+				BCD1E431624925D253C9C78C /* PermissionDeniedView.swift in Sources */,
+				0451A14429D7C6F8665DA3E2 /* PermissionDisclosureView.swift in Sources */,
+				CAF4E2EA38CABCDB8223DB01 /* PermissionFlowView.swift in Sources */,
+				FBB6C1F5AF643CBB4D580684 /* PermissionState.swift in Sources */,
+				C75644AB091C76D6E9A6153E /* RootView.swift in Sources */,
+				FB8F26126A97A88C9668FDE6 /* WandrWatchApp.swift in Sources */,
+				2F43F4A6E5BD7F06FF4545BD /* WatchConnectivityService.swift in Sources */,
+				62AC25544D9DEF39E1EA8B3F /* WatchWorkout.swift in Sources */,
+				BE20AFD1D19291A6A51DB18B /* WorkoutKind.swift in Sources */,
+				711781CA7537AED3F094826D /* WorkoutManager.swift in Sources */,
+				1A20FD80F9BE691D4AFF6681 /* WorkoutMetrics.swift in Sources */,
+				237F47BC4C82AB481CF5146D /* WorkoutOutbox.swift in Sources */,
+				E52F96EE21035B80EB925116 /* WorkoutSummaryView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8DD9AE55D7CCB3E17FAA3E16 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C2530ABF0198B7B51832728D /* WatchWorkoutTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A26ED7843CA56F3398EEC1E3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				3B53D12A92684B33CAC5F342 /* ActivityCardView.swift in Sources */,
+				05E8E8C10D807B25F4C1E47E /* ActivityConflictView.swift in Sources */,
 				66C1D311F99A8E0E794FFA84 /* ActivityHistoryView.swift in Sources */,
 				3502985CB1B306B97F2DBDD4 /* AvatarEditorView.swift in Sources */,
 				FE7C548F5DAF13847A8DA0B1 /* AvatarPickerView.swift in Sources */,
@@ -418,12 +662,36 @@
 				1C645D40B7090B847F0F175B /* TrackMapView.swift in Sources */,
 				A5AB48F938600C9DF53545CB /* WandrApp.swift in Sources */,
 				5867506F8E60AB2766E53377 /* WandrColors.swift in Sources */,
+				8646FDDB2CC2BD6B43D0676D /* WatchConnectivityReceiver.swift in Sources */,
+				2133066BEA6ED193BAF34EE5 /* WatchImportObserver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		2434996B3EEB57581FD4A8F6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB56287A5FCCD4498462EE43 /* WandrWatch */;
+			targetProxy = 382D5F551E2C113F7640AF4B /* PBXContainerItemProxy */;
+		};
+		AA4A4EDE55F31EA60ED17A4C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB56287A5FCCD4498462EE43 /* WandrWatch */;
+			targetProxy = 2CCA40DEE3EA8F48A907B18D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
+		2A1206E61CBE3C615FE343F8 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A00AB15374288E5B4586B035 /* de */,
+				555E057BD69D274330BF1110 /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 		A9D260237F6CBF2BA089595F /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -517,13 +785,47 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Debug;
+		};
+		0E9CF40DADD76A8A64B1F4A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WandrWatch/WandrWatch.entitlements;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WandrWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness.watchkitapp;
+				PRODUCT_NAME = WandrWatch;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+		3CEAB50964D40BC8617E30D4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness.watchkitapp.tests;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WandrWatch.app/WandrWatch";
+			};
+			name = Release;
 		};
 		749ACE76D5D51BBB981968CB /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -543,6 +845,22 @@
 				PRODUCT_NAME = Wandr;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B0471986A399D1DF939E531A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WandrWatch/WandrWatch.entitlements;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WandrWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness.watchkitapp;
+				PRODUCT_NAME = WandrWatch;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
 			};
 			name = Release;
 		};
@@ -599,17 +917,53 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
+		};
+		D42E3A989490AEAE236827EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness.watchkitapp.tests;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WandrWatch.app/WandrWatch";
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		53FC4D44DB006A2CB6E0AA4F /* Build configuration list for PBXNativeTarget "WandrWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0E9CF40DADD76A8A64B1F4A4 /* Debug */,
+				B0471986A399D1DF939E531A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		58AD2B1734437F2FB567DC2A /* Build configuration list for PBXNativeTarget "WandrWatchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D42E3A989490AEAE236827EA /* Debug */,
+				3CEAB50964D40BC8617E30D4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		B44786267E0B5E7DCCC36246 /* Build configuration list for PBXNativeTarget "Wandr" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

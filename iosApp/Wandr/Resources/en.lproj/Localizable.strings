@@ -117,3 +117,16 @@
 "team_edit_title" = "Edit Group";
 "empty_value_placeholder" = "—";
 "team_details_title" = "Group Details";
+
+/* Conflict wizard & watch import */
+"activity_conflict_title" = "Overlapping activities";
+"activity_conflict_message" = "This activity overlaps in time with activities you already have. Choose how to resolve it.";
+"activity_conflict_merge_title" = "Merge";
+"activity_conflict_merge_description" = "Combine distance, elevation and time into one workout. The overlapping activities are replaced.";
+"activity_conflict_trim_title" = "Trim";
+"activity_conflict_trim_description" = "Cut this activity to the part of the time that no other activity covers.";
+"activity_conflict_trim_unavailable" = "Not possible: the time is completely covered by existing activities.";
+"activity_conflict_discard_title" = "Discard";
+"activity_conflict_discard_description" = "Keep the existing activities and drop this one.";
+"activity_conflict_apply_button" = "Apply";
+

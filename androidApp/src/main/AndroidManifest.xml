@@ -38,6 +38,19 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- Receives workouts recorded on the paired WearOS watch (Data Layer, path /workouts/{id}). -->
+        <service
+            android:name=".watch.WatchWorkoutListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data
+                    android:scheme="wear"
+                    android:host="*"
+                    android:pathPrefix="/workouts/" />
+            </intent-filter>
+        </service>
+
         <service
             android:name=".service.LocationTrackingService"
             android:foregroundServiceType="location"

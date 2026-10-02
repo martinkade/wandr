@@ -5,6 +5,7 @@ import shared
 struct WandrApp: App {
     init() {
         KoinKt.doInitKoin()
+        WatchConnectivityReceiver.instance.activate()
     }
 
     var body: some Scene {

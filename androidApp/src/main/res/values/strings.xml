@@ -219,4 +219,8 @@
     <string name="activity_merged_message">Activities merged</string>
     <string name="activity_trimmed_message">Activity trimmed and saved</string>
     <string name="activity_discarded_message">Activity discarded, existing activities kept</string>
+    <plurals name="watch_workouts_imported">
+        <item quantity="one">%d workout imported from your watch</item>
+        <item quantity="other">%d workouts imported from your watch</item>
+    </plurals>
 </resources>

@@ -7,6 +7,8 @@ import com.wandr.presentation.profile.ProfileViewModel
 import com.wandr.presentation.startup.StartupViewModel
 import com.wandr.presentation.team.TeamViewModel
 import com.wandr.presentation.teamdetails.TeamDetailsViewModel
+import com.wandr.domain.watch.WatchWorkoutInbox
+import com.wandr.presentation.watch.WatchImportViewModel
 import org.koin.mp.KoinPlatform
 
 /** Entry points for Swift, which cannot use Koin's reified `get<T>()`. */
@@ -18,4 +20,6 @@ object IosDependencies {
     fun profileViewModel(): ProfileViewModel = KoinPlatform.getKoin().get()
     fun teamViewModel(): TeamViewModel = KoinPlatform.getKoin().get()
     fun teamDetailsViewModel(): TeamDetailsViewModel = KoinPlatform.getKoin().get()
+    fun watchImportViewModel(): WatchImportViewModel = KoinPlatform.getKoin().get()
+    fun watchWorkoutInbox(): WatchWorkoutInbox = KoinPlatform.getKoin().get()
 }

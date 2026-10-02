@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 rootProject.name = "WANDR"
 include(":shared")
 include(":androidApp")
+include(":wearApp")

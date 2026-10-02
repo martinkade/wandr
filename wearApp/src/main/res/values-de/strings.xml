@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WANDR</string>
+
+    <string name="type_hiking">Wandern</string>
+    <string name="type_running">Laufen</string>
+    <string name="type_cycling">Radfahren</string>
+
+    <string name="picker_title">Aktivität wählen</string>
+    <string name="start_button">Start</string>
+    <string name="start_hint">Bereit zur Aufzeichnung</string>
+
+    <string name="pause">Pause</string>
+    <string name="resume">Fortsetzen</string>
+    <string name="stop">Beenden</string>
+    <string name="paused_label">Pausiert</string>
+    <string name="starting">Startet…</string>
+    <string name="start_failed">Training konnte nicht gestartet werden</string>
+
+    <string name="label_distance">Distanz</string>
+    <string name="label_heart_rate">Herzfrequenz</string>
+    <string name="label_elevation">Aufstieg</string>
+    <string name="label_duration">Zeit</string>
+    <string name="label_avg_heart_rate">Ø Herzfrequenz</string>
+    <string name="distance_km_format">%1$s km</string>
+    <string name="heart_rate_format">%1$d bpm</string>
+    <string name="elevation_format">%1$d m</string>
+    <string name="value_unavailable">--</string>
+
+    <string name="summary_title">Zusammenfassung</string>
+    <string name="send_state_pending">Wartet auf Senden ans Handy</string>
+    <string name="send_state_sent">Gesendet, wartet aufs Handy</string>
+    <string name="send_state_delivered">Auf dem Handy importiert</string>
+    <string name="done">Fertig</string>
+
+    <string name="perm_disclosure_title">Berechtigungen nötig</string>
+    <string name="perm_disclosure_message">WANDR zeichnet während des Trainings deine Route per GPS, deine Herzfrequenz und deine Bewegung auf und zeigt eine Benachrichtigung, solange ein Training läuft. Die Daten bleiben auf der Uhr und werden an dein Handy gesendet.</string>
+    <string name="perm_continue">Weiter</string>
+    <string name="perm_cancel">Nicht jetzt</string>
+    <string name="perm_denied_title">Berechtigung abgelehnt</string>
+    <string name="perm_denied_message">Ohne diese Berechtigungen kann das Training nicht aufgezeichnet werden. Du kannst sie in den Einstellungen der Uhr erlauben.</string>
+    <string name="perm_open_settings">Einstellungen öffnen</string>
+
+    <string name="notification_channel_name">Laufendes Training</string>
+    <string name="notification_title">WANDR-Training</string>
+    <string name="notification_text">Dein Training wird aufgezeichnet</string>
+</resources>
