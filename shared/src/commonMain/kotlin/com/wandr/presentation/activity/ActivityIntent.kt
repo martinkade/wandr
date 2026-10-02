@@ -1,5 +1,6 @@
 package com.wandr.presentation.activity
 
+import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.model.GpsTrackpoint
 
 sealed interface ActivityIntent {
@@ -34,6 +35,8 @@ sealed interface ActivityIntent {
     object ResumeGpsTracking : ActivityIntent
     data class StopAndSaveGpsTracking(val userId: String, val teamId: String?, val title: String) : ActivityIntent
 
+    data class ResolveConflict(val resolution: ConflictResolution) : ActivityIntent
+    object DismissConflict : ActivityIntent
     data class DeleteActivity(val activityId: String) : ActivityIntent
     object ClearMessages : ActivityIntent
 }

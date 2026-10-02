@@ -3,7 +3,19 @@ package com.wandr.presentation.activity
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
 
-enum class ActivitySuccess { CREATED, UPDATED, RECORDED, DELETED }
+enum class ActivitySuccess { CREATED, UPDATED, RECORDED, DELETED, MERGED, TRIMMED, DISCARDED }
+
+/**
+ * The saved activity overlaps [conflicting] ones in time; nothing is saved until the user chooses a resolution.
+ *
+ * @param canTrim false when the activity is completely covered by existing ones
+ * @param dismissible false for a finished recording: its data would be lost, so the user must pick a resolution
+ */
+data class ActivityConflict(
+    val conflicting: List<Activity>,
+    val canTrim: Boolean,
+    val dismissible: Boolean
+)
 
 /** Activity types offered in the app. */
 object ActivityTypes {
@@ -46,6 +58,9 @@ data class ActivityState(
     val liveDurationSeconds: Double = 0.0,
     val liveElevationGainMeters: Double = 0.0,
     val liveTrackpoints: List<GpsTrackpoint> = emptyList(),
+
+    /** Non-null while the conflict resolution wizard is shown. */
+    val conflict: ActivityConflict? = null,
 
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,

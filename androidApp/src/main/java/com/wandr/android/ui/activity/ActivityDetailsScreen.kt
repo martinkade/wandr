@@ -105,14 +105,20 @@ private fun ActivityDetailsScreenContent(
     }
 
     val updatedText = stringResource(R.string.activity_updated_message)
+    val mergedText = stringResource(R.string.activity_merged_message)
+    val trimmedText = stringResource(R.string.activity_trimmed_message)
+    val discardedText = stringResource(R.string.activity_discarded_message)
     LaunchedEffect(state.success, state.errorMessage) {
         val message = when {
             state.errorMessage != null -> state.errorMessage
             state.success == ActivitySuccess.UPDATED -> updatedText
+            state.success == ActivitySuccess.MERGED -> mergedText
+            state.success == ActivitySuccess.TRIMMED -> trimmedText
+            state.success == ActivitySuccess.DISCARDED -> discardedText
             else -> null
         } ?: return@LaunchedEffect
 
-        if (state.success == ActivitySuccess.UPDATED && saveRequested) closeSheet()
+        if (state.success != null && saveRequested) closeSheet()
         saveRequested = false
         // Own scope: clearing the message changes the effect keys, which would cancel (and hide) the snackbar.
         scope.launch {
@@ -198,6 +204,15 @@ private fun ActivityDetailsScreenContent(
             )
         }
     }
+    state.conflict?.let { conflict ->
+        ActivityConflictSheet(
+            conflict = conflict,
+            isSaving = state.isSaving,
+            onResolve = { onIntent(ActivityIntent.ResolveConflict(it)) },
+            onDismiss = if (conflict.dismissible) ({ onIntent(ActivityIntent.DismissConflict) }) else null
+        )
+    }
+
 }
 
 private val previewActivity = Activity(

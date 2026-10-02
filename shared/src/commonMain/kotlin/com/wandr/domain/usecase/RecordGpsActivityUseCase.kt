@@ -1,6 +1,7 @@
 package com.wandr.domain.usecase
 
 import com.wandr.domain.model.Activity
+import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.repository.ActivityRepository
 import kotlin.time.Clock
@@ -9,8 +10,11 @@ import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
 class RecordGpsActivityUseCase(
-    private val activityRepository: ActivityRepository
+    activityRepository: ActivityRepository
 ) {
+    private val conflictResolver = ActivityConflictResolver(activityRepository)
+
+    /** Fails with `ActivityConflictException` if the recording overlaps other activities and no [resolution] is given. */
     suspend operator fun invoke(
         userId: String,
         teamId: String?,
@@ -22,7 +26,8 @@ class RecordGpsActivityUseCase(
         elevationGainMeters: Double,
         startTime: Long,
         endTime: Long,
-        trackpoints: List<GpsTrackpoint>
+        trackpoints: List<GpsTrackpoint>,
+        resolution: ConflictResolution? = null
     ): Result<Activity> {
         val now = Clock.System.now().toEpochMilliseconds()
         val uniqueId = Uuid.random().toString() // the server uses UUID primary keys
@@ -43,6 +48,6 @@ class RecordGpsActivityUseCase(
             createdAt = now,
             updatedAt = now
         )
-        return activityRepository.saveActivity(activity, trackpoints = trackpoints)
+        return conflictResolver.save(activity, trackpoints = trackpoints, resolution = resolution)
     }
 }

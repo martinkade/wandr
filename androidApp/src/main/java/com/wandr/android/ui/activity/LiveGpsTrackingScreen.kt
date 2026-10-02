@@ -61,7 +61,9 @@ fun LiveGpsTrackingScreen(
     val state by viewModel.state.collectAsState()
     LaunchedEffect(userId) { viewModel.processIntent(ActivityIntent.LoadUserActivities(userId)) }
     LaunchedEffect(state.success) {
-        if (state.success == ActivitySuccess.RECORDED) {
+        if (state.success == ActivitySuccess.RECORDED || state.success == ActivitySuccess.DISCARDED ||
+            state.success == ActivitySuccess.MERGED || state.success == ActivitySuccess.TRIMMED
+        ) {
             viewModel.processIntent(ActivityIntent.ClearMessages)
             onClose()
         }
@@ -195,6 +197,15 @@ private fun LiveGpsTrackingScreenContent(
                 }
             }
         }
+    }
+
+    state.conflict?.let { conflict ->
+        ActivityConflictSheet(
+            conflict = conflict,
+            isSaving = state.isSaving,
+            onResolve = { onIntent(ActivityIntent.ResolveConflict(it)) },
+            onDismiss = null // a finished recording must be resolved, otherwise it would be lost
+        )
     }
 }
 

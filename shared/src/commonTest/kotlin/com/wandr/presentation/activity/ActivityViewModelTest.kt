@@ -1,6 +1,7 @@
 package com.wandr.presentation.activity
 
 import com.wandr.domain.model.Activity
+import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.repository.ActivityRepository
 import com.wandr.domain.usecase.CreateManualActivityUseCase
@@ -37,7 +38,8 @@ private class FakeActivityRepository(initial: List<Activity> = emptyList()) : Ac
     override suspend fun getTrackpoints(activityId: String): List<GpsTrackpoint> = track
     override fun getUserActivityCount(userId: String): Flow<Int> = activities.map { it.size }
     override fun getTeamActivities(teamId: String): Flow<List<Activity>> = activities
-    override suspend fun getOverlappingActivities(userId: String, startTime: Long, endTime: Long): List<Activity> = emptyList()
+    override suspend fun getOverlappingActivities(userId: String, startTime: Long, endTime: Long): List<Activity> =
+        activities.value.filter { it.userId == userId && it.startTime < endTime && it.endTime > startTime }
     override suspend fun saveActivity(activity: Activity, trackpoints: List<GpsTrackpoint>?): Result<Activity> {
         saved = activity
         savedTrackpoints = trackpoints
@@ -240,4 +242,118 @@ class ActivityViewModelTest {
     }
 
     private fun ActivityViewModel.uiState() = state.value
+
+    // --- Time conflicts -------------------------------------------------------------------------------------
+
+    /** Creates a manual activity that overlaps [manual] (1_000_000 .. 4_600_000). */
+    private fun ActivityViewModel.submitOverlapping(title: String = "Overlap") {
+        processIntent(ActivityIntent.StartCreate)
+        processIntent(ActivityIntent.TitleChanged(title))
+        processIntent(ActivityIntent.StartTimeChanged(manual.startTime + 1_800_000L))
+        processIntent(ActivityIntent.DurationChanged(60.0))
+        processIntent(ActivityIntent.SubmitForm("u1", null))
+    }
+
+    @Test
+    fun overlapOpensTheWizardInsteadOfSaving() = runTest {
+        val repo = FakeActivityRepository(listOf(manual))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.submitOverlapping()
+
+        val conflict = assertNotNull(vm.uiState().conflict)
+        assertEquals(listOf("a1"), conflict.conflicting.map { it.id })
+        assertTrue(conflict.dismissible)
+        assertNull(repo.saved)
+        assertNull(vm.uiState().errorMessage)
+        assertFalse(vm.uiState().isSaving)
+    }
+
+    @Test
+    fun mergeSavesOneActivityAndRemovesTheOverlapping() = runTest {
+        val repo = FakeActivityRepository(listOf(manual))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.submitOverlapping()
+        vm.processIntent(ActivityIntent.ResolveConflict(ConflictResolution.MERGE))
+
+        assertEquals(ActivitySuccess.MERGED, vm.uiState().success)
+        assertNull(vm.uiState().conflict)
+        assertEquals(1, repo.activities.value.size)
+        assertEquals("a1", repo.deleted)
+        assertEquals(manual.startTime, repo.saved?.startTime)
+    }
+
+    @Test
+    fun trimSavesOnlyTheFreePart() = runTest {
+        val repo = FakeActivityRepository(listOf(manual))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.submitOverlapping()
+        vm.processIntent(ActivityIntent.ResolveConflict(ConflictResolution.TRIM))
+
+        assertEquals(ActivitySuccess.TRIMMED, vm.uiState().success)
+        assertEquals(manual.endTime, repo.saved?.startTime)
+        assertEquals(2, repo.activities.value.size)
+    }
+
+    @Test
+    fun discardKeepsTheExistingActivities() = runTest {
+        val repo = FakeActivityRepository(listOf(manual))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.submitOverlapping()
+        vm.processIntent(ActivityIntent.ResolveConflict(ConflictResolution.DISCARD))
+
+        assertEquals(ActivitySuccess.DISCARDED, vm.uiState().success)
+        assertNull(vm.uiState().conflict)
+        assertNull(repo.saved)
+        assertEquals(listOf("a1"), repo.activities.value.map { it.id })
+    }
+
+    @Test
+    fun dismissingReturnsToTheForm() = runTest {
+        val repo = FakeActivityRepository(listOf(manual))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.submitOverlapping()
+        vm.processIntent(ActivityIntent.DismissConflict)
+
+        assertNull(vm.uiState().conflict)
+        assertNotNull(vm.uiState().form)
+        assertNull(vm.uiState().success)
+    }
+
+    @Test
+    fun editingWithoutChangingTheTimeIgnoresExistingOverlaps() = runTest {
+        val overlapping = manual.copy(id = "a3", startTime = manual.startTime + 60_000L, endTime = manual.endTime + 60_000L)
+        val repo = FakeActivityRepository(listOf(manual, overlapping))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
+        vm.processIntent(ActivityIntent.StartEdit("a1"))
+        vm.processIntent(ActivityIntent.TitleChanged("Renamed"))
+        vm.processIntent(ActivityIntent.SubmitForm("u1", null))
+
+        assertNull(vm.uiState().conflict)
+        assertEquals(ActivitySuccess.UPDATED, vm.uiState().success)
+        assertEquals("Renamed", repo.saved?.title)
+    }
+
+    @Test
+    fun recordingConflictCannotBeDismissedAndDiscardDropsTheRecording() = runTest {
+        val repo = FakeActivityRepository(listOf(manual))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
+        vm.processIntent(ActivityIntent.StartGpsTracking("running"))
+        // The recording started "now", i.e. long after the stored activity: force an overlap with a running one.
+        repo.activities.value = listOf(manual.copy(startTime = 0L, endTime = Long.MAX_VALUE / 2))
+        vm.processIntent(ActivityIntent.AddTrackpoint(GpsTrackpoint(1.0, 1.0, 0.0, 0L)))
+        vm.processIntent(ActivityIntent.StopAndSaveGpsTracking("u1", null, "Run"))
+
+        val conflict = assertNotNull(vm.uiState().conflict)
+        assertFalse(conflict.dismissible)
+        vm.processIntent(ActivityIntent.DismissConflict)
+        assertNotNull(vm.uiState().conflict)
+        assertEquals(1, vm.uiState().liveTrackpoints.size) // nothing lost yet
+
+        vm.processIntent(ActivityIntent.ResolveConflict(ConflictResolution.DISCARD))
+        assertEquals(ActivitySuccess.DISCARDED, vm.uiState().success)
+        assertTrue(vm.uiState().liveTrackpoints.isEmpty())
+        assertNull(repo.saved)
+    }
 }

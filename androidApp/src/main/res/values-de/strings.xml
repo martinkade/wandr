@@ -206,4 +206,17 @@
     <string name="activity_recorded_message">Aktivität aufgezeichnet</string>
     <string name="activity_deleted_message">Aktivität gelöscht</string>
     <string name="activity_tracking_back_blocked">Beende und speichere zuerst die Aufzeichnung.</string>
+    <string name="activity_conflict_title">Überlappende Aktivitäten</string>
+    <string name="activity_conflict_message">Diese Aktivität überschneidet sich zeitlich mit bestehenden Aktivitäten. Wähle, wie der Konflikt gelöst werden soll.</string>
+    <string name="activity_conflict_merge_title">Zusammenführen</string>
+    <string name="activity_conflict_merge_description">Distanz, Höhenmeter und Zeit zu einem Workout kombinieren. Die überlappenden Aktivitäten werden ersetzt.</string>
+    <string name="activity_conflict_trim_title">Kürzen</string>
+    <string name="activity_conflict_trim_description">Diese Aktivität auf den Zeitraum kürzen, den keine andere Aktivität abdeckt.</string>
+    <string name="activity_conflict_trim_unavailable">Nicht möglich: Der Zeitraum ist vollständig von bestehenden Aktivitäten abgedeckt.</string>
+    <string name="activity_conflict_discard_title">Verwerfen</string>
+    <string name="activity_conflict_discard_description">Die bestehenden Aktivitäten behalten und diese verwerfen.</string>
+    <string name="activity_conflict_apply_button">Anwenden</string>
+    <string name="activity_merged_message">Aktivitäten zusammengeführt</string>
+    <string name="activity_trimmed_message">Aktivität gekürzt und gespeichert</string>
+    <string name="activity_discarded_message">Aktivität verworfen, bestehende Aktivitäten behalten</string>
 </resources>

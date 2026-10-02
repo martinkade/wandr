@@ -161,14 +161,16 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 ### ⚔️ Phase 7: Activity Time Conflict Resolution Wizard
 
-- [ ] **Step 7.1: Overlap Detection Algorithm**
-  - Implement overlap detection logic in `ActivityRepository`:
+- [x] **Step 7.1: Overlap Detection Algorithm**
+  - `ActivityRepository.getOverlappingActivities` (Room query) implements:
     $$\text{Overlap} \iff (\text{Start}_A < \text{End}_B) \land (\text{End}_A > \text{Start}_B)$$
-- [ ] **Step 7.2: Conflict Resolution Wizard UI**
-  - Build `ConflictWizardDialog`/`Sheet` allowing the user to select:
-    - **Merge**: Combine metrics into a single workout.
-    - **Trim**: Automatically adjust boundaries.
-    - **Discard**: Keep original activity and delete conflicting record.
+    Activities that merely touch do not conflict. `ActivityConflictResolver` applies it to the user's own activities (the edited activity is excluded) in the create, update and GPS-recording use cases. Editing without changing the time range skips the check, so overlaps that already exist never block e.g. a rename.
+- [x] **Step 7.2: Conflict Resolution Wizard UI**
+  - Nothing is saved while a conflict is open; the use case fails with `ActivityConflictException` and `ActivityViewModel` exposes `ActivityState.conflict`. Android: `ActivityConflictSheet` (bottom sheet, choose + apply) in the history, details and recording screens. The user selects:
+    - **Merge**: Combine metrics into a single workout (distance/elevation summed, time = whole range, available tracks joined); the overlapping activities are replaced.
+    - **Trim**: Automatically adjust boundaries: the new activity is cut to the longest free part of its time range, metrics scaled proportionally, track filtered. Not offered if it is completely covered.
+    - **Discard**: Keep original activity and delete conflicting record (the new/edited one, or the finished recording).
+  - A finished recording cannot be dismissed without a choice, so it is never lost silently. iOS UI is still open.
 
 ---
 

@@ -1,6 +1,8 @@
 package com.wandr.presentation.activity
 
 import com.wandr.domain.model.Activity
+import com.wandr.domain.model.ActivityConflictException
+import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.usecase.CreateManualActivityUseCase
 import com.wandr.domain.usecase.DeleteActivityUseCase
@@ -40,6 +42,15 @@ class ActivityViewModel(
     private var selectJob: Job? = null
     private var currentUserId: String? = null
 
+    /** A save that was held back by a time conflict, waiting for the user's resolution. */
+    private var pendingSave: PendingSave? = null
+
+    private class PendingSave(
+        val success: ActivitySuccess,
+        val isRecording: Boolean,
+        val save: suspend (ConflictResolution?) -> Result<Activity>
+    )
+
     fun processIntent(intent: ActivityIntent) {
         when (intent) {
             is ActivityIntent.LoadUserActivities -> loadUserActivities(intent.userId)
@@ -61,6 +72,8 @@ class ActivityViewModel(
             is ActivityIntent.PauseGpsTracking -> _state.update { it.copy(isPaused = true) }
             is ActivityIntent.ResumeGpsTracking -> _state.update { it.copy(isPaused = false) }
             is ActivityIntent.StopAndSaveGpsTracking -> stopAndSaveGpsTracking(intent.userId, intent.teamId, intent.title)
+            is ActivityIntent.ResolveConflict -> resolveConflict(intent.resolution)
+            is ActivityIntent.DismissConflict -> dismissConflict()
             is ActivityIntent.DeleteActivity -> deleteActivity(intent.activityId)
             is ActivityIntent.ClearMessages -> _state.update { it.copy(errorMessage = null, success = null) }
         }
@@ -159,10 +172,9 @@ class ActivityViewModel(
             return
         }
 
-        _state.update { it.copy(isSaving = true, errorMessage = null, success = null) }
-        scope.launch {
-            val now = Clock.System.now().toEpochMilliseconds()
-            val result = if (existing == null) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        val pending = if (existing == null) {
+            PendingSave(ActivitySuccess.CREATED, isRecording = false) { resolution ->
                 createManualActivityUseCase(
                     userId = userId,
                     teamId = teamId,
@@ -172,39 +184,95 @@ class ActivityViewModel(
                     distanceMeters = form.distanceKm * 1000.0,
                     durationSeconds = form.durationMinutes * 60.0,
                     elevationGainMeters = form.elevationMeters,
-                    startTime = form.startTime
-                )
-            } else {
-                val durationSeconds = if (form.isMeasured) existing.durationSeconds else form.durationMinutes * 60.0
-                val startTime = if (form.isMeasured) existing.startTime else form.startTime
-                updateActivityUseCase(
-                    existing.copy(
-                        title = form.title,
-                        description = form.description.ifBlank { null },
-                        activityType = form.activityType,
-                        // Measured (GPS) values are not editable.
-                        distanceMeters = if (form.isMeasured) existing.distanceMeters else form.distanceKm * 1000.0,
-                        durationSeconds = durationSeconds,
-                        elevationGainMeters = if (form.isMeasured) existing.elevationGainMeters else form.elevationMeters,
-                        startTime = startTime,
-                        endTime = if (form.isMeasured) existing.endTime else startTime + (durationSeconds * 1000).toLong(),
-                        updatedAt = now
-                    )
+                    startTime = form.startTime,
+                    resolution = resolution
                 )
             }
-            result
-                .onSuccess {
-                    _state.update {
-                        it.copy(
-                            isSaving = false,
-                            success = if (existing == null) ActivitySuccess.CREATED else ActivitySuccess.UPDATED
-                        )
+        } else {
+            val durationSeconds = if (form.isMeasured) existing.durationSeconds else form.durationMinutes * 60.0
+            val startTime = if (form.isMeasured) existing.startTime else form.startTime
+            val updated = existing.copy(
+                title = form.title,
+                description = form.description.ifBlank { null },
+                activityType = form.activityType,
+                // Measured (GPS) values are not editable.
+                distanceMeters = if (form.isMeasured) existing.distanceMeters else form.distanceKm * 1000.0,
+                durationSeconds = durationSeconds,
+                elevationGainMeters = if (form.isMeasured) existing.elevationGainMeters else form.elevationMeters,
+                startTime = startTime,
+                endTime = if (form.isMeasured) existing.endTime else startTime + (durationSeconds * 1000).toLong(),
+                updatedAt = now
+            )
+            // Overlaps that already exist must not block edits that leave the time range alone.
+            val timeChanged = updated.startTime != existing.startTime || updated.endTime != existing.endTime
+            PendingSave(ActivitySuccess.UPDATED, isRecording = false) { resolution ->
+                updateActivityUseCase(updated, checkConflicts = timeChanged, resolution = resolution)
+            }
+        }
+        runSave(pending, resolution = null)
+    }
+
+    /** Runs [pending]; a time conflict opens the wizard instead of saving. */
+    private fun runSave(pending: PendingSave, resolution: ConflictResolution?) {
+        _state.update { it.copy(isSaving = true, errorMessage = null, success = null) }
+        scope.launch {
+            pending.save(resolution).fold(
+                onSuccess = {
+                    pendingSave = null
+                    val success = when (resolution) {
+                        ConflictResolution.MERGE -> ActivitySuccess.MERGED
+                        ConflictResolution.TRIM -> ActivitySuccess.TRIMMED
+                        else -> pending.success
+                    }
+                    _state.update { it.finishSave(pending, success) }
+                },
+                onFailure = { error ->
+                    if (error is ActivityConflictException) {
+                        pendingSave = pending
+                        _state.update {
+                            it.copy(
+                                isSaving = false,
+                                conflict = ActivityConflict(
+                                    conflicting = error.conflicting,
+                                    canTrim = error.canTrim,
+                                    // A finished recording cannot be dismissed without losing it.
+                                    dismissible = !pending.isRecording
+                                )
+                            )
+                        }
+                    } else {
+                        pendingSave = null
+                        _state.update { it.copy(isSaving = false, conflict = null, errorMessage = error.message ?: "Saving failed") }
                     }
                 }
-                .onFailure { error ->
-                    _state.update { it.copy(isSaving = false, errorMessage = error.message ?: "Saving failed") }
-                }
+            )
         }
+    }
+
+    private fun ActivityState.finishSave(pending: PendingSave, success: ActivitySuccess): ActivityState = copy(
+        isSaving = false,
+        conflict = null,
+        success = success,
+        liveTrackpoints = if (pending.isRecording) emptyList() else liveTrackpoints,
+        liveDistanceMeters = if (pending.isRecording) 0.0 else liveDistanceMeters,
+        liveDurationSeconds = if (pending.isRecording) 0.0 else liveDurationSeconds
+    )
+
+    private fun resolveConflict(resolution: ConflictResolution) {
+        val pending = pendingSave ?: return
+        if (resolution == ConflictResolution.DISCARD) {
+            // The existing activities stay; the new/edited one is dropped (for a recording: the recording).
+            pendingSave = null
+            _state.update { it.finishSave(pending, ActivitySuccess.DISCARDED) }
+        } else {
+            runSave(pending, resolution)
+        }
+    }
+
+    private fun dismissConflict() {
+        if (_state.value.conflict?.dismissible != true) return
+        pendingSave = null
+        _state.update { it.copy(conflict = null) }
     }
 
     private fun startGpsTracking(activityType: String) {
@@ -241,11 +309,12 @@ class ActivityViewModel(
     }
 
     private fun stopAndSaveGpsTracking(userId: String, teamId: String?, title: String) {
-        scope.launch {
-            val currentState = _state.value
-            _state.update { it.copy(isSaving = true, isTracking = false, errorMessage = null, success = null) }
-            val endTime = Clock.System.now().toEpochMilliseconds()
-            val result = recordGpsActivityUseCase(
+        val currentState = _state.value
+        _state.update { it.copy(isTracking = false) }
+        val endTime = Clock.System.now().toEpochMilliseconds()
+        val startTime = trackingStartTime
+        val pending = PendingSave(ActivitySuccess.RECORDED, isRecording = true) { resolution ->
+            recordGpsActivityUseCase(
                 userId = userId,
                 teamId = teamId,
                 title = title.ifBlank { "${currentState.trackingActivityType.replaceFirstChar { c -> c.uppercase() }} Workout" },
@@ -254,27 +323,13 @@ class ActivityViewModel(
                 distanceMeters = currentState.liveDistanceMeters,
                 durationSeconds = currentState.liveDurationSeconds,
                 elevationGainMeters = currentState.liveElevationGainMeters,
-                startTime = trackingStartTime,
+                startTime = startTime,
                 endTime = endTime,
-                trackpoints = currentState.liveTrackpoints
-            )
-            result.fold(
-                onSuccess = {
-                    _state.update { s ->
-                        s.copy(
-                            isSaving = false,
-                            success = ActivitySuccess.RECORDED,
-                            liveTrackpoints = emptyList(),
-                            liveDistanceMeters = 0.0,
-                            liveDurationSeconds = 0.0
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    _state.update { s -> s.copy(isSaving = false, errorMessage = error.message ?: "Failed to save GPS activity") }
-                }
+                trackpoints = currentState.liveTrackpoints,
+                resolution = resolution
             )
         }
+        runSave(pending, resolution = null)
     }
 
     private fun deleteActivity(activityId: String) {

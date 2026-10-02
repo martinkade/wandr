@@ -206,4 +206,17 @@
     <string name="activity_recorded_message">Activity recorded</string>
     <string name="activity_deleted_message">Activity deleted</string>
     <string name="activity_tracking_back_blocked">Stop and save the recording first.</string>
+    <string name="activity_conflict_title">Overlapping activities</string>
+    <string name="activity_conflict_message">This activity overlaps in time with activities you already have. Choose how to resolve it.</string>
+    <string name="activity_conflict_merge_title">Merge</string>
+    <string name="activity_conflict_merge_description">Combine distance, elevation and time into one workout. The overlapping activities are replaced.</string>
+    <string name="activity_conflict_trim_title">Trim</string>
+    <string name="activity_conflict_trim_description">Cut this activity to the part of the time that no other activity covers.</string>
+    <string name="activity_conflict_trim_unavailable">Not possible: the time is completely covered by existing activities.</string>
+    <string name="activity_conflict_discard_title">Discard</string>
+    <string name="activity_conflict_discard_description">Keep the existing activities and drop this one.</string>
+    <string name="activity_conflict_apply_button">Apply</string>
+    <string name="activity_merged_message">Activities merged</string>
+    <string name="activity_trimmed_message">Activity trimmed and saved</string>
+    <string name="activity_discarded_message">Activity discarded, existing activities kept</string>
 </resources>
