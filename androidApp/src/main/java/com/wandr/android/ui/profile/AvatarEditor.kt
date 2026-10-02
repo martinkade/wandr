@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.wandr.android.R
 import com.wandr.android.ui.common.rememberImagePickerFlow
-import com.wandr.android.ui.profile.components.AvatarPicker
+import com.wandr.android.ui.common.AvatarPicker
 import com.wandr.presentation.imagecrop.AvatarImageSpec
 
 /**

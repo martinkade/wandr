@@ -219,8 +219,8 @@ private fun ChallengeListScreenContent(
 }
 
 private val previewChallenges = listOf(
-    Challenge("c1", "30-Day 100 km Hike", "Open to everyone.", null, "individual", "distance", 100000.0, false, 0L, 0L, "u1", 0L, 0L),
-    Challenge("c2", "5000 m Altitude Climb", "Teams compete.", null, "group", "elevation", 5000.0, true, 0L, 0L, "u2", 0L, 0L)
+    Challenge("c1", "30-Day 100 km Hike", "Open to everyone.", null, "individual", "distance", 100000.0, false, 1_768_435_200_000L, 1_771_027_200_000L, "u1", 0L, 0L),
+    Challenge("c2", "5000 m Altitude Climb", "Teams compete.", null, "group", "elevation", 5000.0, true, 1_768_435_200_000L, 1_769_039_940_000L, "u2", 0L, 0L)
 )
 
 @Preview(name = "Manager", showBackground = true)

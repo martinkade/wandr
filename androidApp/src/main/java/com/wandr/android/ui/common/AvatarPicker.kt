@@ -1,4 +1,4 @@
-package com.wandr.android.ui.profile.components
+package com.wandr.android.ui.common
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable

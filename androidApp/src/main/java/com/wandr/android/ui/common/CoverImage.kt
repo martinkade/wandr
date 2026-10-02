@@ -46,7 +46,10 @@ fun CoverImage(
             .clip(RoundedCornerShape(16.dp))
             .background(
                 Brush.linearGradient(
-                    listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f))
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    )
                 )
             )
             .clickable(enabled = isEditable && !isBusy, onClick = onClick)
@@ -73,7 +76,12 @@ fun CoverImage(
             )
         }
         if (isBusy) {
-            Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f)),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator(color = Color.White)
             }
         }
@@ -81,15 +89,36 @@ fun CoverImage(
 }
 
 @Preview(name = "Placeholder", showBackground = true, widthDp = 360)
-@Preview(name = "Placeholder Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, widthDp = 360)
+@Preview(
+    name = "Placeholder Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    widthDp = 360
+)
 @Preview(name = "Editing Tablet", showBackground = true, widthDp = 840)
 @Composable
 private fun CoverImagePreview() {
-    WandrTheme { CoverImage(coverUrl = null, isEditable = true, isBusy = false, onClick = {}, modifier = Modifier.padding(16.dp)) }
+    WandrTheme {
+        CoverImage(
+            coverUrl = null,
+            isEditable = true,
+            isBusy = false,
+            onClick = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
 }
 
 @Preview(name = "Busy", showBackground = true, widthDp = 360)
 @Composable
 private fun CoverImageBusyPreview() {
-    WandrTheme { CoverImage(coverUrl = null, isEditable = true, isBusy = true, onClick = {}, modifier = Modifier.padding(16.dp)) }
+    WandrTheme {
+        CoverImage(
+            coverUrl = null,
+            isEditable = true,
+            isBusy = true,
+            onClick = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
 }

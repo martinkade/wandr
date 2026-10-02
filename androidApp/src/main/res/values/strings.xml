@@ -176,4 +176,13 @@
     <string name="challenge_withdraw_team_button">Withdraw Team</string>
     <string name="challenge_left_message">Left challenge</string>
     <string name="challenge_team_withdrawn_message">Team withdrawn</string>
+
+    <plurals name="challenge_duration_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="challenge_duration_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
 </resources>

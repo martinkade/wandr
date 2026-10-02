@@ -66,6 +66,13 @@ fun ChallengeCard(
                 )
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = challengePeriodText(challenge),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
 
             if (challenge.requireAllMembersCompletion) {
@@ -107,8 +114,8 @@ private fun ChallengeCardPreview() {
                 type = "distance",
                 targetValue = 100000.0,
                 requireAllMembersCompletion = true,
-                startDate = 0L,
-                endDate = 0L,
+                startDate = 1_768_435_200_000L,
+                endDate = 1_771_027_200_000L,
                 createdBy = "u1",
                 createdAt = 0L,
                 updatedAt = 0L
@@ -129,7 +136,7 @@ private fun ChallengeCardGroupPreview() {
             challenge = Challenge(
                 id = "c2", title = "Team Altitude Climb", description = "Teams compete for 5000 m.", coverUrl = null,
                 scope = "group", type = "elevation", targetValue = 5000.0, requireAllMembersCompletion = true,
-                startDate = 0L, endDate = 0L, createdBy = "u1", createdAt = 0L, updatedAt = 0L
+                startDate = 1_768_435_200_000L, endDate = 1_768_435_200_000L + 5 * 3_600_000L, createdBy = "u1", createdAt = 0L, updatedAt = 0L
             ),
             status = ChallengeStatus.ACTIVE,
             onSelect = {},

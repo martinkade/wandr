@@ -1,4 +1,4 @@
-package com.wandr.android.ui.profile.components
+package com.wandr.android.ui.common
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -43,7 +44,14 @@ fun AvatarImage(
         modifier = modifier
             .size(size)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    )
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         if (avatarUrl != null) {

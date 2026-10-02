@@ -35,7 +35,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,7 +44,6 @@ import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.common.rememberImagePickerFlow
 import com.wandr.android.ui.theme.WandrTheme
-import com.wandr.android.util.AppDateFormatter
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeStatus
@@ -177,7 +175,6 @@ private fun ChallengeDetailsScreenContent(
             if (challenge == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else {
-                val locale = LocalConfiguration.current.locales[0]
                 val type = ChallengeType.fromValue(challenge.type)
                 val isGroup = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.GROUP
                 Column(
@@ -202,11 +199,7 @@ private fun ChallengeDetailsScreenContent(
                         stringResource(R.string.challenge_target_label),
                         "${stringResource(typeLabel(type))}: ${challengeValueText(type, challenge.targetValue)}"
                     )
-                    LabeledValue(
-                        stringResource(R.string.challenge_period_label),
-                        "${AppDateFormatter.formatDateTime(challenge.startDate, locale = locale)} – " +
-                            AppDateFormatter.formatDateTime(challenge.endDate, locale = locale)
-                    )
+                    LabeledValue(stringResource(R.string.challenge_period_label), challengePeriodText(challenge))
                     LabeledValue(
                         stringResource(R.string.challenge_scope_label),
                         stringResource(if (isGroup) R.string.challenge_scope_group else R.string.challenge_scope_individual)
