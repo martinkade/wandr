@@ -7,7 +7,10 @@ import com.wandr.domain.usecase.CreateChallengeUseCase
 import com.wandr.domain.usecase.GetChallengeLeaderboardUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
+import com.wandr.domain.usecase.GetChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
+import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
+import com.wandr.domain.usecase.SetChallengeCoverUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
@@ -28,6 +31,9 @@ import kotlin.uuid.Uuid
 
 class ChallengeViewModel(
     private val getChallengesUseCase: GetChallengesUseCase,
+    private val getChallengeUseCase: GetChallengeUseCase,
+    private val setChallengeCoverUseCase: SetChallengeCoverUseCase,
+    private val removeChallengeCoverUseCase: RemoveChallengeCoverUseCase,
     private val evaluateChallengeStatusUseCase: EvaluateChallengeStatusUseCase,
     private val refreshChallengesUseCase: RefreshChallengesUseCase,
     private val getUserTeamsUseCase: GetUserTeamsUseCase,
@@ -43,12 +49,13 @@ class ChallengeViewModel(
     val uiState: StateFlow<ChallengeState> = _uiState.asStateFlow()
 
     private var observeJob: Job? = null
+    private var selectJob: Job? = null
 
     fun processIntent(intent: ChallengeIntent) {
         when (intent) {
             is ChallengeIntent.LoadChallenges -> load(intent.userId)
             is ChallengeIntent.SelectChallenge -> selectChallenge(intent.challengeId, intent.teamId)
-            is ChallengeIntent.StartCreate -> _uiState.update { it.copy(form = ChallengeForm(), errorMessage = null) }
+            is ChallengeIntent.StartCreate -> startCreate()
             is ChallengeIntent.StartEdit -> startEdit(intent.challengeId)
             is ChallengeIntent.TitleChanged -> updateForm { it.copy(title = intent.title) }
             is ChallengeIntent.DescriptionChanged -> updateForm { it.copy(description = intent.description) }
@@ -57,7 +64,15 @@ class ChallengeViewModel(
                 form.copy(type = intent.type, targetValue = defaultTarget(intent.type))
             }
             is ChallengeIntent.TargetValueChanged -> updateForm { it.copy(targetValue = intent.value) }
-            is ChallengeIntent.DurationDaysChanged -> updateForm { it.copy(durationDays = intent.days) }
+            is ChallengeIntent.StartDateChanged -> updateForm { form ->
+                val length = (form.endDate - form.startDate).takeIf { it > 0 } ?: DAY_MILLIS
+                form.copy(
+                    startDate = intent.millis,
+                    endDate = if (form.endDate <= intent.millis) intent.millis + length else form.endDate
+                )
+            }
+            is ChallengeIntent.EndDateChanged -> updateForm { it.copy(endDate = intent.millis) }
+            is ChallengeIntent.ActiveChanged -> updateForm { it.copy(isActive = intent.isActive) }
             is ChallengeIntent.ScopeChanged -> updateForm { form ->
                 form.copy(
                     scope = intent.scope,
@@ -67,6 +82,8 @@ class ChallengeViewModel(
             is ChallengeIntent.RequireAllMembersCompletionChanged -> updateForm { it.copy(requireAllMembersCompletion = intent.requireAll) }
             is ChallengeIntent.SubmitForm -> submit(intent.userId)
             is ChallengeIntent.DiscardForm -> _uiState.update { it.copy(form = null) }
+            is ChallengeIntent.UploadCover -> updateCover { id -> setChallengeCoverUseCase(id, intent.jpegBytes) }
+            is ChallengeIntent.RemoveCover -> updateCover { id -> removeChallengeCoverUseCase(id) }
             is ChallengeIntent.JoinChallenge -> joinChallenge(intent.challengeId, intent.userId)
             is ChallengeIntent.EnrollTeam -> enrollTeam(intent.challengeId, intent.teamId, intent.userId)
             is ChallengeIntent.ClearMessages -> _uiState.update { it.copy(errorMessage = null, success = null) }
@@ -90,14 +107,20 @@ class ChallengeViewModel(
 
     private fun selectChallenge(challengeId: String, teamId: String?) {
         _uiState.update { it.copy(isLoading = true, standings = emptyList(), leaderboard = emptyList()) }
-        scope.launch {
-            // Team vs. team ranking (aggregates, from the server); may fail while offline.
-            getTeamStandingsUseCase(challengeId)
-                .onSuccess { standings -> _uiState.update { it.copy(standings = standings, isLoading = false) } }
-                .onFailure { error -> _uiState.update { it.copy(isLoading = false, errorMessage = error.message) } }
-        }
-        if (teamId != null) {
-            scope.launch {
+        selectJob?.cancel()
+        selectJob = scope.launch {
+            launch {
+                getChallengeUseCase(challengeId).collect { challenge ->
+                    _uiState.update { it.copy(selectedChallenge = challenge) }
+                }
+            }
+            launch {
+                // Team vs. team ranking (aggregates, from the server); may fail while offline.
+                getTeamStandingsUseCase(challengeId)
+                    .onSuccess { standings -> _uiState.update { it.copy(standings = standings, isLoading = false) } }
+                    .onFailure { error -> _uiState.update { it.copy(isLoading = false, errorMessage = error.message) } }
+            }
+            if (teamId != null) {
                 getChallengeLeaderboardUseCase(challengeId, teamId).collect { leaderboard ->
                     _uiState.update { it.copy(leaderboard = leaderboard) }
                 }
@@ -105,9 +128,19 @@ class ChallengeViewModel(
         }
     }
 
+    private fun startCreate() {
+        // Whole minutes are enough for a start time; the end defaults to 30 days later.
+        val now = Clock.System.now().toEpochMilliseconds().let { it - it % MINUTE_MILLIS }
+        _uiState.update {
+            it.copy(form = ChallengeForm(startDate = now, endDate = now + 30 * DAY_MILLIS), errorMessage = null)
+        }
+    }
+
     private fun startEdit(challengeId: String) {
-        val challenge = _uiState.value.challenges.firstOrNull { it.id == challengeId } ?: return
-        val dayMillis = 24 * 60 * 60 * 1000L
+        val state = _uiState.value
+        val challenge = state.challenges.firstOrNull { it.id == challengeId }
+            ?: state.selectedChallenge?.takeIf { it.id == challengeId }
+            ?: return
         _uiState.update {
             it.copy(
                 errorMessage = null,
@@ -117,9 +150,11 @@ class ChallengeViewModel(
                     description = challenge.description.orEmpty(),
                     type = ChallengeType.fromValue(challenge.type),
                     targetValue = challenge.targetValue,
-                    durationDays = ((challenge.endDate - challenge.startDate) / dayMillis).toInt().coerceAtLeast(1),
+                    startDate = challenge.startDate,
+                    endDate = challenge.endDate,
                     scope = ChallengeScope.fromValue(challenge.scope),
-                    requireAllMembersCompletion = challenge.requireAllMembersCompletion
+                    requireAllMembersCompletion = challenge.requireAllMembersCompletion,
+                    isActive = challenge.isActive
                 )
             )
         }
@@ -133,12 +168,12 @@ class ChallengeViewModel(
     private fun submit(userId: String) {
         val form = _uiState.value.form ?: return
         val now = Clock.System.now().toEpochMilliseconds()
-        val dayMillis = 24 * 60 * 60 * 1000L
-        val existing = form.challengeId?.let { id -> _uiState.value.challenges.firstOrNull { it.id == id } }
+        val state = _uiState.value
+        val existing = form.challengeId?.let { id ->
+            state.challenges.firstOrNull { it.id == id } ?: state.selectedChallenge?.takeIf { it.id == id }
+        }
         if (form.isEditing && existing == null) return
 
-        val startDate = existing?.startDate ?: now
-        val endDate = startDate + form.durationDays.coerceAtLeast(0) * dayMillis
         val challenge = Challenge(
             id = existing?.id ?: Uuid.random().toString(),
             title = form.title,
@@ -148,11 +183,12 @@ class ChallengeViewModel(
             type = form.type.value,
             targetValue = form.targetValue,
             requireAllMembersCompletion = form.scope == ChallengeScope.GROUP && form.requireAllMembersCompletion,
-            startDate = startDate,
-            endDate = endDate,
+            startDate = form.startDate,
+            endDate = form.endDate,
             createdBy = existing?.createdBy ?: userId,
             createdAt = existing?.createdAt ?: now,
-            updatedAt = now
+            updatedAt = now,
+            isActive = form.isActive
         )
 
         _uiState.update { it.copy(isSaving = true, errorMessage = null, success = null) }
@@ -169,6 +205,18 @@ class ChallengeViewModel(
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isSaving = false, errorMessage = error.message ?: "Saving failed") }
+                }
+        }
+    }
+
+    private fun updateCover(action: suspend (challengeId: String) -> Result<Challenge>) {
+        val challengeId = _uiState.value.selectedChallenge?.id ?: return
+        _uiState.update { it.copy(isImageUpdating = true, errorMessage = null, success = null) }
+        scope.launch {
+            action(challengeId)
+                .onSuccess { _uiState.update { it.copy(isImageUpdating = false, success = ChallengeSuccess.IMAGE_UPDATED) } }
+                .onFailure { error ->
+                    _uiState.update { it.copy(isImageUpdating = false, errorMessage = error.message ?: "Image update failed") }
                 }
         }
     }
@@ -193,5 +241,10 @@ class ChallengeViewModel(
                 .onSuccess { _uiState.update { it.copy(success = ChallengeSuccess.JOINED) } }
                 .onFailure { error -> _uiState.update { it.copy(errorMessage = error.message ?: "Failed to join") } }
         }
+    }
+
+    private companion object {
+        const val MINUTE_MILLIS = 60_000L
+        const val DAY_MILLIS = 24 * 60 * 60 * 1000L
     }
 }

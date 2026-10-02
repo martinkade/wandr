@@ -18,7 +18,7 @@
   - **Distance**: e.g., 100 km in 30 days.
   - **Elevation Gain**: e.g., 5,000 m ascent in 30 days.
   - **Active Time**: e.g., 5 hours of activity in 30 days.
-- **Lifecycle & Status**: Draft and Active are stored; Completed and Expired are derived at runtime from the start/end date and progress. Custom cover photo, descriptions, and targets.
+- **Lifecycle & Status**: Draft (unpublished) and Active (published) are stored; Planned, Completed and Expired are derived at runtime from the dates and progress. Start and end are date-time pickers, so challenges can be planned ahead. Custom cover photo, descriptions, and targets.
 - **Group Challenges**: Teams compete **against other teams** (not members against each other). Team owners/admins enroll their team, all members contribute to the team's result, and the standings rank teams.
 - **Privacy**: Other teams only see aggregated team totals; individual progress is visible within your own team only (no global cross-group tracking).
 

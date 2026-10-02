@@ -162,6 +162,7 @@ private fun ChallengeCardGroupPreview() {
 
 private fun statusLabel(status: ChallengeStatus) = when (status) {
     ChallengeStatus.DRAFT -> R.string.challenge_status_draft
+    ChallengeStatus.PLANNED -> R.string.challenge_status_planned
     ChallengeStatus.ACTIVE -> R.string.challenge_status_active
     ChallengeStatus.COMPLETED -> R.string.challenge_status_completed
     ChallengeStatus.EXPIRED -> R.string.challenge_status_expired

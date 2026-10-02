@@ -38,6 +38,9 @@ val domainModule = module {
     factory { CreateChallengeUseCase(get()) }
     factory { com.wandr.domain.usecase.UpdateChallengeUseCase(get()) }
     factory { com.wandr.domain.usecase.GetChallengesUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetChallengeUseCase(get()) }
+    factory { com.wandr.domain.usecase.SetChallengeCoverUseCase(get()) }
+    factory { com.wandr.domain.usecase.RemoveChallengeCoverUseCase(get()) }
     factory { com.wandr.domain.usecase.GetTeamStandingsUseCase(get()) }
     factory { com.wandr.domain.usecase.EnrollTeamInChallengeUseCase(get()) }
     factory { com.wandr.domain.usecase.RefreshChallengesUseCase(get()) }

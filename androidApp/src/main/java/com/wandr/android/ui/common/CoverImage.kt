@@ -1,4 +1,4 @@
-package com.wandr.android.ui.team
+package com.wandr.android.ui.common
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -27,13 +27,16 @@ import com.wandr.android.R
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.presentation.imagecrop.CoverImageSpec
 
-/** 4:3 cover image (or a brand gradient placeholder). In edit mode it is tappable to change the cover. */
+/**
+ * 4:3 cover image (or a brand gradient placeholder), used for groups and challenges. When [isEditable] it is
+ * tappable and shows a "Change cover" hint; the caller opens the image picker in [onClick].
+ */
 @Composable
-fun TeamCover(
+fun CoverImage(
     coverUrl: String?,
-    isEditing: Boolean,
+    isEditable: Boolean,
     isBusy: Boolean,
-    onChange: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -46,7 +49,7 @@ fun TeamCover(
                     listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f))
                 )
             )
-            .clickable(enabled = isEditing && !isBusy, onClick = onChange)
+            .clickable(enabled = isEditable && !isBusy, onClick = onClick)
     ) {
         if (coverUrl != null) {
             AsyncImage(
@@ -56,7 +59,7 @@ fun TeamCover(
                 modifier = Modifier.fillMaxSize()
             )
         }
-        if (isEditing && !isBusy) {
+        if (isEditable && !isBusy) {
             Text(
                 text = stringResource(R.string.team_cover_change),
                 style = MaterialTheme.typography.labelLarge,
@@ -81,12 +84,12 @@ fun TeamCover(
 @Preview(name = "Placeholder Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, widthDp = 360)
 @Preview(name = "Editing Tablet", showBackground = true, widthDp = 840)
 @Composable
-private fun TeamCoverPreview() {
-    WandrTheme { TeamCover(coverUrl = null, isEditing = true, isBusy = false, onChange = {}, modifier = Modifier.padding(16.dp)) }
+private fun CoverImagePreview() {
+    WandrTheme { CoverImage(coverUrl = null, isEditable = true, isBusy = false, onClick = {}, modifier = Modifier.padding(16.dp)) }
 }
 
 @Preview(name = "Busy", showBackground = true, widthDp = 360)
 @Composable
-private fun TeamCoverBusyPreview() {
-    WandrTheme { TeamCover(coverUrl = null, isEditing = true, isBusy = true, onChange = {}, modifier = Modifier.padding(16.dp)) }
+private fun CoverImageBusyPreview() {
+    WandrTheme { CoverImage(coverUrl = null, isEditable = true, isBusy = true, onClick = {}, modifier = Modifier.padding(16.dp)) }
 }

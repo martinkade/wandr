@@ -27,7 +27,13 @@ interface ChallengeRepository {
 
     /** Saves locally first; if the push fails the challenge stays queued for the sync manager. */
     suspend fun updateChallenge(challenge: Challenge): Result<Challenge>
-    suspend fun uploadChallengeCover(challengeId: String, bytes: ByteArray, fileName: String): Result<String>
+
+    /** Uploads [jpegBytes] as the cover, links it to the challenge and removes earlier covers. */
+    suspend fun setChallengeCover(challengeId: String, jpegBytes: ByteArray): Result<Challenge>
+
+    /** Clears the cover and deletes the stored cover files. */
+    suspend fun removeChallengeCover(challengeId: String): Result<Challenge>
+
 
     /** Joins an individual challenge for [userId]. Group challenges are joined by enrolling a team. */
     suspend fun joinChallenge(challengeId: String, userId: String): Result<Unit>

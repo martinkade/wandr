@@ -15,21 +15,37 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.ui.theme.WandrTheme
+import com.wandr.android.ui.profile.AvatarEditor
 import com.wandr.domain.model.Profile
 
 @Composable
 fun ProfileHeaderRow(
     profile: Profile,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** When set, tapping the avatar changes the photo right here (library / camera / remove). */
+    onAvatarReady: ((ByteArray) -> Unit)? = null,
+    onRemoveAvatar: () -> Unit = {},
+    isAvatarBusy: Boolean = false
 ) = Row(
     modifier = modifier,
     horizontalArrangement = Arrangement.spacedBy(16.dp),
     verticalAlignment = Alignment.CenterVertically
 ) {
-    AvatarImage(
-        avatarUrl = profile.avatarUrl,
-        displayName = profile.displayName,
-    )
+    if (onAvatarReady != null) {
+        AvatarEditor(
+            avatarUrl = profile.avatarUrl,
+            displayName = profile.displayName,
+            isBusy = isAvatarBusy,
+            onAvatarReady = onAvatarReady,
+            onRemoveAvatar = onRemoveAvatar
+        )
+    } else {
+        AvatarImage(
+            avatarUrl = profile.avatarUrl,
+            displayName = profile.displayName,
+            isBusy = isAvatarBusy
+        )
+    }
     Column(modifier = Modifier.weight(1.0f)) {
         Text(
             text = profile.displayName,

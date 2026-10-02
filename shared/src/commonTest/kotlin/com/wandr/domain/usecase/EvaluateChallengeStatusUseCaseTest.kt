@@ -28,8 +28,16 @@ class EvaluateChallengeStatusUseCaseTest {
     private val openChallenge = groupChallenge.copy(scope = "individual", requireAllMembersCompletion = false)
 
     @Test
-    fun draft_beforeStartDate() {
-        assertEquals(ChallengeStatus.DRAFT, evaluator(groupChallenge, currentTimeMillis = 999L))
+    fun draft_whenNotPublished_regardlessOfTheDates() {
+        val draft = groupChallenge.copy(isActive = false)
+        assertEquals(ChallengeStatus.DRAFT, evaluator(draft, currentTimeMillis = 999L))
+        assertEquals(ChallengeStatus.DRAFT, evaluator(draft, currentTimeMillis = 3000L))
+        assertEquals(ChallengeStatus.DRAFT, evaluator(draft, currentTimeMillis = 9000L))
+    }
+
+    @Test
+    fun planned_whenPublishedButNotStartedYet() {
+        assertEquals(ChallengeStatus.PLANNED, evaluator(groupChallenge, currentTimeMillis = 999L))
     }
 
     @Test
@@ -73,8 +81,7 @@ class EvaluateChallengeStatusUseCaseTest {
 
     @Test
     fun onlyDraftAndActiveAreStored() {
-        assertEquals("draft", ChallengeStatus.storedValueAt(startDate = 1000L, nowMillis = 999L))
-        assertEquals("active", ChallengeStatus.storedValueAt(startDate = 1000L, nowMillis = 1000L))
-        assertEquals("active", ChallengeStatus.storedValueAt(startDate = 1000L, nowMillis = 999_999L))
+        assertEquals("draft", ChallengeStatus.storedValue(isActive = false))
+        assertEquals("active", ChallengeStatus.storedValue(isActive = true))
     }
 }

@@ -16,7 +16,10 @@ import com.wandr.domain.usecase.CreateChallengeUseCase
 import com.wandr.domain.usecase.GetChallengeLeaderboardUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
+import com.wandr.domain.usecase.GetChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
+import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
+import com.wandr.domain.usecase.SetChallengeCoverUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
@@ -27,6 +30,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -46,7 +50,7 @@ private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : 
     var standings: List<TeamStanding> = emptyList()
     val contributions = MutableStateFlow<List<LeaderboardEntry>>(emptyList())
 
-    override fun getChallengeById(challengeId: String): Flow<Challenge?> = emptyFlow()
+    override fun getChallengeById(challengeId: String): Flow<Challenge?> = challenges.map { list -> list.firstOrNull { it.id == challengeId } }
     override fun getChallenges(): Flow<List<Challenge>> = challenges
     override suspend fun refreshChallenges(): Result<Unit> {
         refreshed++
@@ -65,8 +69,16 @@ private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : 
         challenges.value = challenges.value.map { if (it.id == challenge.id) challenge else it }
         return Result.success(challenge)
     }
-    override suspend fun uploadChallengeCover(challengeId: String, bytes: ByteArray, fileName: String): Result<String> =
-        Result.failure(UnsupportedOperationException())
+    var coverBytes: ByteArray? = null
+    var coverRemoved = false
+    override suspend fun setChallengeCover(challengeId: String, jpegBytes: ByteArray): Result<Challenge> {
+        coverBytes = jpegBytes
+        return Result.success(challenges.value.first { it.id == challengeId }.copy(coverUrl = "https://cdn/cover.jpg"))
+    }
+    override suspend fun removeChallengeCover(challengeId: String): Result<Challenge> {
+        coverRemoved = true
+        return Result.success(challenges.value.first { it.id == challengeId }.copy(coverUrl = null))
+    }
     override suspend fun joinChallenge(challengeId: String, userId: String): Result<Unit> = Result.success(Unit)
     override suspend fun enrollTeam(challengeId: String, teamId: String, enrolledBy: String): Result<Unit> {
         if (failEnroll) return Result.failure(IllegalStateException("not allowed"))
@@ -107,7 +119,8 @@ class ChallengeViewModelTest {
         teams: List<Team>,
         scope: CoroutineScope
     ) = ChallengeViewModel(
-        GetChallengesUseCase(repo), EvaluateChallengeStatusUseCase(), RefreshChallengesUseCase(repo), GetUserTeamsUseCase(FakeTeamRepository(teams)),
+        GetChallengesUseCase(repo), GetChallengeUseCase(repo), SetChallengeCoverUseCase(repo), RemoveChallengeCoverUseCase(repo),
+        EvaluateChallengeStatusUseCase(), RefreshChallengesUseCase(repo), GetUserTeamsUseCase(FakeTeamRepository(teams)),
         CreateChallengeUseCase(repo), UpdateChallengeUseCase(repo),
         GetChallengeLeaderboardUseCase(repo), GetTeamStandingsUseCase(repo), EnrollTeamInChallengeUseCase(repo),
         JoinChallengeUseCase(repo), scope
@@ -124,15 +137,17 @@ class ChallengeViewModelTest {
     }
 
     @Test
-    fun statusIsDerivedAtRuntimeFromTheDates() = runTest {
+    fun statusIsDerivedAtRuntimeFromFlagAndDates() = runTest {
         val farFuture = 4_000_000_000_000L // year 2096
-        val draft = open.copy(id = "draft", startDate = farFuture, endDate = farFuture + day)
+        val draft = open.copy(id = "draft", isActive = false)
+        val planned = open.copy(id = "planned", startDate = farFuture, endDate = farFuture + day)
         val running = open.copy(id = "running", startDate = 0, endDate = farFuture)
         val over = open.copy(id = "over", startDate = 0, endDate = 1)
-        val vm = viewModel(FakeChallengeRepository(listOf(draft, running, over)), emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        val vm = viewModel(FakeChallengeRepository(listOf(draft, planned, running, over)), emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
 
         assertEquals(ChallengeStatus.DRAFT, vm.uiState.value.statuses["draft"])
+        assertEquals(ChallengeStatus.PLANNED, vm.uiState.value.statuses["planned"])
         assertEquals(ChallengeStatus.ACTIVE, vm.uiState.value.statuses["running"])
         assertEquals(ChallengeStatus.EXPIRED, vm.uiState.value.statuses["over"])
     }
@@ -149,9 +164,67 @@ class ChallengeViewModelTest {
         val created = assertNotNull(repo.created)
         assertEquals("Summer hike", created.title)
         assertEquals("individual", created.scope)
-        assertEquals(30 * day, created.endDate - created.startDate)
+        assertEquals(30 * day, created.endDate - created.startDate) // default length
+        assertFalse(created.isActive) // new challenges start as drafts
         assertEquals(ChallengeSuccess.CREATED, vm.uiState.value.success)
         assertFalse(vm.uiState.value.isSaving)
+    }
+
+    @Test
+    fun activeToggleDecidesBetweenDraftAndActive() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        assertFalse(assertNotNull(vm.uiState.value.form).isActive)
+
+        vm.processIntent(ChallengeIntent.TitleChanged("Live"))
+        vm.processIntent(ChallengeIntent.ActiveChanged(true))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+
+        assertTrue(assertNotNull(repo.created).isActive)
+    }
+
+    @Test
+    fun challengesCanBePlannedInTheFuture() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TitleChanged("Next summer"))
+        vm.processIntent(ChallengeIntent.StartDateChanged(4_000_000_000_000L))
+        vm.processIntent(ChallengeIntent.EndDateChanged(4_000_000_000_000L + 7 * day))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+
+        val created = assertNotNull(repo.created)
+        assertEquals(4_000_000_000_000L, created.startDate)
+        assertEquals(4_000_000_000_000L + 7 * day, created.endDate)
+    }
+
+    @Test
+    fun movingTheStartPastTheEndMovesTheEndAlongKeepingTheLength() = runTest {
+        val vm = viewModel(FakeChallengeRepository(), emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        val before = assertNotNull(vm.uiState.value.form)
+        val length = before.endDate - before.startDate
+
+        vm.processIntent(ChallengeIntent.StartDateChanged(before.endDate + 5 * day))
+
+        val form = assertNotNull(vm.uiState.value.form)
+        assertEquals(before.endDate + 5 * day, form.startDate)
+        assertEquals(length, form.endDate - form.startDate)
+    }
+
+    @Test
+    fun endBeforeStartIsRejected() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TitleChanged("Backwards"))
+        val start = assertNotNull(vm.uiState.value.form).startDate
+        vm.processIntent(ChallengeIntent.EndDateChanged(start - day))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+
+        assertEquals("End date must be after start date", vm.uiState.value.errorMessage)
+        assertNull(repo.created)
     }
 
     @Test
@@ -255,7 +328,9 @@ class ChallengeViewModelTest {
         val form = assertNotNull(vm.uiState.value.form)
         assertEquals("Open 100 km", form.title)
         assertEquals(ChallengeType.DISTANCE, form.type)
-        assertEquals(30, form.durationDays)
+        assertEquals(0L, form.startDate)
+        assertEquals(30 * day, form.endDate)
+        assertTrue(form.isActive)
         assertTrue(form.isEditing)
 
         vm.processIntent(ChallengeIntent.TitleChanged("Open 150 km"))
@@ -292,5 +367,31 @@ class ChallengeViewModelTest {
         vm.processIntent(ChallengeIntent.DiscardForm)
         assertNull(vm.uiState.value.success)
         assertNull(vm.uiState.value.form)
+    }
+
+    @Test
+    fun coverUploadAndRemovalApplyToTheSelectedChallenge() = runTest {
+        val repo = FakeChallengeRepository(listOf(open))
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.SelectChallenge("c1"))
+        assertEquals("c1", vm.uiState.value.selectedChallenge?.id)
+
+        vm.processIntent(ChallengeIntent.UploadCover(byteArrayOf(1, 2, 3)))
+        assertEquals(3, repo.coverBytes?.size)
+        assertEquals(ChallengeSuccess.IMAGE_UPDATED, vm.uiState.value.success)
+        assertFalse(vm.uiState.value.isImageUpdating)
+
+        vm.processIntent(ChallengeIntent.RemoveCover)
+        assertTrue(repo.coverRemoved)
+    }
+
+    @Test
+    fun editFromTheDetailScreenWorksWithoutTheListLoaded() = runTest {
+        val repo = FakeChallengeRepository(listOf(open))
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.SelectChallenge("c1")) // detail screen: no LoadChallenges
+        vm.processIntent(ChallengeIntent.StartEdit("c1"))
+
+        assertEquals("c1", assertNotNull(vm.uiState.value.form).challengeId)
     }
 }

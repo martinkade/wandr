@@ -8,14 +8,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -24,20 +31,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.wandr.android.R
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.presentation.team.TeamIntent
 import com.wandr.presentation.team.TeamViewModel
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
- * Groups tab for managers: the list and a dialog to create a group. Opening a group is reported via
- * [onOpenTeam]; the details page is shown by the main screen, above the tab bar.
+ * Groups tab for managers: the list and a bottom sheet to create a group (the same sheet as for editing one).
+ * Opening a group is reported via [onOpenTeam]; the details page is shown by the main screen, above the tab bar.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsScreen(
     userId: String,
@@ -47,7 +54,41 @@ fun GroupsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var showCreate by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val isSaving by rememberUpdatedState(state.isLoading)
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { !isSaving } // no swipe-away while saving
+    )
     LaunchedEffect(userId) { viewModel.processIntent(TeamIntent.LoadUserTeams(userId)) }
+
+    fun resetForm() {
+        viewModel.processIntent(TeamIntent.CreateTeamNameChanged(""))
+        viewModel.processIntent(TeamIntent.CreateTeamDescriptionChanged(""))
+        viewModel.processIntent(TeamIntent.ClearMessages)
+    }
+
+    fun closeSheet() {
+        scope.launch { sheetState.hide() }.invokeOnCompletion {
+            showCreate = false
+            resetForm()
+        }
+    }
+
+    // A created group closes the sheet; errors show in the sheet.
+    LaunchedEffect(state.successMessage, state.errorMessage) {
+        if (showCreate && state.successMessage != null) {
+            closeSheet()
+        } else if (state.errorMessage != null) {
+            val message = state.errorMessage ?: return@LaunchedEffect
+            scope.launch {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar(message)
+            }
+            viewModel.processIntent(TeamIntent.ClearMessages)
+        }
+    }
 
     GroupList(
         teams = state.teams,
@@ -57,11 +98,25 @@ fun GroupsScreen(
     )
 
     if (showCreate) {
-        Dialog(
-            onDismissRequest = { showCreate = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ModalBottomSheet(
+            onDismissRequest = {
+                showCreate = false
+                resetForm()
+            },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.background
         ) {
-            CreateTeamScreen(creatorId = userId, onCancel = { showCreate = false }, onCreated = { showCreate = false })
+            TeamEditScreen(
+                title = stringResource(R.string.create_team_title),
+                name = state.createTeamName,
+                description = state.createTeamDescription,
+                onNameChange = { viewModel.processIntent(TeamIntent.CreateTeamNameChanged(it)) },
+                onDescriptionChange = { viewModel.processIntent(TeamIntent.CreateTeamDescriptionChanged(it)) },
+                isSaving = state.isLoading,
+                onSave = { viewModel.processIntent(TeamIntent.SubmitCreateTeam(userId)) },
+                onCancel = ::closeSheet,
+                snackbarHostState = snackbarHostState
+            )
         }
     }
 }

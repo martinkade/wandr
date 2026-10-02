@@ -57,15 +57,6 @@ fun ProfileEditScreen(
         )
         Spacer(Modifier.height(20.dp))
 
-        AvatarEditor(
-            avatarUrl = state.profile?.avatarUrl,
-            displayName = state.profile?.displayName ?: "User",
-            isBusy = state.isAvatarUpdating,
-            onAvatarReady = { jpeg -> state.profile?.let { onIntent(ProfileIntent.UploadAvatar(it.id, jpeg)) } },
-            onRemoveAvatar = { state.profile?.let { onIntent(ProfileIntent.RemoveAvatar(it.id)) } }
-        )
-        Spacer(Modifier.height(20.dp))
-
         OutlinedTextField(
             value = state.profile?.displayName ?: "",
             onValueChange = { onIntent(ProfileIntent.DisplayNameChanged(it)) },

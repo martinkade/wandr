@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.DateTimePickerField
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeType
@@ -61,7 +62,6 @@ fun ChallengeEditScreen(
     var targetText by remember(form.challengeId, form.type) {
         mutableStateOf(formatDisplay(ChallengeUnits.toDisplay(form.type, form.targetValue)))
     }
-    var durationText by remember(form.challengeId) { mutableStateOf(form.durationDays.toString()) }
 
     Column(
         modifier = modifier
@@ -105,33 +105,34 @@ fun ChallengeEditScreen(
         }
 
         Spacer(Modifier.height(12.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(
-                value = targetText,
-                onValueChange = { text ->
-                    targetText = text
-                    text.replace(',', '.').toDoubleOrNull()?.let {
-                        onIntent(ChallengeIntent.TargetValueChanged(ChallengeUnits.toBase(form.type, it)))
-                    }
-                },
-                label = { Text(stringResource(R.string.challenge_target_label)) },
-                suffix = { Text(stringResource(unitLabel(form.type))) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.weight(1f)
-            )
-            OutlinedTextField(
-                value = durationText,
-                onValueChange = { text ->
-                    durationText = text.filter(Char::isDigit).take(4)
-                    onIntent(ChallengeIntent.DurationDaysChanged(durationText.toIntOrNull() ?: 0))
-                },
-                label = { Text(stringResource(R.string.challenge_duration_label)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f)
-            )
-        }
+        OutlinedTextField(
+            value = targetText,
+            onValueChange = { text ->
+                targetText = text
+                text.replace(',', '.').toDoubleOrNull()?.let {
+                    onIntent(ChallengeIntent.TargetValueChanged(ChallengeUnits.toBase(form.type, it)))
+                }
+            },
+            label = { Text(stringResource(R.string.challenge_target_label)) },
+            suffix = { Text(stringResource(unitLabel(form.type))) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Challenges can be planned for the future: pick start and end date + time.
+        Spacer(Modifier.height(12.dp))
+        DateTimePickerField(
+            label = stringResource(R.string.challenge_start_label),
+            valueMillis = form.startDate,
+            onValueChange = { onIntent(ChallengeIntent.StartDateChanged(it)) }
+        )
+        Spacer(Modifier.height(8.dp))
+        DateTimePickerField(
+            label = stringResource(R.string.challenge_end_label),
+            valueMillis = form.endDate,
+            onValueChange = { onIntent(ChallengeIntent.EndDateChanged(it)) }
+        )
 
         SectionLabel(R.string.challenge_scope_label)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -166,6 +167,19 @@ fun ChallengeEditScreen(
                     onCheckedChange = { onIntent(ChallengeIntent.RequireAllMembersCompletionChanged(it)) }
                 )
             }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(stringResource(R.string.challenge_active_label), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = stringResource(R.string.challenge_active_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(checked = form.isActive, onCheckedChange = { onIntent(ChallengeIntent.ActiveChanged(it)) })
         }
 
         Spacer(Modifier.height(24.dp))
@@ -224,7 +238,7 @@ private fun formatDisplay(value: Double): String =
 private fun ChallengeEditScreenPreview() {
     WandrTheme {
         ChallengeEditScreen(
-            form = ChallengeForm(title = "30-Day 100 km Hike"),
+            form = ChallengeForm(title = "30-Day 100 km Hike", startDate = 1_768_435_200_000L, endDate = 1_771_027_200_000L),
             isSaving = false,
             onIntent = {}, onSave = {}, onCancel = {}, snackbarHostState = remember { SnackbarHostState() }
         )
@@ -241,7 +255,8 @@ private fun ChallengeEditScreenGroupPreview() {
             form = ChallengeForm(
                 challengeId = "c1", title = "Team sprint", description = "Everybody finishes.",
                 type = ChallengeType.ELEVATION, targetValue = 5000.0, scope = ChallengeScope.GROUP,
-                requireAllMembersCompletion = true
+                startDate = 1_768_435_200_000L, endDate = 1_771_027_200_000L,
+                requireAllMembersCompletion = true, isActive = true
             ),
             isSaving = false,
             onIntent = {}, onSave = {}, onCancel = {}, snackbarHostState = remember { SnackbarHostState() }

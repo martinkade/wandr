@@ -1,21 +1,24 @@
 package com.wandr.domain.model
 
 /**
- * Lifecycle state of a challenge.
+ * Lifecycle state of a challenge as shown to the user.
  *
- * Only [DRAFT] and [ACTIVE] exist in the database (`challenge_status`). [COMPLETED] and [EXPIRED] are never
- * stored: they are derived at runtime from the start / end date (and, for [COMPLETED], the participants'
- * progress), see `EvaluateChallengeStatusUseCase`.
+ * The database stores only two values (`challenge_status`): [DRAFT] (not published yet, only the creator sees
+ * it) and [ACTIVE] (published). Everything else is derived at runtime from that flag and the dates, see
+ * `EvaluateChallengeStatusUseCase`:
+ * - [PLANNED]: published, but the start date is in the future
+ * - [ACTIVE]: published and running
+ * - [COMPLETED] / [EXPIRED]: over, with / without reaching the goal
  */
 enum class ChallengeStatus(val value: String) {
     DRAFT("draft"),
+    PLANNED("planned"),
     ACTIVE("active"),
     COMPLETED("completed"),
     EXPIRED("expired");
 
     companion object {
-        /** The value to persist when saving a challenge that starts at [startDate]; only draft / active exist. */
-        fun storedValueAt(startDate: Long, nowMillis: Long): String =
-            if (nowMillis < startDate) DRAFT.value else ACTIVE.value
+        /** The value that is persisted: only draft or active exist in the database. */
+        fun storedValue(isActive: Boolean): String = if (isActive) ACTIVE.value else DRAFT.value
     }
 }

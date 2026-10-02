@@ -38,7 +38,10 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
-import com.wandr.android.ui.profile.components.AvatarPicker
+import com.wandr.android.ui.common.CoverImage
+import com.wandr.android.ui.common.rememberImagePickerFlow
+import com.wandr.android.ui.profile.AvatarEditor
+import com.wandr.presentation.imagecrop.CoverImageSpec
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
@@ -114,6 +117,16 @@ private fun TeamDetailsScreenContent(
     // Losing edit rights (e.g. role changed remotely) leaves edit mode.
     LaunchedEffect(state.canEdit) { if (!state.canEdit) isEditing = false }
 
+    val coverFlow = rememberImagePickerFlow(
+        title = stringResource(R.string.team_cover_title),
+        aspectRatio = CoverImageSpec.ASPECT_RATIO,
+        outputMaxEdgePx = CoverImageSpec.MAX_EDGE_PX,
+        jpegQuality = CoverImageSpec.JPEG_QUALITY,
+        canRemove = team?.coverUrl != null,
+        onImageReady = { onIntent(TeamDetailsIntent.UploadCover(it)) },
+        onRemove = { onIntent(TeamDetailsIntent.RemoveCover) }
+    )
+
     ScreenScaffold(
         title = stringResource(R.string.team_details_title),
         modifier = modifier,
@@ -134,15 +147,24 @@ private fun TeamDetailsScreenContent(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TeamCover(coverUrl = team.coverUrl, isEditing = false, isBusy = false, onChange = {})
+                    // Owners and admins change cover and avatar right here (tap), no edit mode needed.
+                    CoverImage(
+                        coverUrl = team.coverUrl,
+                        isEditable = state.canEdit,
+                        isBusy = state.isImageUpdating,
+                        onClick = coverFlow::open
+                    )
 
                     Spacer(Modifier.height(16.dp))
 
-                    AvatarPicker(
+                    AvatarEditor(
                         avatarUrl = team.avatarUrl,
                         displayName = team.name,
-                        onPickAvatar = {},
-                        enabled = false
+                        isBusy = state.isImageUpdating,
+                        enabled = state.canEdit,
+                        title = stringResource(R.string.team_photo_title),
+                        onAvatarReady = { onIntent(TeamDetailsIntent.UploadAvatar(it)) },
+                        onRemoveAvatar = { onIntent(TeamDetailsIntent.RemoveAvatar) }
                     )
 
                     Spacer(Modifier.height(8.dp))
@@ -193,8 +215,12 @@ private fun TeamDetailsScreenContent(
             containerColor = MaterialTheme.colorScheme.background
         ) {
             TeamEditScreen(
-                state = state,
-                onIntent = onIntent,
+                title = stringResource(R.string.team_edit_title),
+                name = team.name,
+                description = team.description.orEmpty(),
+                onNameChange = { onIntent(TeamDetailsIntent.NameChanged(it)) },
+                onDescriptionChange = { onIntent(TeamDetailsIntent.DescriptionChanged(it)) },
+                isSaving = state.isSaving,
                 onSave = {
                     saveRequested = true
                     onIntent(TeamDetailsIntent.Save)

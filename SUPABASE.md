@@ -56,8 +56,9 @@ CREATE TYPE system_role AS ENUM ('user', 'manager');
 -- Role of a user inside one team (team_members.role)
 CREATE TYPE team_role AS ENUM ('admin', 'member');
 CREATE TYPE challenge_type AS ENUM ('distance', 'elevation', 'time');
--- Only draft / active are stored. 'completed' and 'expired' are derived at runtime from start_date, end_date
--- (and the participants' progress), so they can never be stale.
+-- Only draft / active are stored: draft = not published yet (only the creator sees it), active = published.
+-- 'planned' (published, starts later), 'completed' and 'expired' are derived at runtime from the dates (and the
+-- participants' progress), so they can never be stale.
 CREATE TYPE challenge_status AS ENUM ('draft', 'active');
 CREATE TYPE challenge_scope AS ENUM ('group', 'individual');
 CREATE TYPE social_entity_type AS ENUM ('activity', 'challenge');
@@ -119,7 +120,7 @@ CREATE TABLE public.challenges (
     require_all_members_completion BOOLEAN NOT NULL DEFAULT FALSE, -- All-or-Nothing: a team only completes when EVERY member completed
     start_date TIMESTAMPTZ NOT NULL,
     end_date TIMESTAMPTZ NOT NULL,
-    status challenge_status NOT NULL DEFAULT 'draft', -- informational; clients derive the real state from the dates
+    status challenge_status NOT NULL DEFAULT 'draft', -- draft: only the creator sees it; active: published
     created_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -343,11 +344,11 @@ CREATE POLICY "Team owners can remove members or members can leave"
 -- Challenges & Challenge Participants Policies (Manager Rights & Scope Rules)
 -- ----------------------------------------------------------------------------
 -- A GROUP challenge is not tied to one team: teams enroll and compete AGAINST EACH OTHER. The members of one team
--- contribute to their team's result and do not compete against each other. Challenges themselves are public,
--- so team owners/admins can find them and enroll.
-CREATE POLICY "Challenges are visible to every signed-in user"
+-- contribute to their team's result and do not compete against each other. Published (active) challenges are public,
+-- so team owners/admins can find them and enroll; drafts are only visible to their creator.
+CREATE POLICY "Published challenges and own drafts are visible"
     ON public.challenges FOR SELECT TO authenticated
-    USING (true);
+    USING (status = 'active' OR auth.uid() = created_by);
 
 CREATE POLICY "Only managers can create challenges"
     ON public.challenges FOR INSERT TO authenticated
@@ -390,7 +391,7 @@ CREATE POLICY "Team owners and admins can enroll their team"
     WITH CHECK (
         enrolled_by = auth.uid() AND
         public.is_team_admin(team_id::text, auth.uid()) AND
-        EXISTS (SELECT 1 FROM public.challenges c WHERE c.id = challenge_id AND c.scope = 'group')
+        EXISTS (SELECT 1 FROM public.challenges c WHERE c.id = challenge_id AND c.scope = 'group' AND c.status = 'active')
     );
 
 CREATE POLICY "Team owners and admins can withdraw their team"
@@ -414,7 +415,7 @@ CREATE POLICY "Users can join individual challenges"
     ON public.challenge_participants FOR INSERT TO authenticated
     WITH CHECK (
         auth.uid() = user_id AND team_id IS NULL AND
-        EXISTS (SELECT 1 FROM public.challenges WHERE id = challenge_id AND scope = 'individual')
+        EXISTS (SELECT 1 FROM public.challenges WHERE id = challenge_id AND scope = 'individual' AND status = 'active')
     );
 
 CREATE POLICY "Users can quit individual challenges"
@@ -495,6 +496,19 @@ CREATE POLICY "Team Image Upload Access" ON storage.objects FOR INSERT TO authen
     WITH CHECK (bucket_id = 'team-covers' AND public.is_team_admin((storage.foldername(name))[1], auth.uid()));
 CREATE POLICY "Team Image Delete Access" ON storage.objects FOR DELETE TO authenticated
     USING (bucket_id = 'team-covers' AND public.is_team_admin((storage.foldername(name))[1], auth.uid()));
+
+-- Challenge cover (folder <challenge_id>/...): everyone signed in can read, only the creating manager can add or remove.
+CREATE POLICY "Challenge Cover Read Access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'challenge-covers');
+CREATE POLICY "Challenge Cover Upload Access" ON storage.objects FOR INSERT TO authenticated
+    WITH CHECK (bucket_id = 'challenge-covers' AND EXISTS (
+        SELECT 1 FROM public.challenges c
+        WHERE c.id::text = (storage.foldername(name))[1] AND c.created_by = auth.uid()
+    ));
+CREATE POLICY "Challenge Cover Delete Access" ON storage.objects FOR DELETE TO authenticated
+    USING (bucket_id = 'challenge-covers' AND EXISTS (
+        SELECT 1 FROM public.challenges c
+        WHERE c.id::text = (storage.foldername(name))[1] AND c.created_by = auth.uid()
+    ));
 
 ```
 

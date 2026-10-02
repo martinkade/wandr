@@ -135,7 +135,6 @@
     <string name="challenge_unit_distance">km</string>
     <string name="challenge_unit_elevation">m</string>
     <string name="challenge_unit_time">Std.</string>
-    <string name="challenge_duration_label">Dauer (Tage)</string>
     <string name="challenge_scope_label">Modus</string>
     <string name="challenge_scope_individual">Alle (einzeln)</string>
     <string name="challenge_scope_group">Teams (Team gegen Team)</string>
@@ -155,4 +154,21 @@
     <string name="challenge_status_active">Aktiv</string>
     <string name="challenge_status_completed">Abgeschlossen</string>
     <string name="challenge_status_expired">Beendet</string>
+
+    <!-- Challenge-Zeitraum, Status, Details -->
+    <string name="challenge_start_label">Beginn</string>
+    <string name="challenge_end_label">Ende</string>
+    <string name="challenge_active_label">Aktiv</string>
+    <string name="challenge_active_hint">Aus: Entwurf, nur für dich sichtbar. An: für alle veröffentlicht.</string>
+    <string name="challenge_status_planned">Geplant</string>
+    <string name="challenge_status_label">Status</string>
+    <string name="challenge_period_label">Zeitraum</string>
+    <string name="challenge_details_title">Challenge-Details</string>
+    <string name="challenge_standings_title">Team-Rangliste</string>
+    <string name="challenge_standings_empty">Noch keine Teams angemeldet.</string>
+    <string name="challenge_standings_members">%1$d von %2$d Mitgliedern fertig</string>
+    <string name="challenge_image_updated_message">Titelbild aktualisiert</string>
+    <string name="picker_select_date">Datum wählen</string>
+    <string name="picker_select_time">Uhrzeit wählen</string>
+    <string name="ok_button">OK</string>
 </resources>

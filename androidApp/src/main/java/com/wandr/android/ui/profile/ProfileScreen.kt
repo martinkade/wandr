@@ -139,8 +139,12 @@ private fun ProfileScreenContent(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // The photo is changed right here (tap), not in the edit sheet.
                     ProfileHeaderRow(
                         profile = profile,
+                        onAvatarReady = { jpeg -> onIntent(ProfileIntent.UploadAvatar(profile.id, jpeg)) },
+                        onRemoveAvatar = { onIntent(ProfileIntent.RemoveAvatar(profile.id)) },
+                        isAvatarBusy = state.isAvatarUpdating,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)

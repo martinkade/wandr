@@ -19,6 +19,7 @@ import com.wandr.domain.repository.ChallengeRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
+import io.ktor.http.ContentType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -137,7 +138,7 @@ class ChallengeRepositoryImpl(
         id = id, title = title, description = description, coverUrl = coverUrl, scope = scope,
         type = type, targetValue = targetValue, requireAllMembersCompletion = requireAllMembersCompletion,
         startDate = startDate, endDate = endDate,
-        status = ChallengeStatus.storedValueAt(startDate, Clock.System.now().toEpochMilliseconds()),
+        status = ChallengeStatus.storedValue(isActive),
         createdBy = createdBy, createdAt = createdAt, updatedAt = updatedAt, syncStatus = syncStatus
     )
 
@@ -145,15 +146,31 @@ class ChallengeRepositoryImpl(
         id = id, title = title, description = description, coverUrl = coverUrl, scope = scope,
         type = type, targetValue = targetValue, requireAllMembersCompletion = requireAllMembersCompletion,
         startDate = startDate, endDate = endDate, createdBy = createdBy, createdAt = createdAt,
-        updatedAt = updatedAt
+        updatedAt = updatedAt, isActive = status == ChallengeStatus.ACTIVE.value
     )
 
-    override suspend fun uploadChallengeCover(challengeId: String, bytes: ByteArray, fileName: String): Result<String> = runCatching {
-        val bucket = supabase.storage.from("challenge-covers")
-        val path = "$challengeId/$fileName"
-        bucket.upload(path, bytes) { upsert = true }
-        val publicUrl = bucket.publicUrl(path)
-        publicUrl
+    override suspend fun setChallengeCover(challengeId: String, jpegBytes: ByteArray): Result<Challenge> = runCatching {
+        val current = requireNotNull(challengeDao.getChallengeOnce(challengeId)) { "Challenge is not loaded yet" }.toDomain()
+        val fileName = "cover_${Clock.System.now().toEpochMilliseconds()}.jpg"
+        val bucket = supabase.storage.from(COVER_BUCKET)
+        bucket.upload("$challengeId/$fileName", jpegBytes) { contentType = ContentType.Image.JPEG }
+        val updated = updateChallenge(current.copy(coverUrl = bucket.publicUrl("$challengeId/$fileName"))).getOrThrow()
+        // Best effort: stale files are harmless, a failed cleanup must not fail the update.
+        runCatching { deleteCovers(challengeId, keepFileName = fileName) }
+        updated
+    }
+
+    override suspend fun removeChallengeCover(challengeId: String): Result<Challenge> = runCatching {
+        val current = requireNotNull(challengeDao.getChallengeOnce(challengeId)) { "Challenge is not loaded yet" }.toDomain()
+        val updated = updateChallenge(current.copy(coverUrl = null)).getOrThrow()
+        runCatching { deleteCovers(challengeId, keepFileName = null) }
+        updated
+    }
+
+    private suspend fun deleteCovers(challengeId: String, keepFileName: String?) {
+        val bucket = supabase.storage.from(COVER_BUCKET)
+        val stale = bucket.list(challengeId).map { it.name }.filter { it.startsWith("cover_") && it != keepFileName }
+        if (stale.isNotEmpty()) bucket.delete(stale.map { "$challengeId/$it" })
     }
 
     @OptIn(ExperimentalUuidApi::class)
@@ -203,5 +220,6 @@ class ChallengeRepositoryImpl(
     private companion object {
         const val SYNCED = "SYNCED"
         const val DIRTY = "DIRTY"
+        const val COVER_BUCKET = "challenge-covers"
     }
 }

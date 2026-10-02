@@ -52,6 +52,7 @@ import org.koin.compose.koinInject
 fun ChallengeListScreen(
     userId: String,
     isManager: Boolean,
+    onOpenChallenge: (challengeId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ChallengeViewModel = koinInject()
 ) {
@@ -62,6 +63,7 @@ fun ChallengeListScreen(
         userId = userId,
         isManager = isManager,
         onIntent = viewModel::processIntent,
+        onOpenChallenge = onOpenChallenge,
         modifier = modifier
     )
 }
@@ -73,6 +75,7 @@ private fun ChallengeListScreenContent(
     userId: String,
     isManager: Boolean,
     onIntent: (ChallengeIntent) -> Unit,
+    onOpenChallenge: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isEditing by rememberSaveable { mutableStateOf(false) }
@@ -153,7 +156,7 @@ private fun ChallengeListScreenContent(
                         ChallengeCard(
                             challenge = challenge,
                             status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE,
-                            onSelect = {},
+                            onSelect = { onOpenChallenge(challenge.id) },
                             onJoin = { onIntent(ChallengeIntent.JoinChallenge(challenge.id, userId)) },
                             // Teams compete as a team: group challenges are joined by enrolling one of the user's teams.
                             onEnrollTeam = if (challenge.scope == "group" && state.teams.isNotEmpty()) {
@@ -225,7 +228,7 @@ private fun ChallengeListScreenManagerPreview() {
                 challenges = previewChallenges,
                 teams = listOf(com.wandr.domain.model.Team("t1", "Alpine Trail Blazers", null, null, null, "X7K9P2W1", "u1", 0L, 0L))
             ),
-            userId = "u1", isManager = true, onIntent = {}
+            userId = "u1", isManager = true, onIntent = {}, onOpenChallenge = {}
         )
     }
 }
@@ -235,7 +238,7 @@ private fun ChallengeListScreenManagerPreview() {
 private fun ChallengeListScreenMemberPreview() {
     WandrTheme {
         ChallengeListScreenContent(
-            state = ChallengeState(challenges = previewChallenges), userId = "u3", isManager = false, onIntent = {}
+            state = ChallengeState(challenges = previewChallenges), userId = "u3", isManager = false, onIntent = {}, onOpenChallenge = {}
         )
     }
 }
@@ -245,6 +248,6 @@ private fun ChallengeListScreenMemberPreview() {
 @Composable
 private fun ChallengeListScreenEmptyPreview() {
     WandrTheme {
-        ChallengeListScreenContent(state = ChallengeState(), userId = "u1", isManager = true, onIntent = {})
+        ChallengeListScreenContent(state = ChallengeState(), userId = "u1", isManager = true, onIntent = {}, onOpenChallenge = {})
     }
 }

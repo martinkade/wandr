@@ -13,5 +13,7 @@ data class Challenge(
     val endDate: Long,
     val createdBy: String,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    /** Stored status: true = `active` (published), false = `draft` (only the creator sees it). */
+    val isActive: Boolean = true
 )

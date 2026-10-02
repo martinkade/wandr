@@ -8,7 +8,7 @@ import com.wandr.domain.model.LeaderboardEntry
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamStanding
 
-enum class ChallengeSuccess { CREATED, UPDATED, JOINED, TEAM_ENROLLED }
+enum class ChallengeSuccess { CREATED, UPDATED, JOINED, TEAM_ENROLLED, IMAGE_UPDATED }
 
 /** Content of the create / edit form. [challengeId] is null while creating. */
 data class ChallengeForm(
@@ -18,10 +18,14 @@ data class ChallengeForm(
     val type: ChallengeType = ChallengeType.DISTANCE,
     /** Meters (distance, elevation) or seconds (time). */
     val targetValue: Double = 100_000.0,
-    val durationDays: Int = 30,
+    /** Epoch milliseconds; challenges can be planned for the future. */
+    val startDate: Long = 0L,
+    val endDate: Long = 0L,
     /** GROUP = teams compete against other teams; there is no team on the challenge itself. */
     val scope: ChallengeScope = ChallengeScope.INDIVIDUAL,
-    val requireAllMembersCompletion: Boolean = false
+    val requireAllMembersCompletion: Boolean = false,
+    /** Status toggle: true = `active` (published), false = `draft` (default, only the creator sees it). */
+    val isActive: Boolean = false
 ) {
     val isEditing: Boolean get() = challengeId != null
 }
@@ -41,6 +45,7 @@ data class ChallengeState(
     val form: ChallengeForm? = null,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
+    val isImageUpdating: Boolean = false,
     val errorMessage: String? = null,
     val success: ChallengeSuccess? = null
 )

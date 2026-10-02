@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.wandr.android.ui.activity.ActivityHistoryScreen
+import com.wandr.android.ui.challenge.ChallengeDetailsScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
 import com.wandr.android.ui.common.SlideInOverlay
 import com.wandr.android.ui.profile.ProfileScreen
@@ -53,6 +54,7 @@ fun MainScreen(
     val userId = state.userId
     // Group details slide in over the whole main screen, including the tab bar (like a pushed page).
     var openTeamId by rememberSaveable { mutableStateOf<String?>(null) }
+    var openChallengeId by rememberSaveable { mutableStateOf<String?>(null) }
 
     Box(modifier = modifier) {
         MainScreenContent(
@@ -64,7 +66,11 @@ fun MainScreen(
             if (userId != null) {
                 when (tab) {
                     MainTab.Activities -> ActivityHistoryScreen(userId = userId)
-                    MainTab.Challenges -> ChallengeListScreen(userId = userId, isManager = state.isManager)
+                    MainTab.Challenges -> ChallengeListScreen(
+                        userId = userId,
+                        isManager = state.isManager,
+                        onOpenChallenge = { openChallengeId = it }
+                    )
                     MainTab.Groups -> GroupsScreen(userId = userId, onOpenTeam = { openTeamId = it })
                     MainTab.Profile -> ProfileScreen(userId = userId, onLogout = { viewModel.logout(onLogout) })
                 }
@@ -73,6 +79,14 @@ fun MainScreen(
 
         SlideInOverlay(item = openTeamId.takeIf { userId != null }, onBack = { openTeamId = null }) { teamId ->
             TeamDetailsScreen(teamId = teamId, userId = userId.orEmpty(), onBack = { openTeamId = null })
+        }
+        SlideInOverlay(item = openChallengeId.takeIf { userId != null }, onBack = { openChallengeId = null }) { challengeId ->
+            ChallengeDetailsScreen(
+                challengeId = challengeId,
+                userId = userId.orEmpty(),
+                isManager = state.isManager,
+                onBack = { openChallengeId = null }
+            )
         }
     }
 }
