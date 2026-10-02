@@ -67,7 +67,8 @@ fun ActivityHistoryScreen(
         onIntent = viewModel::processIntent,
         onOpenActivity = onOpenActivity,
         onRecord = onRecord,
-        modifier = modifier
+        modifier = modifier,
+        importAction = { HealthConnectImportAction() }
     )
 }
 
@@ -80,7 +81,8 @@ private fun ActivityHistoryScreenContent(
     onIntent: (ActivityIntent) -> Unit,
     onOpenActivity: (String) -> Unit,
     onRecord: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    importAction: @Composable () -> Unit = {}
 ) {
     var isCreating by rememberSaveable { mutableStateOf(false) }
     // Only a save started from the sheet may close it.
@@ -129,6 +131,7 @@ private fun ActivityHistoryScreenContent(
     ScreenScaffold(
         title = stringResource(R.string.activities_title),
         modifier = modifier,
+        actions = { importAction() },
         // While the sheet is open, its own host shows the messages.
         snackbarHost = { if (!isCreating) SnackbarHost(snackbarHostState) },
         floatingActionButton = {

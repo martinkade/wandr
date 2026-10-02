@@ -5,6 +5,7 @@ struct MainView: View {
     var onLoggedOut: () -> Void = {}
     @StateObject private var viewModel = MainObserver()
     @StateObject private var watchImport = WatchImportObserver()
+    @StateObject private var healthImport = HealthKitImporter()
 
     var body: some View {
         TabView {
@@ -12,6 +13,21 @@ struct MainView: View {
                 ActivityHistoryView(activities: viewModel.activities)
                     .padding()
                     .navigationTitle(LocalizedStringKey("activities_title"))
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            Button(LocalizedStringKey("health_import_button")) { healthImport.start() }
+                                .disabled(healthImport.isImporting)
+                        }
+                    }
+                    .permissionDisclosure(
+                        isPresented: $healthImport.showDisclosure,
+                        title: "healthkit_disclosure_title",
+                        message: "healthkit_disclosure_message"
+                    ) { healthImport.disclosureConfirmed() }
+                    .alert(
+                        healthImport.message.map { String(localized: $0) } ?? "",
+                        isPresented: Binding(get: { healthImport.message != nil }, set: { if !$0 { healthImport.message = nil } })
+                    ) { Button("OK", role: .cancel) {} }
             }
             .tabItem { Label(LocalizedStringKey("tab_activity"), systemImage: "figure.hiking") }
 

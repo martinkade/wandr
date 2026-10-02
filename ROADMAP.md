@@ -189,13 +189,12 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 ### 🏥 Phase 9: Apple Health & Health Connect Integrations (Read-Only)
 
-- [ ] **Step 9.1: Apple HealthKit Integration (iOS)**
-  - Request read permissions for Distance, Workouts, and Elevation.
-  - Auto-import workouts into WANDR local database.
-- [ ] **Step 9.2: Health Connect Integration (Android)**
-  - Request read permissions for `DistanceRecord`, `ElevationGainedRecord`, `ExerciseSessionRecord`.
-- [ ] **Step 9.3: Import De-duplication**
-  - Ensure HealthKit/Health Connect imports trigger the Conflict Resolution Wizard if overlaps exist.
+- [x] **Step 9.1: Apple HealthKit Integration (iOS)**
+  - Read-only: the app requests read access for workouts, walking/running and cycling distance (never write access) after a disclosure alert, and reads workouts since the last import (first: 30 days) via the "Import" button in the activity history (`HealthKitImporter`). Elevation comes from the workout's ascent metadata. Only hiking/walking, running and cycling are imported; workouts written by WANDR itself (the watch app) are skipped.
+- [x] **Step 9.2: Health Connect Integration (Android)**
+  - Requests only `READ_EXERCISE`, `READ_DISTANCE` and `READ_ELEVATION_GAINED` (after the disclosure dialog; the rationale activity required by Health Connect is included). Exercise sessions are read since the last import, distance/elevation are aggregated per session from the session's own data origin (`HealthConnectImporter`). Revoked permission or missing Health Connect are handled with dialogs/messages.
+- [x] **Step 9.3: Import De-duplication**
+  - Imports use the same pipeline as watch workouts (`WatchWorkoutInbox` → `ImportWatchWorkoutUseCase`): the activity id is derived from the platform's record id (`ExternalWorkoutId`), so reading a workout twice imports it once, and an overlap with existing activities opens the Conflict Resolution Wizard (merge / trim / discard).
 
 ---
 

@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
     implementation(libs.play.services.wearable)
+    implementation(libs.health.connect.client)
     implementation(libs.activity.compose)
     implementation(libs.core.splashscreen)
     implementation(libs.coil.compose)

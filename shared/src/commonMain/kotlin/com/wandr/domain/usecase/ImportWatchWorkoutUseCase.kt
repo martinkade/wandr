@@ -4,12 +4,13 @@ import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.repository.ActivityRepository
 import com.wandr.domain.watch.WatchWorkout
+import com.wandr.domain.watch.WorkoutSource
 import kotlinx.coroutines.flow.first
 import kotlin.time.Clock
 
 /**
- * Turns a watch workout into an [Activity] (recorded, not manual) of [userId]. Importing the same workout again is a
- * no-op. A time overlap with other activities fails with `ActivityConflictException` unless a [ConflictResolution]
+ * Turns an external workout (watch, Health Connect, Apple Health) into an [Activity] (recorded, not manual) of
+ * [userId]. Importing the same workout again is a no-op. A time overlap with other activities fails with `ActivityConflictException` unless a [ConflictResolution]
  * is given (see [ActivityConflictResolver]).
  */
 class ImportWatchWorkoutUseCase(private val activityRepository: ActivityRepository) {
@@ -29,7 +30,11 @@ class ImportWatchWorkoutUseCase(private val activityRepository: ActivityReposito
             userId = userId,
             teamId = teamId,
             title = "${workout.activityType.replaceFirstChar { it.uppercase() }} Workout",
-            description = "Recorded on watch",
+            description = when (workout.source) {
+                WorkoutSource.HEALTH_CONNECT -> "Imported from Health Connect"
+                WorkoutSource.APPLE_HEALTH -> "Imported from Apple Health"
+                else -> "Recorded on watch"
+            },
             activityType = workout.activityType,
             distanceMeters = workout.distanceMeters,
             durationSeconds = (workout.endTime - workout.startTime) / 1000.0,

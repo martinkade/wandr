@@ -130,3 +130,11 @@
 "activity_conflict_discard_description" = "Die bestehenden Aktivitäten behalten und diese verwerfen.";
 "activity_conflict_apply_button" = "Anwenden";
 
+/* Apple-Health-Import */
+"health_import_button" = "Importieren";
+"healthkit_disclosure_title" = "Aus Apple Health importieren";
+"healthkit_disclosure_message" = "WANDR liest deine Workouts (Art, Zeit, Distanz und Höhenmeter) aus Apple Health, damit Aktivitäten, die du mit anderen Apps aufgezeichnet hast, in deinem Verlauf erscheinen und für deine Challenges zählen. Der Zugriff ist rein lesend: WANDR ändert oder schreibt niemals Gesundheitsdaten.";
+"healthkit_unavailable" = "Apple Health ist auf diesem Gerät nicht verfügbar.";
+"healthkit_failed" = "Workouts konnten nicht aus Apple Health gelesen werden. Du kannst den Zugriff unter Einstellungen > Health > Datenzugriff erlauben.";
+"healthkit_nothing_new" = "Keine neuen Workouts gefunden.";
+"healthkit_found %lld" = "%lld Workouts gefunden";

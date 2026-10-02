@@ -5,9 +5,17 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+/** Origins of an externally recorded [WatchWorkout]. */
+object WorkoutSource {
+    const val WATCH = "watch"
+    const val HEALTH_CONNECT = "health_connect"
+    const val APPLE_HEALTH = "apple_health"
+}
+
 /**
- * A workout recorded on a companion watch (WearOS / WatchOS) and sent to the phone as JSON ([WatchWorkoutCodec]).
- * The watch generates the [id] (a UUID), so a workout that is delivered twice is only imported once.
+ * A workout recorded outside the app and imported into it: recorded on a companion watch (WearOS / WatchOS) and sent
+ * to the phone as JSON ([WatchWorkoutCodec]), or read from Health Connect / Apple Health. The [id] is a UUID that stays
+ * the same for the same workout, so a workout that is delivered twice is only imported once.
  */
 @Serializable
 data class WatchWorkout(
@@ -22,6 +30,8 @@ data class WatchWorkout(
     @SerialName("average_heart_rate") val averageHeartRate: Int? = null,
     @SerialName("max_heart_rate") val maxHeartRate: Int? = null,
     val trackpoints: List<WatchTrackpoint> = emptyList(),
+    /** Where the workout comes from, see [WorkoutSource]. Watches do not send it. */
+    val source: String = WorkoutSource.WATCH,
     val version: Int = WatchWorkoutCodec.VERSION
 )
 

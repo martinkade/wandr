@@ -33,6 +33,11 @@ targets:
         # Kotlin/Native framework produced by :shared:embedAndSignAppleFrameworkForXcode
         FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
         OTHER_LDFLAGS: "$(inherited) -framework shared"
+    entitlements:
+      path: Wandr/Wandr.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
     info:
       path: Wandr/Info.plist
       properties:
@@ -52,6 +57,7 @@ targets:
           - UIInterfaceOrientationLandscapeRight
         UIBackgroundModes:
           - location
+        NSHealthShareUsageDescription: WANDR reads your workouts from Apple Health so that activities recorded with other apps appear in your history. Access is read-only.
         NSCameraUsageDescription: WANDR uses the camera to take your profile photo.
         NSLocationWhenInUseUsageDescription: WANDR uses your location to record your outdoor activities.
         NSLocationAlwaysAndWhenInUseUsageDescription: WANDR uses your location to keep recording your activity while the screen is off.

@@ -220,7 +220,19 @@
     <string name="activity_trimmed_message">Activity trimmed and saved</string>
     <string name="activity_discarded_message">Activity discarded, existing activities kept</string>
     <plurals name="watch_workouts_imported">
-        <item quantity="one">%d workout imported from your watch</item>
-        <item quantity="other">%d workouts imported from your watch</item>
+        <item quantity="one">%d workout imported</item>
+        <item quantity="other">%d workouts imported</item>
+    </plurals>
+    <string name="health_connect_import_button">Import</string>
+    <string name="health_connect_disclosure_title">Import from Health Connect</string>
+    <string name="health_connect_disclosure_message">WANDR reads your workouts (type, time, distance and elevation gain) from Health Connect so that activities recorded with other apps appear in your history and count for your challenges. Access is read-only: WANDR never changes or writes health data.</string>
+    <string name="health_connect_denied">Without access to Health Connect, workouts cannot be imported. You can allow it in the Health Connect settings.</string>
+    <string name="health_connect_unavailable">Health Connect is not available on this device.</string>
+    <string name="health_connect_failed">Workouts could not be read from Health Connect.</string>
+    <string name="health_connect_nothing_new">No new workouts found.</string>
+    <string name="health_connect_rationale_close">Close</string>
+    <plurals name="health_workouts_found">
+        <item quantity="one">%d workout found</item>
+        <item quantity="other">%d workouts found</item>
     </plurals>
 </resources>
