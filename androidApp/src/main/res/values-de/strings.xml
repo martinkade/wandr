@@ -185,4 +185,25 @@
         <item quantity="one">%1$d Stunde</item>
         <item quantity="other">%1$d Stunden</item>
     </plurals>
+
+    <!-- Aktivitäten: erfassen, aufzeichnen, bearbeiten, Details -->
+    <string name="activities_empty">Noch keine Aktivitäten aufgezeichnet.</string>
+    <string name="activity_fab_open">Aktivität hinzufügen</string>
+    <string name="activity_fab_close">Menü schließen</string>
+    <string name="activity_fab_create">Manuell erfassen</string>
+    <string name="activity_fab_record">Aktivität aufzeichnen</string>
+    <string name="activity_new_title">Neue Aktivität</string>
+    <string name="activity_edit_title">Aktivität bearbeiten</string>
+    <string name="activity_details_title">Aktivitätsdetails</string>
+    <string name="activity_title_label">Titel</string>
+    <string name="activity_description_label">Beschreibung</string>
+    <string name="activity_type_label">Art</string>
+    <string name="activity_source_label">Quelle</string>
+    <string name="activity_measured_hint">Die gemessenen Werte einer aufgezeichneten Aktivität lassen sich nicht ändern.</string>
+    <string name="activity_track_local_hint">Die aufgezeichnete Strecke liegt nur auf dem Gerät, das sie aufgezeichnet hat.</string>
+    <string name="activity_created_message">Aktivität gespeichert</string>
+    <string name="activity_updated_message">Aktivität aktualisiert</string>
+    <string name="activity_recorded_message">Aktivität aufgezeichnet</string>
+    <string name="activity_deleted_message">Aktivität gelöscht</string>
+    <string name="activity_tracking_back_blocked">Beende und speichere zuerst die Aufzeichnung.</string>
 </resources>

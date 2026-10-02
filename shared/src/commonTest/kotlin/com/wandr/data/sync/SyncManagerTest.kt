@@ -47,6 +47,7 @@ private class FakeChallengeDao : ChallengeDao {
 
 private class FakeActivityDao : ActivityDao {
     override fun getActivitiesForUser(userId: String): Flow<List<ActivityEntity>> = flowOf(emptyList())
+    override fun getActivityById(id: String): Flow<ActivityEntity?> = flowOf(null)
     override suspend fun getActivityOnce(id: String): ActivityEntity? = null
     override fun getActivityCountForUser(userId: String): Flow<Int> = flowOf(0)
     override fun getActivitiesForTeam(teamId: String): Flow<List<ActivityEntity>> = flowOf(emptyList())

@@ -147,6 +147,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - Create `Activity` domain entity & `ActivityEntity` in Room.
 - [x] **Step 6.2: Manual Activity Entry & Editing**
   - Build UI and UseCases for creating/editing manual logs (e.g. "Hiked 10km yesterday").
+  - Android: FAB menu in the activity history (create manually / record). Manual entry and editing use a bottom sheet; only the **owner** can edit, from the details screen (measured values of recorded activities stay read-only). The details screen shows the track if the FIT file is on this device.
 - [x] **Step 6.3: Garmin FIT SDK Integration**
   - Implement `.FIT` file encoder/decoder to save/parse trackpoints, distance, duration, elevation.
   - Store `.FIT` files **on the recording device only** (app-private folder via `FitFileStorage`); they are never uploaded to Supabase. Only the activity metrics are synced; the local file path is not part of the sync payload.

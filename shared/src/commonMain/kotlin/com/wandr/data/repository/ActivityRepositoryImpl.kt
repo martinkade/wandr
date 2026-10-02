@@ -1,5 +1,6 @@
 package com.wandr.data.repository
 
+import com.wandr.data.fit.FitFileDecoder
 import com.wandr.data.fit.FitFileEncoder
 import com.wandr.data.fit.FitFileStorage
 import com.wandr.data.local.dao.ActivityDao
@@ -19,6 +20,14 @@ class ActivityRepositoryImpl(
         return activityDao.getActivitiesForUser(userId).map { list ->
             list.map { it.toDomain() }
         }
+    }
+
+    override fun getActivityById(id: String): Flow<Activity?> = activityDao.getActivityById(id).map { it?.toDomain() }
+
+    override suspend fun getTrackpoints(activityId: String): List<GpsTrackpoint> {
+        val path = activityDao.getActivityOnce(activityId)?.fitFilePath ?: return emptyList()
+        val bytes = fitFileStorage.read(path) ?: return emptyList()
+        return FitFileDecoder.decodeTrackpoints(bytes)
     }
 
     override fun getUserActivityCount(userId: String): Flow<Int> = activityDao.getActivityCountForUser(userId)

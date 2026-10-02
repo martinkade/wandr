@@ -185,4 +185,25 @@
         <item quantity="one">%1$d hour</item>
         <item quantity="other">%1$d hours</item>
     </plurals>
+
+    <!-- Activities: create, record, edit, details -->
+    <string name="activities_empty">No activities recorded yet.</string>
+    <string name="activity_fab_open">Add activity</string>
+    <string name="activity_fab_close">Close menu</string>
+    <string name="activity_fab_create">Log manually</string>
+    <string name="activity_fab_record">Record activity</string>
+    <string name="activity_new_title">New Activity</string>
+    <string name="activity_edit_title">Edit Activity</string>
+    <string name="activity_details_title">Activity Details</string>
+    <string name="activity_title_label">Title</string>
+    <string name="activity_description_label">Description</string>
+    <string name="activity_type_label">Type</string>
+    <string name="activity_source_label">Source</string>
+    <string name="activity_measured_hint">The measured values of a recorded activity cannot be changed.</string>
+    <string name="activity_track_local_hint">The recorded track is only stored on the device that recorded it.</string>
+    <string name="activity_created_message">Activity saved</string>
+    <string name="activity_updated_message">Activity updated</string>
+    <string name="activity_recorded_message">Activity recorded</string>
+    <string name="activity_deleted_message">Activity deleted</string>
+    <string name="activity_tracking_back_blocked">Stop and save the recording first.</string>
 </resources>

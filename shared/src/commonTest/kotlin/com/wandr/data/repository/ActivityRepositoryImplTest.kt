@@ -21,6 +21,7 @@ private class InMemoryActivityDao : ActivityDao {
     override fun getActivitiesForUser(userId: String): Flow<List<ActivityEntity>> = flowOf(rows.values.toList())
     override fun getActivitiesForTeam(teamId: String): Flow<List<ActivityEntity>> = flowOf(emptyList())
     override suspend fun getOverlappingActivities(userId: String, startTime: Long, endTime: Long) = emptyList<ActivityEntity>()
+    override fun getActivityById(id: String): Flow<ActivityEntity?> = flowOf(rows[id])
     override suspend fun getActivityOnce(id: String): ActivityEntity? = rows[id]
     override fun getActivityCountForUser(userId: String): Flow<Int> = flowOf(rows.size)
     override suspend fun insertActivity(activity: ActivityEntity) { rows[activity.id] = activity }
@@ -78,5 +79,26 @@ class ActivityRepositoryImplTest {
         repository.saveActivity(activity("a4", manual = true), trackpoints = null)
         repository.deleteActivity("a4").getOrThrow()
         assertNull(dao.rows["a4"])
+    }
+
+    @Test
+    fun trackIsReadBackFromTheLocalFitFile() = runTest {
+        repository.saveActivity(activity("a5", manual = false), trackpoints)
+
+        val track = repository.getTrackpoints("a5")
+
+        assertEquals(trackpoints.size, track.size)
+        assertEquals(47.0, track.first().latitude, 1e-4)
+    }
+
+    @Test
+    fun noTrackForManualEntriesOrWhenTheFileIsMissing() = runTest {
+        repository.saveActivity(activity("a6", manual = true), trackpoints = null)
+        assertEquals(emptyList(), repository.getTrackpoints("a6"))
+
+        val path = assertNotNull(repository.saveActivity(activity("a7", manual = false), trackpoints).getOrThrow().fitFilePath)
+        storage.delete(path) // e.g. the activity was recorded on another device
+        assertEquals(emptyList(), repository.getTrackpoints("a7"))
+        assertEquals(emptyList(), repository.getTrackpoints("unknown"))
     }
 }

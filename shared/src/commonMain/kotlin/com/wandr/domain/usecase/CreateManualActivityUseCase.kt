@@ -21,14 +21,18 @@ class CreateManualActivityUseCase(
         elevationGainMeters: Double,
         startTime: Long
     ): Result<Activity> {
+        if (title.isBlank()) return Result.failure(IllegalArgumentException("Title cannot be empty"))
+        if (distanceMeters < 0 || durationSeconds < 0 || elevationGainMeters < 0) {
+            return Result.failure(IllegalArgumentException("Distance, duration and elevation cannot be negative"))
+        }
         val now = Clock.System.now().toEpochMilliseconds()
         val uniqueId = Uuid.random().toString() // the server uses UUID primary keys
         val activity = Activity(
             id = uniqueId,
             userId = userId,
             teamId = teamId,
-            title = title,
-            description = description,
+            title = title.trim(),
+            description = description?.trim()?.ifEmpty { null },
             activityType = activityType,
             distanceMeters = distanceMeters,
             durationSeconds = durationSeconds,

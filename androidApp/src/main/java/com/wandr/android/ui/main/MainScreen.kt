@@ -23,7 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.wandr.android.ui.activity.ActivityDetailsScreen
 import com.wandr.android.ui.activity.ActivityHistoryScreen
+import com.wandr.android.ui.activity.LiveGpsTrackingScreen
 import com.wandr.android.ui.challenge.ChallengeDetailsScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
 import com.wandr.android.ui.common.SlideInOverlay
@@ -55,6 +57,8 @@ fun MainScreen(
     // Group details slide in over the whole main screen, including the tab bar (like a pushed page).
     var openTeamId by rememberSaveable { mutableStateOf<String?>(null) }
     var openChallengeId by rememberSaveable { mutableStateOf<String?>(null) }
+    var openActivityId by rememberSaveable { mutableStateOf<String?>(null) }
+    var isRecording by rememberSaveable { mutableStateOf(false) }
 
     Box(modifier = modifier) {
         MainScreenContent(
@@ -65,7 +69,12 @@ fun MainScreen(
         ) { tab ->
             if (userId != null) {
                 when (tab) {
-                    MainTab.Activities -> ActivityHistoryScreen(userId = userId)
+                    MainTab.Activities -> ActivityHistoryScreen(
+                        userId = userId,
+                        teamId = state.teamId,
+                        onOpenActivity = { openActivityId = it },
+                        onRecord = { isRecording = true }
+                    )
                     MainTab.Challenges -> ChallengeListScreen(
                         userId = userId,
                         isManager = state.isManager,
@@ -86,6 +95,13 @@ fun MainScreen(
                 userId = userId.orEmpty(),
                 onBack = { openChallengeId = null }
             )
+        }
+        SlideInOverlay(item = openActivityId.takeIf { userId != null }, onBack = { openActivityId = null }) { activityId ->
+            ActivityDetailsScreen(activityId = activityId, userId = userId.orEmpty(), onBack = { openActivityId = null })
+        }
+        // Back is handled by the screen itself: it is blocked while a recording is running.
+        SlideInOverlay(item = userId.takeIf { isRecording }, onBack = { }) { id ->
+            LiveGpsTrackingScreen(userId = id, teamId = state.teamId, onClose = { isRecording = false })
         }
     }
 }

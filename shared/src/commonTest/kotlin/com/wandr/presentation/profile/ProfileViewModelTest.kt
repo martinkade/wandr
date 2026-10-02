@@ -29,6 +29,8 @@ private class FakeActivityRepository(count: Int = 0) : ActivityRepository {
     val activityCount = MutableStateFlow(count)
 
     override fun getUserActivities(userId: String): Flow<List<Activity>> = emptyFlow()
+    override fun getActivityById(id: String): Flow<Activity?> = emptyFlow()
+    override suspend fun getTrackpoints(activityId: String): List<GpsTrackpoint> = emptyList()
     override fun getUserActivityCount(userId: String): Flow<Int> = activityCount
     override fun getTeamActivities(teamId: String): Flow<List<Activity>> = emptyFlow()
     override suspend fun getOverlappingActivities(userId: String, startTime: Long, endTime: Long): List<Activity> = emptyList()
