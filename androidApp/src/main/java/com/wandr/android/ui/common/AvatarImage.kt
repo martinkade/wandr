@@ -59,9 +59,6 @@ fun AvatarImage(
                 model = avatarUrl,
                 contentDescription = stringResource(R.string.avatar_content_description),
                 contentScale = ContentScale.Crop,
-                onState = { state ->
-
-                },
                 modifier = Modifier.fillMaxSize()
             )
         } else {

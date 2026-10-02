@@ -157,7 +157,7 @@ Detail screens (profile, team/group, ...) are **read-only**. Editing happens in 
 - Edit screen = its own component with Cancel / Save buttons and its own snackbar host (e.g. `ProfileEditScreen`, `TeamEditScreen` / `ProfileEditView`, `TeamEditView`).
 - Android: `ModalBottomSheet` with `skipPartiallyExpanded = true`; block swipe-away while saving (`confirmValueChange`); close with `sheetState.hide()` before removing it from composition. iOS: `.sheet` with `.presentationDetents([.large])` and `.interactiveDismissDisabled(isSaving)`.
 - Dismissing the sheet (Cancel, swipe, scrim) discards unsaved edits (`DiscardChanges` intent); a successful save closes it and shows a "saved" snackbar on the read-only screen. Errors and image updates show on the sheet.
-- Image changes use the reusable crop flow (`rememberImagePickerFlow` / `.imagePickerFlow`) with the specs from `AvatarImageSpec` (1:1, 512 px) and `CoverImageSpec` (4:3, max 1024 px wide); covers are shown with `CoverImage`.
+- Image changes use the reusable crop flow (`rememberImagePickerFlow` / `.imagePickerFlow`) with the specs from `AvatarImageSpec` (1:1, 512 px) and `CoverImageSpec` (4:3, max 1024 px wide); avatars and covers follow the same three layers: `AvatarImage` / `CoverImage` (display only), `AvatarImagePicker` / `CoverImagePicker` (tappable), `AvatarEditor` / `CoverEditor` (picker plus the source -> crop flow).
 - The same sheet component serves **creating and editing** (e.g. `TeamEditScreen` with a create or edit title); there is no separate full-screen create form.
 - Dates use `DateTimePickerField` (date picker, then time picker); never a free-text duration.
 

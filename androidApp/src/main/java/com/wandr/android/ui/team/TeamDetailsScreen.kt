@@ -38,10 +38,8 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
-import com.wandr.android.ui.common.CoverImage
-import com.wandr.android.ui.common.rememberImagePickerFlow
-import com.wandr.android.ui.profile.AvatarEditor
-import com.wandr.presentation.imagecrop.CoverImageSpec
+import com.wandr.android.ui.common.CoverEditor
+import com.wandr.android.ui.common.AvatarEditor
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
@@ -117,16 +115,6 @@ private fun TeamDetailsScreenContent(
     // Losing edit rights (e.g. role changed remotely) leaves edit mode.
     LaunchedEffect(state.canEdit) { if (!state.canEdit) isEditing = false }
 
-    val coverFlow = rememberImagePickerFlow(
-        title = stringResource(R.string.team_cover_title),
-        aspectRatio = CoverImageSpec.ASPECT_RATIO,
-        outputMaxEdgePx = CoverImageSpec.MAX_EDGE_PX,
-        jpegQuality = CoverImageSpec.JPEG_QUALITY,
-        canRemove = team?.coverUrl != null,
-        onImageReady = { onIntent(TeamDetailsIntent.UploadCover(it)) },
-        onRemove = { onIntent(TeamDetailsIntent.RemoveCover) }
-    )
-
     ScreenScaffold(
         title = stringResource(R.string.team_details_title),
         modifier = modifier,
@@ -148,11 +136,12 @@ private fun TeamDetailsScreenContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Owners and admins change cover and avatar right here (tap), no edit mode needed.
-                    CoverImage(
+                    CoverEditor(
                         coverUrl = team.coverUrl,
-                        isEditable = state.canEdit,
                         isBusy = state.isImageUpdating,
-                        onClick = coverFlow::open
+                        enabled = state.canEdit,
+                        onCoverReady = { onIntent(TeamDetailsIntent.UploadCover(it)) },
+                        onRemoveCover = { onIntent(TeamDetailsIntent.RemoveCover) }
                     )
 
                     Spacer(Modifier.height(16.dp))

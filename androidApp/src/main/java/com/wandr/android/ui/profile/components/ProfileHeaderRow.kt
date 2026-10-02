@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.ui.common.AvatarImage
 import com.wandr.android.ui.theme.WandrTheme
-import com.wandr.android.ui.profile.AvatarEditor
+import com.wandr.android.ui.common.AvatarEditor
 import com.wandr.domain.model.Profile
 
 @Composable

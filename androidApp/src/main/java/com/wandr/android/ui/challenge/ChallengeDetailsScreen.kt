@@ -39,10 +39,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
-import com.wandr.android.ui.common.CoverImage
+import com.wandr.android.ui.common.CoverEditor
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
-import com.wandr.android.ui.common.rememberImagePickerFlow
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
@@ -55,7 +54,6 @@ import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeState
 import com.wandr.presentation.challenge.ChallengeSuccess
 import com.wandr.presentation.challenge.ChallengeViewModel
-import com.wandr.presentation.imagecrop.CoverImageSpec
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -146,16 +144,6 @@ private fun ChallengeDetailsScreenContent(
         onIntent(ChallengeIntent.ClearMessages)
     }
 
-    val coverFlow = rememberImagePickerFlow(
-        title = stringResource(R.string.team_cover_title),
-        aspectRatio = CoverImageSpec.ASPECT_RATIO,
-        outputMaxEdgePx = CoverImageSpec.MAX_EDGE_PX,
-        jpegQuality = CoverImageSpec.JPEG_QUALITY,
-        canRemove = challenge?.coverUrl != null,
-        onImageReady = { onIntent(ChallengeIntent.UploadCover(it)) },
-        onRemove = { onIntent(ChallengeIntent.RemoveCover) }
-    )
-
     ScreenScaffold(
         title = stringResource(R.string.challenge_details_title),
         modifier = modifier,
@@ -181,11 +169,12 @@ private fun ChallengeDetailsScreenContent(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CoverImage(
+                    CoverEditor(
                         coverUrl = challenge.coverUrl,
-                        isEditable = canEdit,
                         isBusy = state.isImageUpdating,
-                        onClick = coverFlow::open
+                        enabled = canEdit,
+                        onCoverReady = { onIntent(ChallengeIntent.UploadCover(it)) },
+                        onRemoveCover = { onIntent(ChallengeIntent.RemoveCover) }
                     )
                     Spacer(Modifier.height(8.dp))
 

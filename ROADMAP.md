@@ -91,7 +91,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - Create `Profile` domain entity (including `systemRole`: `'user'`, `'manager'`), `ProfileEntity` (Room, 1 file), and `ProfileRepository`.
   - Implement avatar upload to Supabase Storage (`avatars` bucket).
 - [x] **Step 2.3: Auth & Profile UI Components**
-  - **Android (Compose)**: `LoginScreen.kt`, `RegisterScreen.kt`, `ProfileScreen.kt`, `AvatarPicker.kt`. Include `@Preview` for Dark/Light & text scales.
+  - **Android (Compose)**: `LoginScreen.kt`, `RegisterScreen.kt`, `ProfileScreen.kt`, `AvatarImagePicker.kt`. Include `@Preview` for Dark/Light & text scales.
   - **iOS (SwiftUI)**: `LoginView.swift`, `RegisterView.swift`, `ProfileView.swift`, `AvatarPickerView.swift`. Include `#Preview` for Light/Dark color schemes.
 
 ---

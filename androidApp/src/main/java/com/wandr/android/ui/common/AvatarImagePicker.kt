@@ -8,7 +8,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.wandr.android.ui.theme.WandrTheme
 
 @Composable
-fun AvatarPicker(
+fun AvatarImagePicker(
     avatarUrl: String?,
     displayName: String,
     onPickAvatar: () -> Unit,
@@ -26,9 +26,9 @@ fun AvatarPicker(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Preview(name = "Busy", showBackground = true)
 @Composable
-private fun AvatarPickerPreview() {
+private fun AvatarImagePickerPreview() {
     WandrTheme {
-        AvatarPicker(
+        AvatarImagePicker(
             avatarUrl = null,
             displayName = "Martin Kade",
             onPickAvatar = {},
@@ -39,9 +39,9 @@ private fun AvatarPickerPreview() {
 
 @Preview(name = "Busy Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
-private fun AvatarPickerBusyPreview() {
+private fun AvatarImagePickerBusyPreview() {
     WandrTheme {
-        AvatarPicker(
+        AvatarImagePicker(
             avatarUrl = null,
             displayName = "Martin Kade",
             onPickAvatar = {},
