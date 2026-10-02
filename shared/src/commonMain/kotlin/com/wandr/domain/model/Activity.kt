@@ -10,6 +10,7 @@ data class Activity(
     val distanceMeters: Double,
     val durationSeconds: Double,
     val elevationGainMeters: Double,
+    /** Absolute path of the recorded `.FIT` file on THIS device; null for manual entries or other devices. Never synced. */
     val fitFilePath: String?,
     val startTime: Long,
     val endTime: Long,

@@ -149,7 +149,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - Build UI and UseCases for creating/editing manual logs (e.g. "Hiked 10km yesterday").
 - [x] **Step 6.3: Garmin FIT SDK Integration**
   - Implement `.FIT` file encoder/decoder to save/parse trackpoints, distance, duration, elevation.
-  - Store `.FIT` files in Supabase Storage (`fit-files` bucket).
+  - Store `.FIT` files **on the recording device only** (app-private folder via `FitFileStorage`); they are never uploaded to Supabase. Only the activity metrics are synced; the local file path is not part of the sync payload.
 - [x] **Step 6.4: Live GPS Tracking & Background Service**
   - **Android**: Foreground service with ongoing system notification displaying live distance/time.
   - **iOS**: Background location updates using `CLLocationManager`.

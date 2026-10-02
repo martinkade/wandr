@@ -3,8 +3,10 @@ package com.wandr.domain.usecase
 import com.wandr.domain.model.Activity
 import com.wandr.domain.repository.ActivityRepository
 import kotlin.time.Clock
-import kotlin.random.Random
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 class CreateManualActivityUseCase(
     private val activityRepository: ActivityRepository
 ) {
@@ -20,7 +22,7 @@ class CreateManualActivityUseCase(
         startTime: Long
     ): Result<Activity> {
         val now = Clock.System.now().toEpochMilliseconds()
-        val uniqueId = "act_${now}_${Random.nextInt(100000, 999999)}"
+        val uniqueId = Uuid.random().toString() // the server uses UUID primary keys
         val activity = Activity(
             id = uniqueId,
             userId = userId,

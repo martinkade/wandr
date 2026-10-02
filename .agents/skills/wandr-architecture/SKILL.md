@@ -26,7 +26,8 @@ Use this skill when creating or refactoring domain models, UseCases, repositorie
   - Room DAOs return `Flow<T>` for reactive UI updates.
 - **LRU File Cache (`data/cache`)**:
   - `LruFileCache` provides thread-safe file caching with adjustable byte limits (e.g., default 50 MB) and operation journaling (`READ`, `WRITE`, `REMOVE`, `EVICT`).
-  - Use `LruFileCache` for caching cover photos (challenge/team covers), workout `.FIT` files, and user avatars.
+  - Use `LruFileCache` for caching cover photos (challenge/team covers) and user avatars.
+  - **`.FIT` files do NOT belong in the cache and are never uploaded.** They are kept persistently on the recording device only, via `FitFileStorage` (app-private folder, deleted together with their activity). Sync payloads (`ActivityDto`) must not contain the file path.
 - **Remote API (Ktor)**:
   - Intercepts requests using Supabase Auth JWT tokens.
   - Ktor HTTP client plugin handles automatic token refresh on `401 Unauthorized`.

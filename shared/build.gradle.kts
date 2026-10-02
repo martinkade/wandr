@@ -56,6 +56,9 @@ kotlin {
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
 
+            // Local file access (FIT files stay on the device)
+            implementation(libs.okio)
+
             // Ktor Networking
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
@@ -72,6 +75,7 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.okio.fakefilesystem)
         }
 
         androidMain.dependencies {

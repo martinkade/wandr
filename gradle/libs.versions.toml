@@ -19,6 +19,7 @@ kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0"
 kotlinx-serialization = "1.11.0"
 ksp = "2.3.10"
+okio = "3.18.2"
 navigation3 = "1.2.0"
 navigation = "2.10.2"
 multiplatform-nav3-ui = "1.1.2"
@@ -51,6 +52,10 @@ room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+
+# Okio: multiplatform file access (FIT files are stored on the device only)
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 
 # Ktor HTTP Client
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }

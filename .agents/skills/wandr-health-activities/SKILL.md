@@ -18,6 +18,7 @@ Use this skill when developing Apple Health / Health Connect data readers, backg
 1. **FIT Format Logging**:
    - Utilize Garmin FIT SDK (or Kotlin FIT wrapper) to decode and encode standard `.FIT` activity files.
    - Store GPS trackpoints, timestamps, altitude/ascent, heart rate, and distance.
+   - **Keep FIT files on the device that recorded them** (`FitFileStorage`). Never upload them to Supabase and never include their path in sync payloads; only the activity metrics are synced.
 2. **Background GPS Tracking**:
    - **Android**: Use a Foreground Service with a persistent system notification showing real-time distance and time.
    - **iOS**: Enable `location` background mode (`CLLocationManager` with `allowsBackgroundLocationUpdates = true`). Request "While Using" authorization only.
@@ -51,6 +52,6 @@ Use this skill when developing Apple Health / Health Connect data readers, backg
 ## 🛠 Verification Checklist
 - [ ] Are Apple Health and Health Connect permissions strictly read-only?
 - [ ] Is background GPS tracking wrapped in a foreground service (Android) / background location updates (iOS)?
-- [ ] Are activity logs exported in valid FIT format?
+- [ ] Are activity logs exported in valid FIT format and kept on the recording device only (never uploaded)?
 - [ ] Do WatchOS and WearOS apps handle connection state changes gracefully?
 - [ ] Is a disclosure dialog shown before the location / Health permission prompts (see `wandr-ui-components`)?

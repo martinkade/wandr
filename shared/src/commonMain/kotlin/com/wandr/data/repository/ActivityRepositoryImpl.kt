@@ -1,21 +1,18 @@
 package com.wandr.data.repository
 
-import com.wandr.data.cache.LruFileCache
 import com.wandr.data.fit.FitFileEncoder
+import com.wandr.data.fit.FitFileStorage
 import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.entity.ActivityEntity
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.repository.ActivityRepository
-import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class ActivityRepositoryImpl(
     private val activityDao: ActivityDao,
-    private val lruFileCache: LruFileCache,
-    private val supabase: SupabaseClient
+    private val fitFileStorage: FitFileStorage
 ) : ActivityRepository {
 
     override fun getUserActivities(userId: String): Flow<List<Activity>> {
@@ -50,16 +47,9 @@ class ActivityRepositoryImpl(
                     trackpoints = trackpoints
                 )
                 
-                val cacheKey = "fit_${activity.id}.fit"
-                lruFileCache.put(cacheKey, fitBytes)
-                
-                try {
-                    val bucket = supabase.storage.from("fit-files")
-                    bucket.upload(cacheKey, fitBytes) { upsert = true }
-                    fitFilePath = bucket.publicUrl(cacheKey)
-                } catch (e: Exception) {
-                    fitFilePath = cacheKey
-                }
+                // The FIT file stays on this device; it is never uploaded. A write failure fails the save, so a
+                // recorded track is not silently dropped.
+                fitFilePath = fitFileStorage.save(activity.id, fitBytes)
             }
 
             val entity = ActivityEntity(
@@ -88,6 +78,7 @@ class ActivityRepositoryImpl(
 
     override suspend fun deleteActivity(id: String): Result<Unit> {
         return runCatching {
+            activityDao.getActivityOnce(id)?.fitFilePath?.let(fitFileStorage::delete)
             activityDao.deleteActivity(id)
         }
     }

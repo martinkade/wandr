@@ -13,6 +13,9 @@ interface ActivityDao {
     @Query("SELECT * FROM activities WHERE user_id = :userId ORDER BY start_time DESC")
     fun getActivitiesForUser(userId: String): Flow<List<ActivityEntity>>
 
+    @Query("SELECT * FROM activities WHERE id = :id")
+    suspend fun getActivityOnce(id: String): ActivityEntity?
+
     @Query("SELECT COUNT(*) FROM activities WHERE user_id = :userId")
     fun getActivityCountForUser(userId: String): Flow<Int>
 

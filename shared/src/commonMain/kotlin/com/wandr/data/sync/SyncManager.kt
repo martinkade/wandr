@@ -4,6 +4,7 @@ import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.dao.ChallengeDao
 import com.wandr.data.local.dao.ProfileDao
 import com.wandr.data.local.dao.TeamDao
+import com.wandr.data.remote.toDto
 import com.wandr.data.remote.toUpdatePayload
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
@@ -67,7 +68,7 @@ class SyncManager(
                 // 4. Sync Activities
                 val dirtyActivities = activityDao.getDirtyActivities()
                 for (activity in dirtyActivities) {
-                    supabase.postgrest.from("activities").upsert(activity)
+                    supabase.postgrest.from("activities").upsert(activity.toDto()) // never includes the local FIT path
                     activityDao.insertActivity(activity.copy(syncStatus = "SYNCED"))
                     totalSynced++
                 }

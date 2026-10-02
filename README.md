@@ -7,7 +7,7 @@
 ## 🚀 Key Features
 
 ### 🔐 Auth & Data Sync (Offline-First & Caching)
-- **Supabase Integration**: Auth, Postgres Database, and Storage (avatars, team covers, challenge cover images, `.FIT` files).
+- **Supabase Integration**: Auth, Postgres Database, and Storage (avatars, team covers, challenge cover images).
 - **Session Management**: Automatic token refresh on `401 Unauthorized`.
 - **Offline-First Sync**: Local state managed with Room; bidirectional sync engine pushes and pulls updates when connectivity is restored.
 - **LRU File Cache & Journaling**: Thread-safe multiplatform file cache with adjustable byte limits (e.g. 50 MB default) and operation journaling (`READ`, `WRITE`, `REMOVE`, `EVICT`) for cover photos, avatars, and workout files.
@@ -25,7 +25,7 @@
 ### ⌚ Health & Activity Recording
 - **Health Integrations**: Read-only integration with **Apple Health** (iOS) and **Health Connect** (Android).
 - **Companion Apps**: Dedicated **WearOS** and **WatchOS** apps for real-time activity tracking.
-- **GPS & FIT Logging**: Live tracking (including background recording with persistent system notification) exported as standard `.FIT` files (Garmin SDK).
+- **GPS & FIT Logging**: Live tracking (including background recording with persistent system notification) exported as standard `.FIT` files (Garmin SDK) that are stored on the recording device only, never uploaded.
 - **Manual Entry & History**: Erfassen & Editieren von Aktivitäten (z. B. „Gestern 10 km gewandert“).
 - **Time Conflict Wizard**: Automated detection of overlapping activities with an interactive resolution wizard.
 

@@ -19,7 +19,7 @@ This document provides a comprehensive setup guide, SQL migrations, Row Level Se
 WANDR uses Supabase for:
 - **Authentication**: Email & Password authentication only.
 - **Postgres Database**: Storage for profiles, teams, challenges, activities, social feeds, and notifications.
-- **Storage**: Buckets for user avatars, challenge cover photos, and raw `.FIT` activity files.
+- **Storage**: Buckets for user avatars, team covers and challenge cover photos. Recorded `.FIT` files are **not** stored on Supabase; they stay on the device that recorded them.
 - **Realtime / Webhooks**: Realtime sync for activity feeds, likes, comments, and push notifications.
 
 ### Supabase CLI Setup
@@ -151,7 +151,8 @@ CREATE TABLE public.challenge_participants (
 );
 
 -- ============================================================================
--- 4. Activities (Recorded FIT & Manual Entries)
+-- 4. Activities (Recorded & Manual Entries)
+-- Only the metrics are synced. The raw .FIT track file stays on the device that recorded the activity.
 -- ============================================================================
 CREATE TABLE public.activities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -163,7 +164,6 @@ CREATE TABLE public.activities (
     distance_meters DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     duration_seconds DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     elevation_gain_meters DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-    fit_file_path TEXT, -- Storage path to .FIT file
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
     is_manual_entry BOOLEAN NOT NULL DEFAULT FALSE,
@@ -468,19 +468,17 @@ CREATE POLICY "Authors or Activity Owners can delete/update comments"
 
 ## 4. Storage Buckets & Policies
 
-Create three storage buckets in the Supabase Dashboard or via SQL:
+Create the storage buckets in the Supabase Dashboard or via SQL. (`.FIT` activity files are intentionally not stored here, they stay on the recording device.)
 
 1. **`avatars`** (Public) — User profile pictures & team avatars.
 2. **`team-covers`** (Public) — Cover photos for teams & groups.
 3. **`challenge-covers`** (Public) — Cover images for challenges.
-4. **`fit-files`** (Private) — Raw `.FIT` activity files recorded via Garmin SDK/GPS.
 
 ```sql
 -- Create buckets
 INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);
 INSERT INTO storage.buckets (id, name, public) VALUES ('team-covers', 'team-covers', true);
 INSERT INTO storage.buckets (id, name, public) VALUES ('challenge-covers', 'challenge-covers', true);
-INSERT INTO storage.buckets (id, name, public) VALUES ('fit-files', 'fit-files', false);
 
 -- Storage Policies
 CREATE POLICY "Avatar Read Access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'avatars');
@@ -498,8 +496,6 @@ CREATE POLICY "Team Image Upload Access" ON storage.objects FOR INSERT TO authen
 CREATE POLICY "Team Image Delete Access" ON storage.objects FOR DELETE TO authenticated
     USING (bucket_id = 'team-covers' AND public.is_team_admin((storage.foldername(name))[1], auth.uid()));
 
-CREATE POLICY "FIT File Upload Access" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'fit-files' AND auth.uid()::text = (storage.foldername(name))[1]);
-CREATE POLICY "FIT File Read Access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'fit-files' AND auth.uid()::text = (storage.foldername(name))[1]);
 ```
 
 ---
