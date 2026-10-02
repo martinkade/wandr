@@ -35,6 +35,13 @@ import com.wandr.android.ui.team.GroupsScreen
 import com.wandr.android.ui.team.TeamDetailsScreen
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.presentation.main.MainViewModel
+import com.wandr.presentation.notifications.NotificationsViewModel
+import com.wandr.presentation.notifications.NotificationsIntent
+import com.wandr.domain.model.SocialEntityType
+import com.wandr.android.ui.notifications.NotificationsScreen
+import com.wandr.android.ui.notifications.NotificationBellAction
+import com.wandr.android.push.PushNavigation
+import com.wandr.android.push.PushPermissionPrompt
 import org.koin.compose.koinInject
 
 /**
@@ -60,6 +67,27 @@ fun MainScreen(
     var openChallengeId by rememberSaveable { mutableStateOf<String?>(null) }
     var openActivityId by rememberSaveable { mutableStateOf<String?>(null) }
     var isRecording by rememberSaveable { mutableStateOf(false) }
+    var showNotifications by rememberSaveable { mutableStateOf(false) }
+    // One view model for the bell badge and the list, so reading a notification updates the badge.
+    val notificationsViewModel: NotificationsViewModel = koinInject()
+    val notifications by notificationsViewModel.state.collectAsState()
+    LaunchedEffect(userId) { userId?.let { notificationsViewModel.processIntent(NotificationsIntent.RefreshBadge(it)) } }
+
+    fun openEntity(type: SocialEntityType, id: String) {
+        when (type) {
+            SocialEntityType.ACTIVITY -> openActivityId = id
+            SocialEntityType.CHALLENGE -> openChallengeId = id
+        }
+    }
+
+    // A tapped push notification opens what it is about, once the user is known.
+    val pushTarget by PushNavigation.target.collectAsState()
+    LaunchedEffect(pushTarget, userId) {
+        val target = pushTarget ?: return@LaunchedEffect
+        if (userId == null) return@LaunchedEffect
+        openEntity(SocialEntityType.fromWire(target.entityType), target.entityId)
+        PushNavigation.consume()
+    }
 
     Box(modifier = modifier) {
         MainScreenContent(
@@ -74,7 +102,13 @@ fun MainScreen(
                         userId = userId,
                         teamId = state.teamId,
                         onOpenActivity = { openActivityId = it },
-                        onRecord = { isRecording = true }
+                        onRecord = { isRecording = true },
+                        actions = {
+                            NotificationBellAction(
+                                unreadCount = notifications.unreadCount,
+                                onClick = { showNotifications = true }
+                            )
+                        }
                     )
                     MainTab.Challenges -> ChallengeListScreen(
                         userId = userId,
@@ -87,7 +121,10 @@ fun MainScreen(
             }
         }
 
-        if (userId != null) WatchImportHost(userId = userId, teamId = state.teamId)
+        if (userId != null) {
+            WatchImportHost(userId = userId, teamId = state.teamId)
+            PushPermissionPrompt()
+        }
 
         SlideInOverlay(item = openTeamId.takeIf { userId != null }, onBack = { openTeamId = null }) { teamId ->
             TeamDetailsScreen(teamId = teamId, userId = userId.orEmpty(), onBack = { openTeamId = null })
@@ -97,6 +134,14 @@ fun MainScreen(
                 challengeId = challengeId,
                 userId = userId.orEmpty(),
                 onBack = { openChallengeId = null }
+            )
+        }
+        SlideInOverlay(item = userId.takeIf { showNotifications }, onBack = { showNotifications = false }) { id ->
+            NotificationsScreen(
+                userId = id,
+                onBack = { showNotifications = false },
+                onOpen = { type, entityId -> openEntity(type, entityId) },
+                viewModel = notificationsViewModel
             )
         }
         SlideInOverlay(item = openActivityId.takeIf { userId != null }, onBack = { openActivityId = null }) { activityId ->

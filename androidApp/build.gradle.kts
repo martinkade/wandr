@@ -10,6 +10,12 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+// Push (FCM) is configured by androidApp/google-services.json (not committed). Without it the app builds and runs, but
+// receives no pushes.
+if (file("google-services.json").exists()) {
+    apply(plugin = libs.plugins.googleServices.get().pluginId)
+}
+
 val keystoreDebugPropertiesFile = rootProject.file("androidApp/signing/debug.key.properties")
 val keystoreDebugProperties = Properties()
 if (keystoreDebugPropertiesFile.exists()) {
@@ -90,6 +96,8 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
     implementation(libs.play.services.wearable)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
     implementation(libs.health.connect.client)
     implementation(libs.activity.compose)
     implementation(libs.core.splashscreen)
@@ -106,5 +114,6 @@ dependencies {
     implementation(libs.navigation3.ui)
     implementation(libs.navigation.compose)
     debugImplementation(libs.ui.tooling)
+    testImplementation(libs.junit)
 }
 

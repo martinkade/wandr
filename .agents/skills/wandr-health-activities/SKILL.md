@@ -65,3 +65,8 @@ Use this skill when developing Apple Health / Health Connect data readers, backg
 - [ ] Are activity logs exported in valid FIT format and kept on the recording device only (never uploaded)?
 - [ ] Do WatchOS and WearOS apps handle connection state changes gracefully?
 - [ ] Is a disclosure dialog shown before the location / Health permission prompts (see `wandr-ui-components`)?
+
+## Android Push (FCM)
+- Code in `androidApp/.../push/`: `WandrMessagingService` (token + foreground messages), `PushNotifier` (channel `social`, token fetch, local notification), `PushPayload` (pure payload mapping, unit-tested), `PushPermissionPrompt` (POST_NOTIFICATIONS with disclosure, asked once).
+- Enable: download `google-services.json` from the Firebase console (package `com.mediabeam.fitness`) into `androidApp/`. It is git-ignored; the google-services plugin is only applied when the file exists. Without it all Firebase access is skipped (no crash, no pushes).
+- Taps (own or FCM-displayed notifications) deliver `entity_type`/`entity_id` extras to `MainActivity`, which publishes a `PushTarget` via `PushNavigation`.

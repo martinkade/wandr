@@ -43,5 +43,9 @@ val dataModule = module {
     single<TeamRepository> { TeamRepositoryImpl(get(), get(), get(), get()) }
     single<ChallengeRepository> { ChallengeRepositoryImpl(get(), get(), get()) }
     single<com.wandr.domain.repository.ActivityRepository> { com.wandr.data.repository.ActivityRepositoryImpl(get(), get()) }
+    single<com.wandr.domain.repository.SocialRepository> { com.wandr.data.repository.SocialRepositoryImpl(get()) }
+    single<com.wandr.domain.repository.NotificationRepository> { com.wandr.data.repository.NotificationRepositoryImpl(get()) }
+    single<com.wandr.domain.repository.PushTokenRepository> { com.wandr.data.repository.PushTokenRepositoryImpl(get()) }
+    single<com.wandr.domain.repository.ActivityFeedRepository> { com.wandr.data.repository.ActivityFeedRepositoryImpl(get(), get()) }
     single { SyncManager(get(), get(), get(), get(), get()) }
 }

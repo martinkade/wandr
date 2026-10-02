@@ -138,3 +138,27 @@
 "healthkit_failed" = "Workouts konnten nicht aus Apple Health gelesen werden. Du kannst den Zugriff unter Einstellungen > Health > Datenzugriff erlauben.";
 "healthkit_nothing_new" = "Keine neuen Workouts gefunden.";
 "healthkit_found %lld" = "%lld Workouts gefunden";
+
+"permission_notifications_title" = "Benachrichtigungen";
+"permission_notifications_message" = "WANDR kann dich benachrichtigen, wenn jemand deine Aktivität mit „Gefällt mir“ markiert, kommentiert oder auf deinen Kommentar reagiert. Es werden nur Mitteilungen zu diesen Interaktionen gesendet. Du kannst sie jederzeit in den Einstellungen ausschalten.";
+"like_button" = "Gefällt mir";
+"comments_title" = "Kommentare";
+"comments_empty" = "Noch keine Kommentare.";
+"comment_hint" = "Kommentar schreiben";
+"comment_send" = "Senden";
+"comment_edited" = "(bearbeitet)";
+"comment_edit" = "Bearbeiten";
+"comment_delete" = "Löschen";
+"comment_add_reaction" = "Reaktion hinzufügen";
+"notifications_title" = "Benachrichtigungen";
+"notifications_empty" = "Noch keine Benachrichtigungen.";
+"notifications_loading" = "Lädt ...";
+"notifications_close" = "Schließen";
+"notifications_mark_all_read" = "Alle als gelesen markieren";
+"notification_like_activity" = "%@ gefällt deine Aktivität";
+"notification_like_challenge" = "%@ gefällt deine Challenge";
+"notification_comment_activity" = "%@ hat deine Aktivität kommentiert";
+"notification_comment_challenge" = "%@ hat deine Challenge kommentiert";
+"notification_reaction" = "%@ hat mit %@ auf einen Kommentar reagiert";
+"notification_invite" = "%@ hat dich eingeladen";
+"notification_unknown" = "Neue Aktivität von %@";

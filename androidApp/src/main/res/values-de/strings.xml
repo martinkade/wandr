@@ -235,4 +235,44 @@
         <item quantity="one">%d Workout gefunden</item>
         <item quantity="other">%d Workouts gefunden</item>
     </plurals>
+
+    <string name="push_channel_social_name">Soziales</string>
+    <string name="push_channel_social_description">Likes, Kommentare und Reaktionen zu deinen Aktivitäten und Challenges</string>
+    <string name="push_title">WANDR</string>
+    <string name="push_like_activity">%1$s gefällt deine Aktivität</string>
+    <string name="push_like_challenge">%1$s gefällt deine Challenge</string>
+    <string name="push_comment_activity">%1$s hat deine Aktivität kommentiert</string>
+    <string name="push_comment_challenge">%1$s hat deine Challenge kommentiert</string>
+    <string name="push_reaction_comment">%1$s hat mit %2$s auf deinen Kommentar reagiert</string>
+    <string name="permission_push_title">Bleib auf dem Laufenden</string>
+    <string name="permission_push_message">WANDR kann dich benachrichtigen, wenn jemand deine Aktivitäten oder Challenges liked oder kommentiert oder auf deine Kommentare reagiert. Benachrichtigungen werden nur dafür genutzt; du kannst sie jederzeit in den Systemeinstellungen ausschalten.</string>
+    <string name="permission_push_denied">Benachrichtigungen sind ausgeschaltet. Um über Likes, Kommentare und Reaktionen informiert zu werden, erlaube sie in den App-Einstellungen.</string>
+    <string name="social_like">Gefällt mir</string>
+    <string name="social_unlike">Gefällt mir zurücknehmen</string>
+    <plurals name="social_like_count">
+        <item quantity="one">%d Like</item>
+        <item quantity="other">%d Likes</item>
+    </plurals>
+    <string name="social_comments_title">Kommentare</string>
+    <string name="social_comments_empty">Noch keine Kommentare. Sei der Erste!</string>
+    <string name="social_comment_hint">Kommentar schreiben…</string>
+    <string name="social_send">Senden</string>
+    <string name="social_edited">bearbeitet</string>
+    <string name="social_edit">Bearbeiten</string>
+    <string name="social_delete">Löschen</string>
+    <string name="social_save">Speichern</string>
+    <string name="social_add_reaction">Reaktion hinzufügen</string>
+    <string name="social_unknown_author">Jemand</string>
+    <string name="notifications_title">Benachrichtigungen</string>
+    <string name="notifications_open">Benachrichtigungen</string>
+    <string name="notifications_empty">Noch nichts Neues. Likes und Kommentare zu deinen Aktivitäten erscheinen hier.</string>
+    <string name="notifications_mark_all_read">Alle als gelesen markieren</string>
+    <string name="notification_like_activity">%1$s gefällt deine Aktivität</string>
+    <string name="notification_like_challenge">%1$s gefällt deine Challenge</string>
+    <string name="notification_comment_activity">%1$s hat deine Aktivität kommentiert: „%2$s“</string>
+    <string name="notification_comment_challenge">%1$s hat deine Challenge kommentiert: „%2$s“</string>
+    <string name="notification_reaction">%1$s hat mit %2$s auf deinen Kommentar reagiert</string>
+    <string name="notification_generic">Neue Benachrichtigung</string>
+    <string name="activity_feed_mine">Meine</string>
+    <string name="activity_feed_team">Team</string>
 </resources>

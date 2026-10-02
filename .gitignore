@@ -19,6 +19,12 @@ androidApp/signing/*.jks
 androidApp/signing/release*.keystore
 androidApp/signing/release*.key.properties
 androidApp/signing/*.json
+androidApp/google-services.json
+# Push (Edge Function): never commit service accounts, client configs or APNs keys
+supabase/functions/send-push/*.json
+supabase/functions/send-push/*.plist
+supabase/functions/send-push/*.p8
+supabase/.temp/
 !androidApp/signing/README.md
 
 # Fastlane outputs & reports

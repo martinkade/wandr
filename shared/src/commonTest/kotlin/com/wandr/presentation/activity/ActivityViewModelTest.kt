@@ -11,6 +11,8 @@ import com.wandr.domain.usecase.GetActivityUseCase
 import com.wandr.domain.usecase.GetTeamActivitiesUseCase
 import com.wandr.domain.usecase.GetUserActivitiesUseCase
 import com.wandr.domain.usecase.RecordGpsActivityUseCase
+import com.wandr.domain.usecase.RefreshActivitiesUseCase
+import com.wandr.domain.repository.ActivityFeedRepository
 import com.wandr.domain.usecase.UpdateActivityUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -53,6 +55,11 @@ private class FakeActivityRepository(initial: List<Activity> = emptyList()) : Ac
     }
 }
 
+private object NoFeed : ActivityFeedRepository {
+    override suspend fun refreshTeam(teamId: String) = Result.success(Unit)
+    override suspend fun refreshUser(userId: String) = Result.success(Unit)
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActivityViewModelTest {
 
@@ -69,7 +76,7 @@ class ActivityViewModelTest {
     private fun viewModel(repo: FakeActivityRepository, scope: CoroutineScope) = ActivityViewModel(
         GetUserActivitiesUseCase(repo), GetTeamActivitiesUseCase(repo), GetActivityUseCase(repo),
         GetActivityTrackUseCase(repo), CreateManualActivityUseCase(repo), UpdateActivityUseCase(repo),
-        RecordGpsActivityUseCase(repo), DeleteActivityUseCase(repo), scope
+        RecordGpsActivityUseCase(repo), DeleteActivityUseCase(repo), RefreshActivitiesUseCase(NoFeed), scope
     )
 
     @Test

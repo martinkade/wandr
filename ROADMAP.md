@@ -200,14 +200,14 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 ### 💬 Phase 10: Social Interactions & Notifications
 
-- [ ] **Step 10.1: Group Feed, Comments & Likes**
-  - Implement `Comment` and `Like` data models and repositories.
-  - Plaintext comment creation, editing, and deletion by activity owner.
-- [ ] **Step 10.2: Comment Reactions**
-  - Emoji reactions on comments (`comment_reactions`).
-- [ ] **Step 10.3: Push Notifications Engine**
-  - Configure Firebase Cloud Messaging (FCM) & Apple Push Notification service (APNs).
-  - Trigger instant notifications for new likes, comments, and reactions.
+- [x] **Step 10.1: Group Feed, Comments & Likes**
+  - `Comment`/`Like` models and `SocialRepository` (Supabase only: social data needs connectivity, no local cache), `SocialViewModel` per activity/challenge with optimistic likes. Plain-text comments (max. 1000 characters) can be created and edited by their author and deleted by the author **or the owner of the activity/challenge** (`SocialState.canEdit/canDelete`, enforced by RLS as well). Comments, likes and reactions are only visible to those who can see the activity (owner/team members) or the published challenge.
+  - Group feed: the activity history has a "Mine | Team" switch; `ActivityFeedRepository` pulls the team members' activities (and the user's own from other devices) into the local cache. Android: `SocialSection` in the activity and challenge details; iOS: `SocialSectionView` in `ActivityDetailView`.
+- [x] **Step 10.2: Comment Reactions**
+  - Emoji reactions (`Reactions.allowed`) toggled per comment, shown as counters with the own reaction highlighted (`comment_reactions`).
+- [x] **Step 10.3: Push Notifications Engine**
+  - Server: triggers write `notifications` for likes, comments and reactions (never for your own actions); the Edge Function `supabase/functions/send-push` delivers them via FCM (Android) and APNs (iOS) to the user's `device_tokens` and removes invalid tokens. See `SUPABASE.md` → "Push notifications" for deployment.
+  - Clients: `PushTokenManager` (shared) registers the token via the `register_device_token` RPC after sign-in and removes it on logout. Android: `WandrMessagingService` (needs `androidApp/google-services.json`, see the skill), iOS: `PushAppDelegate` (needs the Push Notifications capability/provisioning). A disclosure dialog explains the permission before the system prompt; tapping a push opens the activity/challenge. In-app notification list with unread badge on both platforms.
 
 ---
 

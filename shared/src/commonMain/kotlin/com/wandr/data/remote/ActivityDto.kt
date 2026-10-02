@@ -43,3 +43,23 @@ fun ActivityEntity.toDto() = ActivityDto(
     createdAt = Instant.fromEpochMilliseconds(createdAt).toString(),
     updatedAt = Instant.fromEpochMilliseconds(updatedAt).toString()
 )
+
+/** [fitFilePath] stays whatever this device already has; the server never knows it. */
+fun ActivityDto.toEntity(fitFilePath: String? = null, syncStatus: String = "SYNCED") = ActivityEntity(
+    id = id,
+    userId = userId,
+    teamId = teamId,
+    title = title,
+    description = description,
+    activityType = activityType,
+    distanceMeters = distanceMeters,
+    durationSeconds = durationSeconds,
+    elevationGainMeters = elevationGainMeters,
+    fitFilePath = fitFilePath,
+    startTime = Instant.parse(startTime).toEpochMilliseconds(),
+    endTime = Instant.parse(endTime).toEpochMilliseconds(),
+    isManualEntry = isManualEntry,
+    createdAt = Instant.parse(createdAt).toEpochMilliseconds(),
+    updatedAt = Instant.parse(updatedAt).toEpochMilliseconds(),
+    syncStatus = syncStatus
+)

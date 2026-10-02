@@ -20,7 +20,7 @@ WANDR uses Supabase for:
 - **Authentication**: Email & Password authentication only.
 - **Postgres Database**: Storage for profiles, teams, challenges, activities, social feeds, and notifications.
 - **Storage**: Buckets for user avatars, team covers and challenge cover photos. Recorded `.FIT` files are **not** stored on Supabase; they stay on the device that recorded them.
-- **Realtime / Webhooks**: Realtime sync for activity feeds, likes, comments, and push notifications.
+- **Realtime / Webhooks / Edge Functions**: Realtime for comments, likes and notifications (`supabase_realtime` publication); a Database Webhook on `notifications` triggers the `send-push` Edge Function (FCM for Android, APNs for iOS), see [Push notifications](#push-notifications).
 
 ### Supabase CLI Setup
 To run Supabase locally or manage migrations:
@@ -219,6 +219,26 @@ CREATE TABLE public.notifications (
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Indexes for the social feed and the notification inbox
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient_created ON public.notifications(recipient_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_comments_entity_created ON public.comments(entity_type, entity_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_likes_entity ON public.likes(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_comment_reactions_comment ON public.comment_reactions(comment_id);
+
+-- ============================================================================
+-- 7. Push Device Tokens (FCM token on Android, APNs token on iOS)
+-- Written via RPC public.register_device_token (section 5); push delivery: Edge Function send-push.
+-- ============================================================================
+CREATE TABLE public.device_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    token TEXT NOT NULL UNIQUE,
+    platform TEXT NOT NULL CHECK (platform IN ('android', 'ios')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_device_tokens_user ON public.device_tokens(user_id);
 ```
 
 ---
@@ -240,6 +260,7 @@ ALTER TABLE public.likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comment_reactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.device_tokens ENABLE ROW LEVEL SECURITY;
 
 -- ----------------------------------------------------------------------------
 -- Helper Function: Check Team Membership
@@ -271,6 +292,40 @@ BEGIN
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
+
+-- ----------------------------------------------------------------------------
+-- Helper Functions: Social entity access (likes, comments, reactions)
+-- activity: owner or member of the activity's team; challenge: published (active) or own draft.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.can_access_entity(p_type social_entity_type, p_id UUID, p_user UUID)
+RETURNS BOOLEAN AS $$
+    SELECT CASE p_type
+        WHEN 'activity' THEN EXISTS (
+            SELECT 1 FROM public.activities a
+            WHERE a.id = p_id
+              AND (a.user_id = p_user OR (a.team_id IS NOT NULL AND public.is_team_member(a.team_id, p_user)))
+        )
+        WHEN 'challenge' THEN EXISTS (
+            SELECT 1 FROM public.challenges c
+            WHERE c.id = p_id AND (c.status = 'active' OR c.created_by = p_user)
+        )
+        ELSE FALSE
+    END;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
+
+-- Owner of the social entity (activity.user_id / challenge.created_by), NULL if it does not exist.
+CREATE OR REPLACE FUNCTION public.entity_owner_id(p_type social_entity_type, p_id UUID)
+RETURNS UUID AS $$
+    SELECT CASE p_type
+        WHEN 'activity' THEN (SELECT a.user_id FROM public.activities a WHERE a.id = p_id)
+        WHEN 'challenge' THEN (SELECT c.created_by FROM public.challenges c WHERE c.id = p_id)
+    END;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
+
+CREATE OR REPLACE FUNCTION public.is_entity_owner(p_type social_entity_type, p_id UUID, p_user UUID)
+RETURNS BOOLEAN AS $$
+    SELECT COALESCE(public.entity_owner_id(p_type, p_id) = p_user, FALSE);
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
 
 -- ----------------------------------------------------------------------------
 -- Profiles Policies
@@ -435,24 +490,90 @@ CREATE POLICY "Users can update or delete their own activities"
     USING (auth.uid() = user_id);
 
 -- ----------------------------------------------------------------------------
--- Comments Policies (Activity/Challenge owner can edit/delete)
+-- Likes, Comments, Reactions & Notifications Policies
+-- Everything follows can_access_entity(). Notifications have NO client INSERT policy: they are created by
+-- SECURITY DEFINER triggers (section 5). Device tokens are own rows only.
 -- ----------------------------------------------------------------------------
+CREATE POLICY "Users can view likes on accessible entities"
+    ON public.likes FOR SELECT TO authenticated
+    USING (public.can_access_entity(entity_type, entity_id, auth.uid()));
+
+CREATE POLICY "Users can like accessible entities"
+    ON public.likes FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid() AND public.can_access_entity(entity_type, entity_id, auth.uid()));
+
+CREATE POLICY "Users can remove their own likes"
+    ON public.likes FOR DELETE TO authenticated
+    USING (user_id = auth.uid());
+
 CREATE POLICY "Users can view comments on accessible entities"
-    ON public.comments FOR SELECT TO authenticated USING (true);
+    ON public.comments FOR SELECT TO authenticated
+    USING (public.can_access_entity(entity_type, entity_id, auth.uid()));
 
-CREATE POLICY "Users can insert comments"
+CREATE POLICY "Users can comment on accessible entities"
     ON public.comments FOR INSERT TO authenticated
-    WITH CHECK (auth.uid() = user_id);
+    WITH CHECK (user_id = auth.uid() AND public.can_access_entity(entity_type, entity_id, auth.uid()));
 
-CREATE POLICY "Authors or Activity Owners can delete/update comments"
+CREATE POLICY "Authors can edit their comments"
+    ON public.comments FOR UPDATE TO authenticated
+    USING (user_id = auth.uid())
+    WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Authors and entity owners can delete comments"
     ON public.comments FOR DELETE TO authenticated
-    USING (
-        auth.uid() = user_id OR
-        EXISTS (
-            SELECT 1 FROM public.activities a
-            WHERE a.id = entity_id AND a.user_id = auth.uid()
-        )
-    );
+    USING (user_id = auth.uid() OR public.is_entity_owner(entity_type, entity_id, auth.uid()));
+
+CREATE POLICY "Users can view reactions on accessible comments"
+    ON public.comment_reactions FOR SELECT TO authenticated
+    USING (EXISTS (
+        SELECT 1 FROM public.comments c
+        WHERE c.id = comment_id AND public.can_access_entity(c.entity_type, c.entity_id, auth.uid())
+    ));
+
+CREATE POLICY "Users can react on accessible comments"
+    ON public.comment_reactions FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid() AND EXISTS (
+        SELECT 1 FROM public.comments c
+        WHERE c.id = comment_id AND public.can_access_entity(c.entity_type, c.entity_id, auth.uid())
+    ));
+
+CREATE POLICY "Users can remove their own reactions"
+    ON public.comment_reactions FOR DELETE TO authenticated
+    USING (user_id = auth.uid());
+
+CREATE POLICY "Users can view their own notifications"
+    ON public.notifications FOR SELECT TO authenticated
+    USING (recipient_user_id = auth.uid());
+
+CREATE POLICY "Users can mark their own notifications as read"
+    ON public.notifications FOR UPDATE TO authenticated
+    USING (recipient_user_id = auth.uid())
+    WITH CHECK (recipient_user_id = auth.uid());
+
+CREATE POLICY "Users can delete their own notifications"
+    ON public.notifications FOR DELETE TO authenticated
+    USING (recipient_user_id = auth.uid());
+
+CREATE POLICY "Users can view their own device tokens"
+    ON public.device_tokens FOR SELECT TO authenticated
+    USING (user_id = auth.uid());
+
+CREATE POLICY "Users can register their own device tokens"
+    ON public.device_tokens FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can update their own device tokens"
+    ON public.device_tokens FOR UPDATE TO authenticated
+    USING (user_id = auth.uid())
+    WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can delete their own device tokens"
+    ON public.device_tokens FOR DELETE TO authenticated
+    USING (user_id = auth.uid());
+
+-- Clients may only flip is_read (no INSERT policy exists, so only triggers create notifications).
+REVOKE UPDATE ON public.notifications FROM authenticated;
+GRANT UPDATE (is_read) ON public.notifications TO authenticated;
 ```
 
 ---
@@ -641,6 +762,151 @@ RETURNS TABLE (
     ORDER BY 4 DESC;
 $$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
 ```
+
+
+### Social: comment updates & notification triggers
+
+Likes, comments and reactions create notifications through `SECURITY DEFINER` triggers (clients cannot insert into
+`notifications`). Nobody is notified about their own actions. `notifications.target_id` is the entity id; `payload`
+carries `entity_type`, `entity_id`, plus `comment_id` / `preview` (first 80 chars) for comments and `comment_id` /
+`emoji` for reactions. Recipients: like and comment notify the entity owner, a reaction notifies the comment author.
+
+```sql
+-- Comments: only the content can change; updated_at is kept fresh by the server.
+CREATE OR REPLACE FUNCTION public.touch_comment()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.entity_type := OLD.entity_type;
+    NEW.entity_id := OLD.entity_id;
+    NEW.user_id := OLD.user_id;
+    NEW.created_at := OLD.created_at;
+    NEW.updated_at := NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SET search_path = public;
+
+-- like -> entity owner
+CREATE OR REPLACE FUNCTION public.notify_on_like()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_owner UUID := public.entity_owner_id(NEW.entity_type, NEW.entity_id);
+BEGIN
+    IF v_owner IS NOT NULL AND v_owner <> NEW.user_id THEN
+        INSERT INTO public.notifications (recipient_user_id, actor_user_id, notification_type, target_id, payload)
+        VALUES (v_owner, NEW.user_id, 'like', NEW.entity_id,
+                jsonb_build_object('entity_type', NEW.entity_type, 'entity_id', NEW.entity_id));
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- comment -> entity owner
+CREATE OR REPLACE FUNCTION public.notify_on_comment()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_owner UUID := public.entity_owner_id(NEW.entity_type, NEW.entity_id);
+BEGIN
+    IF v_owner IS NOT NULL AND v_owner <> NEW.user_id THEN
+        INSERT INTO public.notifications (recipient_user_id, actor_user_id, notification_type, target_id, payload)
+        VALUES (v_owner, NEW.user_id, 'comment', NEW.entity_id,
+                jsonb_build_object('entity_type', NEW.entity_type, 'entity_id', NEW.entity_id,
+                                   'comment_id', NEW.id, 'preview', left(NEW.content, 80)));
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- reaction -> comment author
+CREATE OR REPLACE FUNCTION public.notify_on_comment_reaction()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_comment public.comments%ROWTYPE;
+BEGIN
+    SELECT * INTO v_comment FROM public.comments WHERE id = NEW.comment_id;
+    IF FOUND AND v_comment.user_id <> NEW.user_id THEN
+        INSERT INTO public.notifications (recipient_user_id, actor_user_id, notification_type, target_id, payload)
+        VALUES (v_comment.user_id, NEW.user_id, 'reaction', v_comment.entity_id,
+                jsonb_build_object('entity_type', v_comment.entity_type, 'entity_id', v_comment.entity_id,
+                                   'comment_id', NEW.comment_id, 'emoji', NEW.emoji));
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER on_comment_updated
+    BEFORE UPDATE ON public.comments
+    FOR EACH ROW EXECUTE FUNCTION public.touch_comment();
+
+CREATE TRIGGER on_like_created
+    AFTER INSERT ON public.likes
+    FOR EACH ROW EXECUTE FUNCTION public.notify_on_like();
+
+CREATE TRIGGER on_comment_created
+    AFTER INSERT ON public.comments
+    FOR EACH ROW EXECUTE FUNCTION public.notify_on_comment();
+
+CREATE TRIGGER on_comment_reaction_created
+    AFTER INSERT ON public.comment_reactions
+    FOR EACH ROW EXECUTE FUNCTION public.notify_on_comment_reaction();
+```
+
+### Device tokens (push registration)
+
+Clients call `register_device_token` instead of upserting: a token that already belongs to another user (shared
+device) is re-assigned to the caller. Clients delete their own row directly on logout.
+
+```sql
+-- Registers (or re-assigns) a push token for the calling user. A token that belongs to another user
+-- (shared device) is moved to auth.uid(); the client calls this RPC instead of upserting.
+CREATE OR REPLACE FUNCTION public.register_device_token(p_token TEXT, p_platform TEXT)
+RETURNS VOID AS $$
+BEGIN
+    IF auth.uid() IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+    INSERT INTO public.device_tokens (user_id, token, platform)
+    VALUES (auth.uid(), p_token, p_platform)
+    ON CONFLICT (token) DO UPDATE
+        SET user_id = EXCLUDED.user_id, platform = EXCLUDED.platform, updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+REVOKE ALL ON FUNCTION public.register_device_token(TEXT, TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.register_device_token(TEXT, TEXT) TO authenticated;
+```
+
+### Push notifications
+
+Every `INSERT` into `notifications` triggers a Database Webhook that calls the Edge Function
+[`supabase/functions/send-push`](supabase/functions/send-push/index.ts). It loads the recipient's `device_tokens`,
+fetches the actor's `display_name`, and sends via FCM HTTP v1 (Android) and APNs HTTP/2 (iOS). Message text is a generic
+English fallback; `title_key`, `body_key` and `actor_name` are also sent in `data` for client-side localization,
+together with `notification_id`, `type`, `entity_type`, `entity_id` (and `comment_id`, `preview`, `emoji`).
+Tokens reported invalid (FCM `UNREGISTERED`, APNs `410` / `BadDeviceToken`) are deleted.
+
+```bash
+supabase functions deploy send-push --no-verify-jwt
+supabase secrets set WEBHOOK_SECRET=<WEBHOOK_SECRET> FIREBASE_SERVICE_ACCOUNT="$(cat <service-account-key>.json)" \
+  APNS_KEY_P8="$(cat AuthKey_XXXX.p8)" APNS_KEY_ID=... APNS_TEAM_ID=... \
+  APNS_BUNDLE_ID=com.mediabeam.fitness APNS_HOST=api.sandbox.push.apple.com
+```
+
+| Secret | Meaning |
+|---|---|
+| `WEBHOOK_SECRET` | Shared secret, must match the `x-webhook-secret` header of the webhook |
+| `FIREBASE_SERVICE_ACCOUNT` | Full service account JSON (FCM HTTP v1) |
+| `APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID` | APNs token auth key (.p8 contents), key id, team id |
+| `APNS_BUNDLE_ID` | `com.mediabeam.fitness` |
+| `APNS_HOST` | `api.sandbox.push.apple.com` (debug) or `api.push.apple.com` (production) |
+
+Webhook: Dashboard > Database > Webhooks > table `public.notifications`, event `Insert`, type Supabase Edge Function
+`send-push` (POST), HTTP header `x-webhook-secret: <WEBHOOK_SECRET>`. If the dashboard reports `schema "supabase_functions" does not exist`, enable webhooks first or use the SQL trigger alternative. Details: `supabase/functions/send-push/README.md`.
+
+### Realtime
+
+`comments`, `likes` and `notifications` are added to the `supabase_realtime` publication (SQL in the migration block
+above; or Dashboard > Database > Replication). Realtime `postgres_changes` honors the RLS policies for INSERT/UPDATE;
+DELETE events are not filtered by RLS and carry only the primary key.
 
 ---
 

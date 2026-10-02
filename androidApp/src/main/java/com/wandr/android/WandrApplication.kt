@@ -1,6 +1,7 @@
 package com.wandr.android
 
 import android.app.Application
+import com.wandr.android.push.PushNotifier
 import com.wandr.android.watch.WatchWorkoutLink
 import com.wandr.di.initKoin
 import org.koin.android.ext.koin.androidContext
@@ -18,5 +19,8 @@ class WandrApplication : Application() {
         )
 
         WatchWorkoutLink.install(this)
+
+        PushNotifier.createChannels(this)
+        PushNotifier.fetchToken(this)
     }
 }

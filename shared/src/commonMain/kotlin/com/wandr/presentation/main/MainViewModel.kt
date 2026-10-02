@@ -2,6 +2,7 @@ package com.wandr.presentation.main
 
 import com.wandr.data.sync.SyncManager
 import com.wandr.domain.model.SystemRole
+import com.wandr.domain.push.PushTokenManager
 import com.wandr.domain.repository.AuthRepository
 import com.wandr.domain.usecase.GetProfileUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
@@ -28,6 +29,7 @@ class MainViewModel(
     private val getProfileUseCase: GetProfileUseCase,
     private val refreshProfileUseCase: RefreshProfileUseCase,
     private val refreshUserTeamsUseCase: RefreshUserTeamsUseCase,
+    private val pushTokenManager: PushTokenManager,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 ) {
     private val _uiState = MutableStateFlow(MainState())
@@ -44,6 +46,7 @@ class MainViewModel(
             if (userId == null) return@launch
 
             // The local cache drives the UI; remote pulls only feed it and may fail while offline.
+            launch { pushTokenManager.registerIfPossible() }
             launch { refreshProfileUseCase(userId) }
             launch { refreshUserTeamsUseCase(userId) }
             launch {
@@ -61,6 +64,7 @@ class MainViewModel(
 
     fun logout(onDone: () -> Unit) {
         scope.launch {
+            pushTokenManager.unregisterCurrent() // needs the session, so before signing out
             logoutUseCase()
             onDone()
         }

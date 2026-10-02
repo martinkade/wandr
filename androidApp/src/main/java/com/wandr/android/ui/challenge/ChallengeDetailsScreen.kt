@@ -42,11 +42,13 @@ import com.wandr.android.R
 import com.wandr.android.ui.common.CoverEditor
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.social.SocialSectionHost
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.ChallengeType
+import com.wandr.domain.model.SocialEntityType
 import com.wandr.domain.model.availableChallengeAction
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamStanding
@@ -80,7 +82,15 @@ fun ChallengeDetailsScreen(
         userId = userId,
         onBack = onBack,
         onIntent = viewModel::processIntent,
-        modifier = modifier
+        modifier = modifier,
+        socialSection = { challenge ->
+            SocialSectionHost(
+                type = SocialEntityType.CHALLENGE,
+                entityId = challenge.id,
+                userId = userId,
+                entityOwnerId = challenge.createdBy
+            )
+        }
     )
 }
 
@@ -91,7 +101,8 @@ private fun ChallengeDetailsScreenContent(
     userId: String,
     onBack: () -> Unit,
     onIntent: (ChallengeIntent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    socialSection: @Composable (Challenge) -> Unit = {}
 ) {
     val challenge = state.selectedChallenge
     // Only the creator (owner) may edit the challenge or change its cover; the server enforces the same rule.
@@ -239,6 +250,11 @@ private fun ChallengeDetailsScreenContent(
                             state.standings.forEach { standing -> TeamStandingRow(standing, type) }
                         }
                     }
+
+                    Spacer(Modifier.height(24.dp))
+                    HorizontalDivider()
+                    Spacer(Modifier.height(12.dp))
+                    socialSection(challenge)
                 }
             }
         }

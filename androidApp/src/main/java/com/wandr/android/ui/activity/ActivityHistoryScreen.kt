@@ -1,8 +1,11 @@
 package com.wandr.android.ui.activity
 
 import android.content.res.Configuration
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,6 +15,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -56,10 +62,19 @@ fun ActivityHistoryScreen(
     onOpenActivity: (activityId: String) -> Unit,
     onRecord: () -> Unit,
     modifier: Modifier = Modifier,
+    actions: @Composable () -> Unit = {},
     viewModel: ActivityViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
-    LaunchedEffect(userId) { viewModel.processIntent(ActivityIntent.LoadUserActivities(userId)) }
+    var feed by rememberSaveable { mutableStateOf(ActivityFeed.Mine) }
+    // The team feed shows what all members of the team recorded.
+    LaunchedEffect(userId, teamId, feed) {
+        if (feed == ActivityFeed.Team && teamId != null) {
+            viewModel.processIntent(ActivityIntent.LoadTeamActivities(teamId))
+        } else {
+            viewModel.processIntent(ActivityIntent.LoadUserActivities(userId))
+        }
+    }
     ActivityHistoryScreenContent(
         state = state,
         userId = userId,
@@ -68,7 +83,12 @@ fun ActivityHistoryScreen(
         onOpenActivity = onOpenActivity,
         onRecord = onRecord,
         modifier = modifier,
-        importAction = { HealthConnectImportAction() }
+        feed = feed,
+        onFeedChange = { feed = it },
+        importAction = {
+            actions()
+            HealthConnectImportAction()
+        }
     )
 }
 
@@ -82,6 +102,8 @@ private fun ActivityHistoryScreenContent(
     onOpenActivity: (String) -> Unit,
     onRecord: () -> Unit,
     modifier: Modifier = Modifier,
+    feed: ActivityFeed = ActivityFeed.Mine,
+    onFeedChange: (ActivityFeed) -> Unit = {},
     importAction: @Composable () -> Unit = {}
 ) {
     var isCreating by rememberSaveable { mutableStateOf(false) }
@@ -144,7 +166,19 @@ private fun ActivityHistoryScreenContent(
             )
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            if (teamId != null) {
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    ActivityFeed.entries.forEachIndexed { index, option ->
+                        SegmentedButton(
+                            selected = feed == option,
+                            onClick = { onFeedChange(option) },
+                            shape = SegmentedButtonDefaults.itemShape(index, ActivityFeed.entries.size)
+                        ) { Text(stringResource(option.labelRes)) }
+                    }
+                }
+            }
+        Box(Modifier.fillMaxWidth().weight(1f)) {
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (state.activities.isEmpty()) {
@@ -167,6 +201,7 @@ private fun ActivityHistoryScreenContent(
                     }
                 }
             }
+        }
         }
     }
 
@@ -235,4 +270,10 @@ private fun ActivityHistoryScreenEmptyPreview() {
             state = ActivityState(), userId = "u1", teamId = null, onIntent = {}, onOpenActivity = {}, onRecord = {}
         )
     }
+}
+
+/** Whose activities the history shows. */
+enum class ActivityFeed(@StringRes val labelRes: Int) {
+    Mine(R.string.activity_feed_mine),
+    Team(R.string.activity_feed_team)
 }

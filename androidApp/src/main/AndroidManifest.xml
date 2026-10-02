@@ -79,6 +79,18 @@
             </intent-filter>
         </service>
 
+        <!-- Push notifications (FCM): token refresh and foreground messages. -->
+        <service
+            android:name=".push.WandrMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="social" />
+
         <service
             android:name=".service.LocationTrackingService"
             android:foregroundServiceType="location"

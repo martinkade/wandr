@@ -54,6 +54,20 @@ val domainModule = module {
     factory { com.wandr.domain.usecase.RecordGpsActivityUseCase(get()) }
     factory { com.wandr.domain.usecase.ImportWatchWorkoutUseCase(get()) }
     single { com.wandr.domain.watch.WatchWorkoutInbox() }
+    factory { com.wandr.domain.usecase.GetSocialSummaryUseCase(get()) }
+    factory { com.wandr.domain.usecase.SetLikeUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetCommentsUseCase(get()) }
+    factory { com.wandr.domain.usecase.AddCommentUseCase(get()) }
+    factory { com.wandr.domain.usecase.UpdateCommentUseCase(get()) }
+    factory { com.wandr.domain.usecase.DeleteCommentUseCase(get()) }
+    factory { com.wandr.domain.usecase.SetReactionUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetNotificationsUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetUnreadNotificationCountUseCase(get()) }
+    factory { com.wandr.domain.usecase.MarkNotificationsReadUseCase(get()) }
+    factory { com.wandr.domain.usecase.RegisterPushTokenUseCase(get()) }
+    factory { com.wandr.domain.usecase.UnregisterPushTokenUseCase(get()) }
+    single { com.wandr.domain.push.PushTokenManager(get(), get()) }
+    factory { com.wandr.domain.usecase.RefreshActivitiesUseCase(get()) }
     factory { com.wandr.domain.usecase.GetUserActivitiesUseCase(get()) }
     factory { com.wandr.domain.usecase.GetActivityUseCase(get()) }
     factory { com.wandr.domain.usecase.GetActivityTrackUseCase(get()) }

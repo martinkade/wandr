@@ -11,6 +11,7 @@ import com.wandr.domain.usecase.GetActivityUseCase
 import com.wandr.domain.usecase.GetTeamActivitiesUseCase
 import com.wandr.domain.usecase.GetUserActivitiesUseCase
 import com.wandr.domain.usecase.RecordGpsActivityUseCase
+import com.wandr.domain.usecase.RefreshActivitiesUseCase
 import com.wandr.domain.usecase.UpdateActivityUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,7 @@ class ActivityViewModel(
     private val updateActivityUseCase: UpdateActivityUseCase,
     private val recordGpsActivityUseCase: RecordGpsActivityUseCase,
     private val deleteActivityUseCase: DeleteActivityUseCase,
+    private val refreshActivitiesUseCase: RefreshActivitiesUseCase,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 ) {
     private val _state = MutableStateFlow(ActivityState())
@@ -83,6 +85,7 @@ class ActivityViewModel(
         currentUserId = userId
         _state.update { it.copy(isLoading = it.activities.isEmpty(), canEdit = it.selectedActivity?.userId == userId) }
         listJob?.cancel()
+        scope.launch { refreshActivitiesUseCase.user(userId) } // activities from other devices; failures (offline) are fine
         listJob = scope.launch {
             getUserActivitiesUseCase(userId).collect { list ->
                 _state.update { it.copy(activities = list, isLoading = false) }
@@ -92,6 +95,7 @@ class ActivityViewModel(
 
     private fun loadTeamActivities(teamId: String) {
         listJob?.cancel()
+        scope.launch { refreshActivitiesUseCase.team(teamId) } // the feed also holds what teammates recorded
         listJob = scope.launch {
             _state.update { it.copy(isLoading = true) }
             getTeamActivitiesUseCase(teamId).collect { list ->

@@ -38,10 +38,12 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.social.SocialSectionHost
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.util.AppDateFormatter
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
+import com.wandr.domain.model.SocialEntityType
 import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
 import com.wandr.presentation.activity.ActivitySuccess
@@ -72,7 +74,15 @@ fun ActivityDetailsScreen(
         userId = userId,
         onBack = onBack,
         onIntent = viewModel::processIntent,
-        modifier = modifier
+        modifier = modifier,
+        socialSection = { activity ->
+            SocialSectionHost(
+                type = SocialEntityType.ACTIVITY,
+                entityId = activity.id,
+                userId = userId,
+                entityOwnerId = activity.userId
+            )
+        }
     )
 }
 
@@ -83,7 +93,8 @@ private fun ActivityDetailsScreenContent(
     userId: String,
     onBack: () -> Unit,
     onIntent: (ActivityIntent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    socialSection: @Composable (Activity) -> Unit = {}
 ) {
     val activity = state.selectedActivity
     var isEditing by rememberSaveable { mutableStateOf(false) }
@@ -176,6 +187,8 @@ private fun ActivityDetailsScreenContent(
                         stringResource(R.string.activity_source_label),
                         stringResource(if (activity.isManualEntry) R.string.manual_entry else R.string.gps_tracked)
                     )
+                    Spacer(Modifier.height(16.dp))
+                    socialSection(activity)
                 }
             }
         }
