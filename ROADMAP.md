@@ -130,8 +130,8 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - **Group means team vs. team**: a group challenge is *not* tied to one team and its members do **not** compete against each other. Several teams enroll and compete as teams against the other enrolled teams; every member contributes to their own team's result. An individual challenge is open to everyone and has no team.
   - Only `draft` (unpublished, visible to the creator only) and `active` (published) are stored (`challenge_status`, a toggle in the form; new challenges start as drafts). Start and end are picked as date + time, so challenges can be **planned in the future**. **Planned, Completed and Expired are derived at runtime** from the flag, the dates and the participants' progress (`EvaluateChallengeStatusUseCase`; Completed requires every member of a team when `requireAllMembersCompletion` is set), so they can never be stale.
 - [x] **Step 5.2: Challenge Management & Role-Based Access**
-  - Restrict challenge creation, editing, and deletion exclusively to users with system `manager` role.
-  - Support individual challenge join/quit for all users, and group challenge **team enrollment/withdrawal by team owners & admins** (`challenge_teams`; enrolling adds all members as participants for their team).
+  - Challenge creation is restricted to users with system `manager` role; editing, deleting and changing the cover is restricted to the **creator (owner)** of the challenge (buttons are only shown to them on the detail screen).
+  - Support individual challenge join/quit for all users (joining only while the challenge is published and not over; a joined challenge shows "Leave" instead of "Join"), and group challenge **team enrollment/withdrawal by team owners & admins** (`challenge_teams`; enrolling adds all members as participants for their team).
   - Add cover photo upload to Supabase Storage (`challenge-covers` bucket).
 - [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
   - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
@@ -213,7 +213,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 | Requirement (`FEATURES.md`) | `SUPABASE.md` DDL / RLS Policy | Project Implementation | Status |
 | :--- | :--- | :--- | :---: |
-| 1. Only `manager` role can create/edit/delete challenges | `INSERT`, `UPDATE`, `DELETE` on `challenges` check `system_role = 'manager'` | `Profile.systemRole` in KMP domain model & Room entity | ✅ Verified |
+| 1. Only `manager` role can create challenges; only the creator can edit/delete them (and change the cover) | `INSERT` on `challenges` checks `system_role = 'manager'`; `UPDATE`/`DELETE` and the `challenge-covers` storage policies check `created_by = auth.uid()` | `Profile.systemRole`; `ChallengeState.canEdit` (creator only) drives the detail screen buttons | ✅ Verified |
 | 2. Only `manager` role can create/delete groups/teams | `INSERT`, `DELETE` on `teams` check `system_role = 'manager'` | Supported in `TeamRepository` & KMP Profile | ✅ Verified |
 | 3. Only team owners can assign `admin` role | `UPDATE` on `team_members` checks `created_by = auth.uid()` | `UpdateTeamMemberRoleUseCase` checks owner | ✅ Verified |
 | 4. Only team owners can remove members | `DELETE` on `team_members` checks `created_by = auth.uid()` OR `user_id = auth.uid()` | `DeleteTeamMemberUseCase` | ✅ Verified |

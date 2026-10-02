@@ -2,6 +2,7 @@ package com.wandr.presentation.challenge
 
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeParticipant
+import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.ChallengeType
@@ -16,7 +17,10 @@ import com.wandr.domain.usecase.CreateChallengeUseCase
 import com.wandr.domain.usecase.GetChallengeLeaderboardUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
+import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
 import com.wandr.domain.usecase.GetChallengeUseCase
+import com.wandr.domain.usecase.LeaveChallengeUseCase
+import com.wandr.domain.usecase.WithdrawTeamFromChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
 import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
 import com.wandr.domain.usecase.SetChallengeCoverUseCase
@@ -52,8 +56,24 @@ private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : 
 
     override fun getChallengeById(challengeId: String): Flow<Challenge?> = challenges.map { list -> list.firstOrNull { it.id == challengeId } }
     override fun getChallenges(): Flow<List<Challenge>> = challenges
-    override suspend fun refreshChallenges(): Result<Unit> {
+    val participations = MutableStateFlow<List<ChallengeParticipation>>(emptyList())
+    var left: Pair<String, String>? = null
+    var withdrawn: Pair<String, String>? = null
+    var failLeave = false
+    override suspend fun refreshChallenges(userId: String): Result<Unit> {
         refreshed++
+        return Result.success(Unit)
+    }
+    override fun getParticipations(userId: String): Flow<List<ChallengeParticipation>> = participations
+    override suspend fun leaveChallenge(challengeId: String, userId: String): Result<Unit> {
+        if (failLeave) return Result.failure(IllegalStateException("not allowed"))
+        left = challengeId to userId
+        participations.value = participations.value.filterNot { it.challengeId == challengeId }
+        return Result.success(Unit)
+    }
+    override suspend fun withdrawTeam(challengeId: String, teamId: String): Result<Unit> {
+        withdrawn = challengeId to teamId
+        participations.value = participations.value.filterNot { it.challengeId == challengeId }
         return Result.success(Unit)
     }
     override fun getChallengeParticipants(challengeId: String): Flow<List<ChallengeParticipant>> = emptyFlow()
@@ -119,7 +139,8 @@ class ChallengeViewModelTest {
         teams: List<Team>,
         scope: CoroutineScope
     ) = ChallengeViewModel(
-        GetChallengesUseCase(repo), GetChallengeUseCase(repo), SetChallengeCoverUseCase(repo), RemoveChallengeCoverUseCase(repo),
+        GetChallengesUseCase(repo), GetChallengeParticipationsUseCase(repo), LeaveChallengeUseCase(repo),
+        WithdrawTeamFromChallengeUseCase(repo), GetChallengeUseCase(repo), SetChallengeCoverUseCase(repo), RemoveChallengeCoverUseCase(repo),
         EvaluateChallengeStatusUseCase(), RefreshChallengesUseCase(repo), GetUserTeamsUseCase(FakeTeamRepository(teams)),
         CreateChallengeUseCase(repo), UpdateChallengeUseCase(repo),
         GetChallengeLeaderboardUseCase(repo), GetTeamStandingsUseCase(repo), EnrollTeamInChallengeUseCase(repo),
@@ -373,6 +394,7 @@ class ChallengeViewModelTest {
     fun coverUploadAndRemovalApplyToTheSelectedChallenge() = runTest {
         val repo = FakeChallengeRepository(listOf(open))
         val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1")) // the detail screen always loads the user first
         vm.processIntent(ChallengeIntent.SelectChallenge("c1"))
         assertEquals("c1", vm.uiState.value.selectedChallenge?.id)
 
@@ -386,12 +408,105 @@ class ChallengeViewModelTest {
     }
 
     @Test
-    fun editFromTheDetailScreenWorksWithoutTheListLoaded() = runTest {
+    fun ownerCanEditFromTheSelectedChallenge() = runTest {
         val repo = FakeChallengeRepository(listOf(open))
         val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-        vm.processIntent(ChallengeIntent.SelectChallenge("c1")) // detail screen: no LoadChallenges
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        vm.processIntent(ChallengeIntent.SelectChallenge("c1"))
         vm.processIntent(ChallengeIntent.StartEdit("c1"))
 
         assertEquals("c1", assertNotNull(vm.uiState.value.form).challengeId)
+    }
+
+    @Test
+    fun participationsAreExposedByChallengeId() = runTest {
+        val repo = FakeChallengeRepository(listOf(open))
+        repo.participations.value = listOf(ChallengeParticipation("c1", null))
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+
+        assertEquals(ChallengeParticipation("c1", null), vm.uiState.value.participations["c1"])
+    }
+
+    @Test
+    fun leavingRemovesTheParticipationAndReportsSuccess() = runTest {
+        val repo = FakeChallengeRepository(listOf(open))
+        repo.participations.value = listOf(ChallengeParticipation("c1", null))
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        vm.processIntent(ChallengeIntent.LeaveChallenge("c1", "u1"))
+
+        assertEquals("c1" to "u1", repo.left)
+        assertEquals(ChallengeSuccess.LEFT, vm.uiState.value.success)
+        assertTrue(vm.uiState.value.participations.isEmpty())
+    }
+
+    @Test
+    fun leaveFailureIsShownAsError() = runTest {
+        val repo = FakeChallengeRepository(listOf(open)).apply { failLeave = true }
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LeaveChallenge("c1", "u1"))
+
+        assertEquals("not allowed", vm.uiState.value.errorMessage)
+        assertNull(vm.uiState.value.success)
+    }
+
+    @Test
+    fun withdrawingATeamReportsSuccess() = runTest {
+        val repo = FakeChallengeRepository()
+        repo.participations.value = listOf(ChallengeParticipation("c2", "t1"))
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        vm.processIntent(ChallengeIntent.WithdrawTeam("c2", "t1"))
+
+        assertEquals("c2" to "t1", repo.withdrawn)
+        assertEquals(ChallengeSuccess.TEAM_WITHDRAWN, vm.uiState.value.success)
+        assertTrue(vm.uiState.value.participations.isEmpty())
+    }
+
+    @Test
+    fun enrollingRefreshesSoTheNewParticipationShowsUp() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        val refreshesBefore = repo.refreshed
+        vm.processIntent(ChallengeIntent.EnrollTeam("c2", "t1", "u1"))
+
+        assertEquals(refreshesBefore + 1, repo.refreshed)
+    }
+
+    @Test
+    fun onlyTheCreatorMayEditTheSelectedChallenge() = runTest {
+        // `open` was created by u1.
+        for ((user, expected) in listOf("u1" to true, "u2" to false)) {
+            val vm = viewModel(FakeChallengeRepository(listOf(open)), emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+            vm.processIntent(ChallengeIntent.LoadChallenges(user))
+            vm.processIntent(ChallengeIntent.SelectChallenge("c1"))
+            assertEquals(expected, vm.uiState.value.canEdit, "user $user")
+        }
+    }
+
+    @Test
+    fun nonOwnersCannotOpenTheEditForm() = runTest {
+        val vm = viewModel(FakeChallengeRepository(listOf(open)), emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u2"))
+        vm.processIntent(ChallengeIntent.StartEdit("c1"))
+
+        assertNull(vm.uiState.value.form)
+        assertEquals("Only the creator can edit this challenge", vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun nonOwnersCannotChangeTheCover() = runTest {
+        val repo = FakeChallengeRepository(listOf(open))
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u2"))
+        vm.processIntent(ChallengeIntent.SelectChallenge("c1"))
+        vm.processIntent(ChallengeIntent.UploadCover(byteArrayOf(1)))
+        vm.processIntent(ChallengeIntent.RemoveCover)
+
+        assertNull(repo.coverBytes)
+        assertFalse(repo.coverRemoved)
+        assertEquals("Only the creator can edit this challenge", vm.uiState.value.errorMessage)
     }
 }

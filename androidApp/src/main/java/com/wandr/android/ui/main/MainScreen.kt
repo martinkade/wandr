@@ -84,7 +84,6 @@ fun MainScreen(
             ChallengeDetailsScreen(
                 challengeId = challengeId,
                 userId = userId.orEmpty(),
-                isManager = state.isManager,
                 onBack = { openChallengeId = null }
             )
         }

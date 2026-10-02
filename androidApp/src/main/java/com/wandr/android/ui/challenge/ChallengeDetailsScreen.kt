@@ -50,6 +50,7 @@ import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.ChallengeType
+import com.wandr.domain.model.availableChallengeAction
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamStanding
 import com.wandr.presentation.challenge.ChallengeIntent
@@ -69,7 +70,6 @@ import org.koin.compose.koinInject
 fun ChallengeDetailsScreen(
     challengeId: String,
     userId: String,
-    isManager: Boolean,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ChallengeViewModel = koinInject()
@@ -82,7 +82,6 @@ fun ChallengeDetailsScreen(
     ChallengeDetailsScreenContent(
         state = state,
         userId = userId,
-        isManager = isManager,
         onBack = onBack,
         onIntent = viewModel::processIntent,
         modifier = modifier
@@ -94,14 +93,13 @@ fun ChallengeDetailsScreen(
 private fun ChallengeDetailsScreenContent(
     state: ChallengeState,
     userId: String,
-    isManager: Boolean,
     onBack: () -> Unit,
     onIntent: (ChallengeIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val challenge = state.selectedChallenge
-    // RLS only lets the manager who created a challenge change it.
-    val canEdit = isManager && challenge != null && challenge.createdBy == userId
+    // Only the creator (owner) may edit the challenge or change its cover; the server enforces the same rule.
+    val canEdit = state.canEdit
 
     var isEditing by rememberSaveable { mutableStateOf(false) }
     var enrolling by rememberSaveable { mutableStateOf(false) }
@@ -125,6 +123,8 @@ private fun ChallengeDetailsScreenContent(
     val updatedText = stringResource(R.string.challenge_updated_message)
     val joinedText = stringResource(R.string.challenge_joined_message)
     val enrolledText = stringResource(R.string.challenge_team_enrolled_message)
+    val leftText = stringResource(R.string.challenge_left_message)
+    val withdrawnText = stringResource(R.string.challenge_team_withdrawn_message)
     val imageText = stringResource(R.string.challenge_image_updated_message)
     LaunchedEffect(state.success, state.errorMessage) {
         val message = when {
@@ -132,6 +132,8 @@ private fun ChallengeDetailsScreenContent(
             state.success == ChallengeSuccess.UPDATED -> updatedText
             state.success == ChallengeSuccess.JOINED -> joinedText
             state.success == ChallengeSuccess.TEAM_ENROLLED -> enrolledText
+            state.success == ChallengeSuccess.LEFT -> leftText
+            state.success == ChallengeSuccess.TEAM_WITHDRAWN -> withdrawnText
             state.success == ChallengeSuccess.IMAGE_UPDATED -> imageText
             else -> null
         } ?: return@LaunchedEffect
@@ -219,20 +221,18 @@ private fun ChallengeDetailsScreenContent(
                     }
 
                     Spacer(Modifier.height(12.dp))
-                    // Drafts are not visible to anybody else, so there is nothing to join or enroll in yet.
-                    if (challenge.isActive) {
-                        if (isGroup) {
-                            if (state.teams.isNotEmpty()) {
-                                Button(onClick = { enrolling = true }, modifier = Modifier.fillMaxWidth()) {
-                                    Text(stringResource(R.string.challenge_enroll_team_button))
-                                }
-                            }
-                        } else {
-                            Button(
-                                onClick = { onIntent(ChallengeIntent.JoinChallenge(challenge.id, userId)) },
-                                modifier = Modifier.fillMaxWidth()
-                            ) { Text(stringResource(R.string.join_challenge_button)) }
-                        }
+                    // Join / leave (individual) or enroll / withdraw a team (group); none for drafts and finished challenges.
+                    val status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE
+                    val participation = state.participations[challenge.id]
+                    val action = availableChallengeAction(challenge, status, participation, state.teams.isNotEmpty())
+                    action?.let {
+                        ChallengeActionButton(
+                            action = it,
+                            onClick = {
+                                performChallengeAction(it, challenge.id, participation, userId, onIntent) { enrolling = true }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     if (isGroup) {
@@ -318,7 +318,7 @@ private val previewGroupChallenge = Challenge(
     startDate = 1_768_435_200_000L, endDate = 1_771_027_200_000L, createdBy = "u1", createdAt = 0L, updatedAt = 0L
 )
 
-@Preview(name = "Group, manager", showBackground = true, heightDp = 1100)
+@Preview(name = "Group, creator", showBackground = true, heightDp = 1100)
 @Preview(name = "Group Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 1100)
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true, heightDp = 1400)
 @Composable
@@ -327,6 +327,7 @@ private fun ChallengeDetailsScreenGroupPreview() {
         ChallengeDetailsScreenContent(
             state = ChallengeState(
                 selectedChallenge = previewGroupChallenge,
+                canEdit = true, // the creator sees "Edit" and can change the cover
                 statuses = mapOf("c2" to ChallengeStatus.ACTIVE),
                 teams = listOf(Team("t1", "Alpine Trail Blazers", null, null, null, "X7K9P2W1", "u1", 0L, 0L)),
                 standings = listOf(
@@ -334,12 +335,12 @@ private fun ChallengeDetailsScreenGroupPreview() {
                     TeamStanding(2, "t1", "Alpine Trail Blazers", null, 2_500.0, 50.0, 3, 0, false)
                 )
             ),
-            userId = "u1", isManager = true, onBack = {}, onIntent = {}
+            userId = "u1", onBack = {}, onIntent = {}
         )
     }
 }
 
-@Preview(name = "Individual draft, member", showBackground = true, heightDp = 900)
+@Preview(name = "Individual draft, not the creator", showBackground = true, heightDp = 900)
 @Composable
 private fun ChallengeDetailsScreenIndividualPreview() {
     WandrTheme {
@@ -348,7 +349,7 @@ private fun ChallengeDetailsScreenIndividualPreview() {
                 selectedChallenge = previewGroupChallenge.copy(scope = "individual", isActive = false),
                 statuses = mapOf("c2" to ChallengeStatus.DRAFT)
             ),
-            userId = "u3", isManager = false, onBack = {}, onIntent = {}
+            userId = "u3", onBack = {}, onIntent = {}
         )
     }
 }

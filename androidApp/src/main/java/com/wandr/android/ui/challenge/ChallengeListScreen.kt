@@ -36,7 +36,9 @@ import com.wandr.android.R
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
+import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.ChallengeStatus
+import com.wandr.domain.model.availableChallengeAction
 import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeState
 import com.wandr.presentation.challenge.ChallengeSuccess
@@ -101,6 +103,8 @@ private fun ChallengeListScreenContent(
     val updatedText = stringResource(R.string.challenge_updated_message)
     val joinedText = stringResource(R.string.challenge_joined_message)
     val enrolledText = stringResource(R.string.challenge_team_enrolled_message)
+    val leftText = stringResource(R.string.challenge_left_message)
+    val withdrawnText = stringResource(R.string.challenge_team_withdrawn_message)
     LaunchedEffect(state.success, state.errorMessage) {
         val message = when {
             state.errorMessage != null -> state.errorMessage
@@ -108,6 +112,8 @@ private fun ChallengeListScreenContent(
             state.success == ChallengeSuccess.UPDATED -> updatedText
             state.success == ChallengeSuccess.JOINED -> joinedText
             state.success == ChallengeSuccess.TEAM_ENROLLED -> enrolledText
+            state.success == ChallengeSuccess.LEFT -> leftText
+            state.success == ChallengeSuccess.TEAM_WITHDRAWN -> withdrawnText
             else -> null
         } ?: return@LaunchedEffect
 
@@ -153,22 +159,22 @@ private fun ChallengeListScreenContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(state.challenges, key = { it.id }) { challenge ->
+                        val status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE
+                        val participation = state.participations[challenge.id]
+                        val action = availableChallengeAction(challenge, status, participation, state.teams.isNotEmpty())
+                        // Editing is only possible on the detail screen.
                         ChallengeCard(
                             challenge = challenge,
-                            status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE,
+                            status = status,
                             onSelect = { onOpenChallenge(challenge.id) },
-                            onJoin = { onIntent(ChallengeIntent.JoinChallenge(challenge.id, userId)) },
-                            // Teams compete as a team: group challenges are joined by enrolling one of the user's teams.
-                            onEnrollTeam = if (challenge.scope == "group" && state.teams.isNotEmpty()) {
-                                { enrollChallengeId = challenge.id }
-                            } else null,
-                            // RLS only lets the manager who created a challenge change it.
-                            onEdit = if (isManager && challenge.createdBy == userId) {
-                                {
-                                    onIntent(ChallengeIntent.StartEdit(challenge.id))
-                                    isEditing = true
+                            action = action,
+                            onAction = {
+                                action?.let {
+                                    performChallengeAction(it, challenge.id, participation, userId, onIntent) {
+                                        enrollChallengeId = challenge.id
+                                    }
                                 }
-                            } else null
+                            }
                         )
                     }
                 }
@@ -229,6 +235,21 @@ private fun ChallengeListScreenManagerPreview() {
                 teams = listOf(com.wandr.domain.model.Team("t1", "Alpine Trail Blazers", null, null, null, "X7K9P2W1", "u1", 0L, 0L))
             ),
             userId = "u1", isManager = true, onIntent = {}, onOpenChallenge = {}
+        )
+    }
+}
+
+@Preview(name = "Joined (leave button)", showBackground = true)
+@Composable
+private fun ChallengeListScreenJoinedPreview() {
+    WandrTheme {
+        ChallengeListScreenContent(
+            state = ChallengeState(
+                challenges = previewChallenges,
+                statuses = mapOf("c1" to ChallengeStatus.ACTIVE, "c2" to ChallengeStatus.EXPIRED),
+                participations = mapOf("c1" to ChallengeParticipation("c1", null))
+            ),
+            userId = "u3", isManager = false, onIntent = {}, onOpenChallenge = {}
         )
     }
 }

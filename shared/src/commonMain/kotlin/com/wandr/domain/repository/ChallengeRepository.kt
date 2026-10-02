@@ -2,6 +2,7 @@ package com.wandr.domain.repository
 
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeParticipant
+import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.LeaderboardEntry
 import com.wandr.domain.model.TeamStanding
 import kotlinx.coroutines.flow.Flow
@@ -12,8 +13,14 @@ interface ChallengeRepository {
     /** Every challenge visible to the user: open (individual) ones and group ones teams can enroll in. */
     fun getChallenges(): Flow<List<Challenge>>
 
-    /** Pulls the challenges visible to the signed-in user (RLS-filtered) into the local cache. */
-    suspend fun refreshChallenges(): Result<Unit>
+    /**
+     * Pulls the challenges visible to the signed-in user (RLS-filtered) and [userId]'s own participations into the
+     * local cache.
+     */
+    suspend fun refreshChallenges(userId: String): Result<Unit>
+
+    /** The challenges [userId] takes part in. */
+    fun getParticipations(userId: String): Flow<List<ChallengeParticipation>>
 
     fun getChallengeParticipants(challengeId: String): Flow<List<ChallengeParticipant>>
 
@@ -37,6 +44,12 @@ interface ChallengeRepository {
 
     /** Joins an individual challenge for [userId]. Group challenges are joined by enrolling a team. */
     suspend fun joinChallenge(challengeId: String, userId: String): Result<Unit>
+
+    /** Leaves an individual challenge. */
+    suspend fun leaveChallenge(challengeId: String, userId: String): Result<Unit>
+
+    /** Withdraws [teamId] from a group challenge (team owner / admin only, enforced by the server). */
+    suspend fun withdrawTeam(challengeId: String, teamId: String): Result<Unit>
 
     /** Enrolls [teamId] in a group challenge; all its members then contribute to the team's result. */
     suspend fun enrollTeam(challengeId: String, teamId: String, enrolledBy: String): Result<Unit>

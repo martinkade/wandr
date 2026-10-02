@@ -360,25 +360,15 @@ CREATE POLICY "Only managers can create challenges"
         )
     );
 
-CREATE POLICY "Only managers can edit challenges"
+-- Only managers create challenges (above); only the creator (owner) edits or deletes them.
+CREATE POLICY "Only the creator can edit a challenge"
     ON public.challenges FOR UPDATE TO authenticated
-    USING (
-        auth.uid() = created_by AND
-        EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE id = auth.uid() AND system_role = 'manager'
-        )
-    );
+    USING (auth.uid() = created_by)
+    WITH CHECK (auth.uid() = created_by);
 
-CREATE POLICY "Only managers can delete challenges"
+CREATE POLICY "Only the creator can delete a challenge"
     ON public.challenges FOR DELETE TO authenticated
-    USING (
-        auth.uid() = created_by AND
-        EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE id = auth.uid() AND system_role = 'manager'
-        )
-    );
+    USING (auth.uid() = created_by);
 
 -- Team enrollment: which teams compete is public (it is the competition); only owners/admins enroll or withdraw.
 -- Enrolling inserts the members as participants (trigger in section 5).
@@ -510,6 +500,27 @@ CREATE POLICY "Challenge Cover Delete Access" ON storage.objects FOR DELETE TO a
         WHERE c.id::text = (storage.foldername(name))[1] AND c.created_by = auth.uid()
     ));
 
+```
+
+### Migration: only the creator edits a challenge (existing projects)
+
+Run once. Editing and deleting a challenge (and, through the storage policies, changing its cover) is limited to
+the user who created it. Previously the creator also had to be a manager at that moment.
+
+```sql
+DROP POLICY IF EXISTS "Only managers can edit challenges" ON public.challenges;
+DROP POLICY IF EXISTS "Only managers can delete challenges" ON public.challenges;
+DROP POLICY IF EXISTS "Only the creator can edit a challenge" ON public.challenges;
+DROP POLICY IF EXISTS "Only the creator can delete a challenge" ON public.challenges;
+
+CREATE POLICY "Only the creator can edit a challenge"
+    ON public.challenges FOR UPDATE TO authenticated
+    USING (auth.uid() = created_by)
+    WITH CHECK (auth.uid() = created_by);
+
+CREATE POLICY "Only the creator can delete a challenge"
+    ON public.challenges FOR DELETE TO authenticated
+    USING (auth.uid() = created_by);
 ```
 
 ---

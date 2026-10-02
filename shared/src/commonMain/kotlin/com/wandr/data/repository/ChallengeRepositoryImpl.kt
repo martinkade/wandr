@@ -5,6 +5,7 @@ import com.wandr.data.local.dao.ChallengeParticipantDao
 import com.wandr.data.local.entity.ChallengeEntity
 import com.wandr.data.local.entity.ChallengeParticipantEntity
 import com.wandr.data.remote.ChallengeDto
+import com.wandr.data.remote.ChallengeParticipantDto
 import com.wandr.data.remote.ChallengeParticipantInsertDto
 import com.wandr.data.remote.ChallengeTeamInsertDto
 import com.wandr.data.remote.TeamStandingDto
@@ -12,6 +13,7 @@ import com.wandr.data.remote.toDto
 import com.wandr.data.remote.toUpdatePayload
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeParticipant
+import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.LeaderboardEntry
 import com.wandr.domain.model.TeamStanding
@@ -102,13 +104,29 @@ class ChallengeRepositoryImpl(
             }
     }
 
-    override suspend fun refreshChallenges(): Result<Unit> = runCatching {
+    override suspend fun refreshChallenges(userId: String): Result<Unit> = runCatching {
         // RLS only returns what the user may see. Unsynced local edits are never overwritten.
         supabase.postgrest.from("challenges").select().decodeList<ChallengeDto>().forEach { dto ->
             val local = challengeDao.getChallengeOnce(dto.id)
             if (local == null || local.syncStatus == SYNCED) challengeDao.insertChallenge(dto.toEntity())
         }
+
+        // Own participations (team members' rows are visible too, so filter by user). Synced rows that no longer
+        // exist on the server (left / team withdrawn) are removed locally.
+        val mine = supabase.postgrest.from("challenge_participants")
+            .select { filter { eq("user_id", userId) } }
+            .decodeList<ChallengeParticipantDto>()
+        val remoteIds = mine.map { it.id }.toSet()
+        participantDao.getParticipationsForUserOnce(userId)
+            .filter { it.syncStatus == SYNCED && it.id !in remoteIds }
+            .forEach { participantDao.deleteParticipantById(it.id) }
+        mine.forEach { participantDao.insertParticipant(it.toEntity()) }
     }
+
+    override fun getParticipations(userId: String): Flow<List<ChallengeParticipation>> =
+        participantDao.getParticipationsForUser(userId).map { rows ->
+            rows.map { ChallengeParticipation(challengeId = it.challengeId, teamId = it.teamId) }
+        }
 
     /**
      * Only managers may create challenges (RLS), so the remote insert happens first; the local cache is only
@@ -190,6 +208,28 @@ class ChallengeRepositoryImpl(
         supabase.postgrest.from("challenge_participants")
             .insert(ChallengeParticipantInsertDto(participant.id, challengeId, userId))
         participantDao.insertParticipant(participant)
+    }
+
+    override suspend fun leaveChallenge(challengeId: String, userId: String): Result<Unit> = runCatching {
+        // RLS: users may only quit individual challenges themselves.
+        supabase.postgrest.from("challenge_participants").delete {
+            filter {
+                eq("challenge_id", challengeId)
+                eq("user_id", userId)
+            }
+        }
+        participantDao.deleteParticipant(challengeId, userId)
+    }
+
+    override suspend fun withdrawTeam(challengeId: String, teamId: String): Result<Unit> = runCatching {
+        // Server-side (RLS): only the team owner or an admin may do this. A trigger removes the members.
+        supabase.postgrest.from("challenge_teams").delete {
+            filter {
+                eq("challenge_id", challengeId)
+                eq("team_id", teamId)
+            }
+        }
+        participantDao.deleteTeamParticipants(challengeId, teamId)
     }
 
     @OptIn(ExperimentalUuidApi::class)

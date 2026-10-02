@@ -171,4 +171,9 @@
     <string name="picker_select_date">Datum wählen</string>
     <string name="picker_select_time">Uhrzeit wählen</string>
     <string name="ok_button">OK</string>
+
+    <string name="leave_challenge_button">Challenge verlassen</string>
+    <string name="challenge_withdraw_team_button">Team zurückziehen</string>
+    <string name="challenge_left_message">Challenge verlassen</string>
+    <string name="challenge_team_withdrawn_message">Team zurückgezogen</string>
 </resources>

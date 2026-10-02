@@ -171,4 +171,9 @@
     <string name="picker_select_date">Select date</string>
     <string name="picker_select_time">Select time</string>
     <string name="ok_button">OK</string>
+
+    <string name="leave_challenge_button">Leave Challenge</string>
+    <string name="challenge_withdraw_team_button">Withdraw Team</string>
+    <string name="challenge_left_message">Left challenge</string>
+    <string name="challenge_team_withdrawn_message">Team withdrawn</string>
 </resources>

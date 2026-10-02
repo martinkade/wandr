@@ -39,6 +39,12 @@ sealed interface ChallengeIntent {
     /** Individual challenges only. */
     data class JoinChallenge(val challengeId: String, val userId: String) : ChallengeIntent
 
+    /** Individual challenges: leaves a challenge the user has joined. */
+    data class LeaveChallenge(val challengeId: String, val userId: String) : ChallengeIntent
+
+    /** Group challenges: withdraws the enrolled team (owner / admin only, enforced by the server). */
+    data class WithdrawTeam(val challengeId: String, val teamId: String) : ChallengeIntent
+
     /** Group challenges: enrolls one of the user's teams (owner / admin only, enforced by the server). */
     data class EnrollTeam(val challengeId: String, val teamId: String, val userId: String) : ChallengeIntent
     data object ClearMessages : ChallengeIntent

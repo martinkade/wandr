@@ -1,18 +1,15 @@
 package com.wandr.android.ui.challenge
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.R
 import com.wandr.domain.model.Challenge
+import com.wandr.domain.model.ChallengeAction
 import com.wandr.domain.model.ChallengeStatus
 
 @Composable
@@ -31,12 +29,10 @@ fun ChallengeCard(
     /** Derived at runtime from the dates, never stored (see `EvaluateChallengeStatusUseCase`). */
     status: ChallengeStatus,
     onSelect: () -> Unit,
-    onJoin: () -> Unit,
     modifier: Modifier = Modifier,
-    /** Shown only to managers who may edit this challenge. */
-    onEdit: (() -> Unit)? = null,
-    /** Group challenges: shown when the user belongs to a team that could be enrolled. */
-    onEnrollTeam: (() -> Unit)? = null
+    /** The participation action to offer, or null when none applies (draft, over, no team, ...). */
+    action: ChallengeAction? = null,
+    onAction: () -> Unit = {}
 ) {
     Card(
         onClick = onSelect,
@@ -81,8 +77,7 @@ fun ChallengeCard(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            val isGroup = challenge.scope == "group"
-            if (isGroup) {
+            if (challenge.scope == "group") {
                 Text(
                     text = stringResource(R.string.challenge_group_card_hint),
                     style = MaterialTheme.typography.labelMedium,
@@ -90,23 +85,8 @@ fun ChallengeCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (isGroup) {
-                    // Teams compete as a team: enrolling replaces "join".
-                    onEnrollTeam?.let {
-                        Button(onClick = it, modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.challenge_enroll_team_button))
-                        }
-                    } ?: Spacer(Modifier.weight(1f))
-                } else {
-                    Button(onClick = onJoin, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.join_challenge_button))
-                    }
-                }
-                onEdit?.let {
-                    OutlinedButton(onClick = it) { Text(stringResource(R.string.challenge_edit_button)) }
-                }
-            }
+            // Editing is only possible on the detail screen.
+            action?.let { ChallengeActionButton(it, onClick = onAction, modifier = Modifier.fillMaxWidth()) }
         }
     }
 }
@@ -135,8 +115,7 @@ private fun ChallengeCardPreview() {
             ),
             status = ChallengeStatus.ACTIVE,
             onSelect = {},
-            onJoin = {},
-            onEdit = {} // as a manager
+            action = ChallengeAction.JOIN
         )
     }
 }
@@ -154,8 +133,7 @@ private fun ChallengeCardGroupPreview() {
             ),
             status = ChallengeStatus.ACTIVE,
             onSelect = {},
-            onJoin = {},
-            onEnrollTeam = {}
+            action = ChallengeAction.ENROLL_TEAM
         )
     }
 }
