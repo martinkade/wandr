@@ -40,7 +40,7 @@
     <string name="join_challenge_button">Join Challenge</string>
 
     <!-- Activity & GPS Tracking Localization -->
-    <string name="activities_title">Activity History</string>
+    <string name="feed_title">Feed</string>
     <string name="log_manual_activity_title">Log Manual Activity</string>
     <string name="live_gps_tracking_title">Live GPS Tracking</string>
     <string name="activity_type_hiking">Hiking</string>
@@ -61,7 +61,7 @@
     <string name="init_loading">Preparing WANDR…</string>
     <string name="init_failed_title">Start-up failed</string>
     <string name="retry_button">Try Again</string>
-    <string name="tab_activity">Activities</string>
+    <string name="tab_feed">Feed</string>
     <string name="tab_challenges">Challenges</string>
     <string name="tab_profile">Profile</string>
     <string name="logout_button">Sign Out</string>

@@ -38,7 +38,7 @@
 "join_challenge_button" = "Challenge beitreten";
 
 /* Activity & GPS Tracking Localization */
-"activities_title" = "Aktivitätsverlauf";
+"feed_title" = "Feed";
 "log_manual_activity_title" = "Manuelle Aktivität eintragen";
 "live_gps_tracking_title" = "Live GPS-Tracking";
 "activity_type_hiking" = "Wandern";
@@ -59,7 +59,7 @@
 "init_loading" = "WANDR wird vorbereitet…";
 "init_failed_title" = "Start fehlgeschlagen";
 "retry_button" = "Erneut versuchen";
-"tab_activity" = "Aktivitäten";
+"tab_feed" = "Feed";
 "tab_challenges" = "Challenges";
 "tab_profile" = "Profil";
 "logout_button" = "Abmelden";

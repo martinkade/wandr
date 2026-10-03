@@ -153,7 +153,7 @@ private fun FeedScreenContent(
     }
 
     ScreenScaffold(
-        title = stringResource(R.string.activities_title),
+        title = stringResource(R.string.feed_title),
         modifier = modifier,
         actions = { actions() },
         // While the sheet is open, its own host shows the messages.

@@ -56,12 +56,12 @@ fun MainScreen(
     viewModel: MainViewModel = koinInject()
 ) {
     val state by viewModel.uiState.collectAsState()
-    var selectedRequested by rememberSaveable { mutableStateOf(MainTab.Activities) }
+    var selectedRequested by rememberSaveable { mutableStateOf(MainTab.Feed) }
     LaunchedEffect(Unit) { viewModel.load() }
 
     // The Groups tab only exists for managers; fall back if the role changes while it is selected.
     val tabs = MainTab.entries.filter { it != MainTab.Groups || state.isManager }
-    val selectedTab = if (selectedRequested in tabs) selectedRequested else MainTab.Activities
+    val selectedTab = if (selectedRequested in tabs) selectedRequested else MainTab.Feed
     val userId = state.userId
     // Group details slide in over the whole main screen, including the tab bar (like a pushed page).
     var openTeamId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -99,7 +99,7 @@ fun MainScreen(
         ) { tab ->
             if (userId != null) {
                 when (tab) {
-                    MainTab.Activities -> FeedScreen(
+                    MainTab.Feed -> FeedScreen(
                         userId = userId,
                         teamId = state.teamId,
                         onOpenActivity = { openActivityId = it },
@@ -210,7 +210,7 @@ private fun MainContentManagerPreview() {
 private fun MainContentMemberPreview() {
     WandrTheme {
         MainScreenContent(
-            tabs = MainTab.entries - MainTab.Groups, selectedTab = MainTab.Activities, onSelectTab = {}, isLoading = false
+            tabs = MainTab.entries - MainTab.Groups, selectedTab = MainTab.Feed, onSelectTab = {}, isLoading = false
         ) { tab -> Text(tab.name) }
     }
 }

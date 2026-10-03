@@ -18,7 +18,7 @@ struct MainView: View {
             NavigationStack {
                 FeedView(activities: viewModel.activities, onSelectActivity: { selectedActivity = $0 })
                     .padding()
-                    .navigationTitle(LocalizedStringKey("activities_title"))
+                    .navigationTitle(LocalizedStringKey("feed_title"))
                     .navigationDestination(item: $selectedActivity) { activity in
                         ActivityDetailView(activity: activity, userId: viewModel.userId)
                     }
@@ -44,7 +44,7 @@ struct MainView: View {
                         }
                     }
             }
-            .tabItem { Label(LocalizedStringKey("tab_activity"), systemImage: "figure.hiking") }
+            .tabItem { Label(LocalizedStringKey("tab_feed"), systemImage: "rectangle.stack") }
             .tag(0)
 
             NavigationStack {
