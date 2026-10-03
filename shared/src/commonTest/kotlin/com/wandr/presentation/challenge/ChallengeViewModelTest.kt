@@ -105,8 +105,6 @@ private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : 
         enrolled = Triple(challengeId, teamId, enrolledBy)
         return Result.success(Unit)
     }
-    override suspend fun updateParticipantProgress(challengeId: String, userId: String, additionalProgress: Double): Result<Unit> =
-        Result.success(Unit)
 }
 
 private class FakeTeamRepository(teams: List<Team>) : TeamRepository {
@@ -190,6 +188,46 @@ class ChallengeViewModelTest {
         assertFalse(created.isActive) // new challenges start as drafts
         assertEquals(ChallengeSuccess.CREATED, vm.uiState.value.success)
         assertFalse(vm.uiState.value.isSaving)
+    }
+
+    @Test
+    fun noActivityTypeSelectedMeansAllTypesCount() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TitleChanged("Any activity"))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+        assertTrue(assertNotNull(repo.created).activityTypes.isEmpty())
+    }
+
+    @Test
+    fun selectedActivityTypesAreToggledAndSaved() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TitleChanged("Runners only"))
+        vm.processIntent(ChallengeIntent.ActivityTypeToggled("running"))
+        vm.processIntent(ChallengeIntent.ActivityTypeToggled("cycling"))
+        vm.processIntent(ChallengeIntent.ActivityTypeToggled("cycling")) // off again
+        assertEquals(setOf("running"), assertNotNull(vm.uiState.value.form).activityTypes)
+
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+        assertEquals(listOf("running"), assertNotNull(repo.created).activityTypes)
+    }
+
+    @Test
+    fun editingStartsFromTheSavedActivityTypes() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.StartCreate)
+        vm.processIntent(ChallengeIntent.TitleChanged("Hikes"))
+        vm.processIntent(ChallengeIntent.ActivityTypeToggled("hiking"))
+        vm.processIntent(ChallengeIntent.SubmitForm("u1"))
+
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        val saved = assertNotNull(repo.created)
+        vm.processIntent(ChallengeIntent.StartEdit(saved.id))
+        assertEquals(setOf("hiking"), vm.uiState.value.form?.activityTypes)
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.wandr.data.remote
 import com.wandr.data.local.entity.ChallengeEntity
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -19,6 +20,7 @@ data class ChallengeDto(
     val type: String,
     @SerialName("target_value") val targetValue: Double,
     @SerialName("require_all_members_completion") val requireAllMembersCompletion: Boolean = false,
+    @SerialName("activity_types") val activityTypes: List<String> = emptyList(),
     @SerialName("start_date") val startDate: String,
     @SerialName("end_date") val endDate: String,
     val status: String,
@@ -35,6 +37,7 @@ data class ChallengeDto(
         type = type,
         targetValue = targetValue,
         requireAllMembersCompletion = requireAllMembersCompletion,
+        activityTypes = activityTypes.joinToString(","),
         startDate = Instant.parse(startDate).toEpochMilliseconds(),
         endDate = Instant.parse(endDate).toEpochMilliseconds(),
         status = status,
@@ -54,6 +57,7 @@ fun ChallengeEntity.toDto() = ChallengeDto(
     type = type,
     targetValue = targetValue,
     requireAllMembersCompletion = requireAllMembersCompletion,
+    activityTypes = activityTypes.split(",").filter { it.isNotBlank() },
     startDate = Instant.fromEpochMilliseconds(startDate).toString(),
     endDate = Instant.fromEpochMilliseconds(endDate).toString(),
     status = status,
@@ -75,6 +79,7 @@ fun ChallengeEntity.toUpdatePayload(): JsonObject = JsonObject(
         "type" to JsonPrimitive(type),
         "target_value" to JsonPrimitive(targetValue),
         "require_all_members_completion" to JsonPrimitive(requireAllMembersCompletion),
+        "activity_types" to JsonArray(activityTypes.split(",").filter { it.isNotBlank() }.map { JsonPrimitive(it) }),
         "start_date" to JsonPrimitive(Instant.fromEpochMilliseconds(startDate).toString()),
         "end_date" to JsonPrimitive(Instant.fromEpochMilliseconds(endDate).toString()),
         "status" to JsonPrimitive(status),

@@ -6,6 +6,6 @@ import com.wandr.domain.repository.ChallengeRepository
 class CreateChallengeUseCase(private val challengeRepository: ChallengeRepository) {
     suspend operator fun invoke(challenge: Challenge): Result<Challenge> {
         challenge.validationError()?.let { return Result.failure(IllegalArgumentException(it)) }
-        return challengeRepository.createChallenge(challenge.copy(title = challenge.title.trim()))
+        return challengeRepository.createChallenge(challenge.normalized())
     }
 }

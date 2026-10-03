@@ -155,6 +155,7 @@ class ChallengeRepositoryImpl(
     private fun Challenge.toEntity(syncStatus: String = SYNCED) = ChallengeEntity(
         id = id, title = title, description = description, coverUrl = coverUrl, scope = scope,
         type = type, targetValue = targetValue, requireAllMembersCompletion = requireAllMembersCompletion,
+        activityTypes = activityTypes.joinToString(","),
         startDate = startDate, endDate = endDate,
         status = ChallengeStatus.storedValue(isActive),
         createdBy = createdBy, createdAt = createdAt, updatedAt = updatedAt, syncStatus = syncStatus
@@ -163,6 +164,7 @@ class ChallengeRepositoryImpl(
     private fun ChallengeEntity.toDomain() = Challenge(
         id = id, title = title, description = description, coverUrl = coverUrl, scope = scope,
         type = type, targetValue = targetValue, requireAllMembersCompletion = requireAllMembersCompletion,
+        activityTypes = activityTypes.split(",").filter { it.isNotBlank() },
         startDate = startDate, endDate = endDate, createdBy = createdBy, createdAt = createdAt,
         updatedAt = updatedAt, isActive = status == ChallengeStatus.ACTIVE.value
     )
@@ -239,22 +241,6 @@ class ChallengeRepositoryImpl(
         // Server-side (RLS): only the team owner or an admin may do this. A trigger adds all members as participants.
         supabase.postgrest.from("challenge_teams")
             .insert(ChallengeTeamInsertDto(Uuid.random().toString(), challengeId, teamId, enrolledBy))
-    }
-
-    override suspend fun updateParticipantProgress(challengeId: String, userId: String, additionalProgress: Double): Result<Unit> = runCatching {
-        val current = participantDao.getParticipant(challengeId, userId)
-        if (current != null) {
-            val newProgress = current.progressValue + additionalProgress
-            val now = Clock.System.now().toEpochMilliseconds()
-            val updated = current.copy(
-                progressValue = newProgress,
-                isCompleted = newProgress >= 100000.0,
-                completedAt = if (newProgress >= 100000.0) now else current.completedAt,
-                syncStatus = "DIRTY"
-            )
-            participantDao.insertParticipant(updated)
-            supabase.postgrest.from("challenge_participants").upsert(updated)
-        }
     }
 
     private companion object {

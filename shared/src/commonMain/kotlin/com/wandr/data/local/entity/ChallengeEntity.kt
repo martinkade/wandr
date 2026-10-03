@@ -30,6 +30,10 @@ data class ChallengeEntity(
     @ColumnInfo(name = "require_all_members_completion")
     val requireAllMembersCompletion: Boolean = false,
     
+    /** Comma-separated activity types that count; empty = all. */
+    @ColumnInfo(name = "activity_types", defaultValue = "")
+    val activityTypes: String = "",
+    
     @ColumnInfo(name = "start_date")
     val startDate: Long,
     

@@ -15,5 +15,7 @@ data class Challenge(
     val createdAt: Long,
     val updatedAt: Long,
     /** Stored status: true = `active` (published), false = `draft` (only the creator sees it). */
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    /** Activity types that count for the challenge (e.g. `running`); empty = every type counts. */
+    val activityTypes: List<String> = emptyList()
 )

@@ -25,6 +25,8 @@ sealed interface ChallengeIntent {
     /** Status toggle: active (published) or draft. */
     data class ActiveChanged(val isActive: Boolean) : ChallengeIntent
     data class ScopeChanged(val scope: ChallengeScope) : ChallengeIntent
+    /** Adds or removes [type] from the activity types that count; none selected = all types count. */
+    data class ActivityTypeToggled(val type: String) : ChallengeIntent
     data class RequireAllMembersCompletionChanged(val requireAll: Boolean) : ChallengeIntent
 
     /** Creates or updates, depending on the form. */

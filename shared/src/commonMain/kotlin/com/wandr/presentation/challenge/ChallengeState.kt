@@ -25,6 +25,8 @@ data class ChallengeForm(
     /** GROUP = teams compete against other teams; there is no team on the challenge itself. */
     val scope: ChallengeScope = ChallengeScope.INDIVIDUAL,
     val requireAllMembersCompletion: Boolean = false,
+    /** Activity types that count; empty = every type counts. */
+    val activityTypes: Set<String> = emptySet(),
     /** Status toggle: true = `active` (published), false = `draft` (default, only the creator sees it). */
     val isActive: Boolean = false
 ) {

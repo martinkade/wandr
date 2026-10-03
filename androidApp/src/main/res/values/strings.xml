@@ -294,4 +294,7 @@
     <string name="join_team_scan">Scan QR code</string>
     <string name="join_team_scan_failed">The QR code could not be scanned.</string>
     <string name="join_team_success">You joined the group.</string>
+    <string name="challenge_activity_types_label">Counting activities</string>
+    <string name="challenge_activity_types_hint">Select the activity types that count. If none is selected, all activity types count.</string>
+    <string name="challenge_activity_types_all">All activity types</string>
 </resources>

@@ -35,11 +35,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.activity.activityTypeText
 import com.wandr.android.ui.common.DateTimePickerField
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeType
 import com.wandr.presentation.challenge.ChallengeForm
+import com.wandr.presentation.activity.ActivityTypes
 import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeUnits
 import java.util.Locale
@@ -132,6 +134,23 @@ fun ChallengeEditScreen(
             label = stringResource(R.string.challenge_end_label),
             valueMillis = form.endDate,
             onValueChange = { onIntent(ChallengeIntent.EndDateChanged(it)) }
+        )
+
+        SectionLabel(R.string.challenge_activity_types_label)
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ActivityTypes.all.forEach { type ->
+                FilterChip(
+                    selected = type in form.activityTypes,
+                    onClick = { onIntent(ChallengeIntent.ActivityTypeToggled(type)) },
+                    label = { Text(activityTypeText(type)) }
+                )
+            }
+        }
+        Text(
+            text = stringResource(R.string.challenge_activity_types_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
         )
 
         SectionLabel(R.string.challenge_scope_label)

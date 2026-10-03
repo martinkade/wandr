@@ -53,5 +53,4 @@ interface ChallengeRepository {
 
     /** Enrolls [teamId] in a group challenge; all its members then contribute to the team's result. */
     suspend fun enrollTeam(challengeId: String, teamId: String, enrolledBy: String): Result<Unit>
-    suspend fun updateParticipantProgress(challengeId: String, userId: String, additionalProgress: Double): Result<Unit>
 }

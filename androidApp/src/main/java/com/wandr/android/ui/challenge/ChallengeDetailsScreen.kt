@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.activity.activityTypeText
 import com.wandr.android.ui.common.CoverEditor
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
@@ -200,6 +201,11 @@ private fun ChallengeDetailsScreenContent(
                         "${stringResource(typeLabel(type))}: ${challengeValueText(type, challenge.targetValue)}"
                     )
                     LabeledValue(stringResource(R.string.challenge_period_label), challengePeriodText(challenge))
+                    LabeledValue(
+                        stringResource(R.string.challenge_activity_types_label),
+                        if (challenge.activityTypes.isEmpty()) stringResource(R.string.challenge_activity_types_all)
+                        else challenge.activityTypes.map { activityTypeText(it) }.joinToString(", ")
+                    )
                     LabeledValue(
                         stringResource(R.string.challenge_scope_label),
                         stringResource(if (isGroup) R.string.challenge_scope_group else R.string.challenge_scope_individual)

@@ -121,6 +121,7 @@ CREATE TABLE public.challenges (
     type challenge_type NOT NULL,
     target_value DOUBLE PRECISION NOT NULL, -- Distance in meters, Elevation in meters, Time in seconds
     require_all_members_completion BOOLEAN NOT NULL DEFAULT FALSE, -- All-or-Nothing: a team only completes when EVERY member completed
+    activity_types TEXT[] NOT NULL DEFAULT '{}', -- activity types that count (hiking, running, cycling); empty = every type counts
     start_date TIMESTAMPTZ NOT NULL,
     end_date TIMESTAMPTZ NOT NULL,
     status challenge_status NOT NULL DEFAULT 'draft', -- draft: only the creator sees it; active: published
@@ -470,9 +471,8 @@ CREATE POLICY "Users can quit individual challenges"
     ON public.challenge_participants FOR DELETE TO authenticated
     USING (auth.uid() = user_id AND team_id IS NULL);
 
-CREATE POLICY "Participants can update their own progress"
-    ON public.challenge_participants FOR UPDATE TO authenticated
-    USING (auth.uid() = user_id);
+-- No UPDATE policy on challenge_participants: progress is calculated by the server from the user's activities
+-- (section 5, "Challenge progress"), so nobody can set it by hand.
 
 -- ----------------------------------------------------------------------------
 -- Activities Policies (Privacy First)
@@ -837,6 +837,107 @@ RETURNS TABLE (
 $$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
 ```
 
+
+### Challenge progress
+
+The progress of a participant is calculated by the server, never set by clients: every change of an activity
+(insert, update, delete), every new participant and every change of a challenge's period, type, target or activity
+types recalculates it. A challenge counts the user's activities that **started within its period** and whose type is
+one of the challenge's `activity_types` (**no activity types = every type counts**): the distance (m) for `distance`,
+the elevation gain (m) for `elevation`, the duration (s) for `time`. Reaching `target_value` completes the participation.
+Activities only count once they were synced to the server.
+
+```sql
+-- Progress of one user in one challenge: the sum of the matching activities that started within the challenge period
+-- (distance / elevation gain in meters, duration in seconds, depending on the challenge type). Without activity types
+-- on the challenge every activity type counts.
+CREATE OR REPLACE FUNCTION public.challenge_progress_for(p_challenge_id UUID, p_user UUID)
+RETURNS DOUBLE PRECISION AS $$
+    SELECT COALESCE(SUM(CASE c.type
+               WHEN 'distance'  THEN a.distance_meters
+               WHEN 'elevation' THEN a.elevation_gain_meters
+               WHEN 'time'      THEN a.duration_seconds
+           END), 0)::double precision
+    FROM public.challenges c
+    LEFT JOIN public.activities a
+        ON a.user_id = p_user
+       AND a.start_time >= c.start_date AND a.start_time < c.end_date
+       AND (cardinality(c.activity_types) = 0 OR a.activity_type = ANY(c.activity_types))
+    WHERE c.id = p_challenge_id;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
+
+-- Writes progress and completion of participants (all, of one challenge, of one user, or of one user in one challenge).
+CREATE OR REPLACE FUNCTION public.refresh_challenge_progress(p_challenge_id UUID DEFAULT NULL, p_user UUID DEFAULT NULL)
+RETURNS VOID AS $$
+    WITH calc AS (
+        SELECT p.id, public.challenge_progress_for(p.challenge_id, p.user_id) AS progress, c.target_value
+        FROM public.challenge_participants p
+        JOIN public.challenges c ON c.id = p.challenge_id
+        WHERE (p_challenge_id IS NULL OR p.challenge_id = p_challenge_id)
+          AND (p_user IS NULL OR p.user_id = p_user)
+    )
+    UPDATE public.challenge_participants p
+    SET progress_value = calc.progress,
+        is_completed = calc.progress >= calc.target_value,
+        completed_at = CASE WHEN calc.progress >= calc.target_value THEN COALESCE(p.completed_at, NOW()) ELSE NULL END
+    FROM calc
+    WHERE p.id = calc.id
+      AND (p.progress_value IS DISTINCT FROM calc.progress
+           OR p.is_completed IS DISTINCT FROM (calc.progress >= calc.target_value));
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
+
+-- Activities changed: update the user's progress in all their challenges.
+CREATE OR REPLACE FUNCTION public.refresh_progress_on_activity()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        PERFORM public.refresh_challenge_progress(NULL, OLD.user_id);
+        RETURN OLD;
+    END IF;
+    PERFORM public.refresh_challenge_progress(NULL, NEW.user_id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- A new participant starts with the progress of the matching activities they recorded before (and whatever the client
+-- sent is ignored).
+CREATE OR REPLACE FUNCTION public.init_participant_progress()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_target DOUBLE PRECISION;
+BEGIN
+    SELECT target_value INTO v_target FROM public.challenges WHERE id = NEW.challenge_id;
+    NEW.progress_value := public.challenge_progress_for(NEW.challenge_id, NEW.user_id);
+    NEW.is_completed := NEW.progress_value >= v_target;
+    NEW.completed_at := CASE WHEN NEW.is_completed THEN NOW() ELSE NULL END;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Period, type, target or activity types of a challenge changed: recalculate its participants.
+CREATE OR REPLACE FUNCTION public.refresh_progress_on_challenge()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM public.refresh_challenge_progress(NEW.id, NULL);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS on_activity_changed ON public.activities;
+CREATE TRIGGER on_activity_changed
+    AFTER INSERT OR UPDATE OR DELETE ON public.activities
+    FOR EACH ROW EXECUTE FUNCTION public.refresh_progress_on_activity();
+
+DROP TRIGGER IF EXISTS on_participant_init ON public.challenge_participants;
+CREATE TRIGGER on_participant_init
+    BEFORE INSERT ON public.challenge_participants
+    FOR EACH ROW EXECUTE FUNCTION public.init_participant_progress();
+
+DROP TRIGGER IF EXISTS on_challenge_rules_changed ON public.challenges;
+CREATE TRIGGER on_challenge_rules_changed
+    AFTER UPDATE OF start_date, end_date, type, target_value, activity_types ON public.challenges
+    FOR EACH ROW EXECUTE FUNCTION public.refresh_progress_on_challenge();
+```
 
 ### Social: comment updates & notification triggers
 

@@ -86,6 +86,9 @@ class ChallengeViewModel(
                     requireAllMembersCompletion = form.requireAllMembersCompletion && intent.scope == ChallengeScope.GROUP
                 )
             }
+            is ChallengeIntent.ActivityTypeToggled -> updateForm { form ->
+                form.copy(activityTypes = if (intent.type in form.activityTypes) form.activityTypes - intent.type else form.activityTypes + intent.type)
+            }
             is ChallengeIntent.RequireAllMembersCompletionChanged -> updateForm { it.copy(requireAllMembersCompletion = intent.requireAll) }
             is ChallengeIntent.SubmitForm -> submit(intent.userId)
             is ChallengeIntent.DiscardForm -> _uiState.update { it.copy(form = null) }
@@ -177,6 +180,7 @@ class ChallengeViewModel(
                     endDate = challenge.endDate,
                     scope = ChallengeScope.fromValue(challenge.scope),
                     requireAllMembersCompletion = challenge.requireAllMembersCompletion,
+                    activityTypes = challenge.activityTypes.toSet(),
                     isActive = challenge.isActive
                 )
             )
@@ -206,6 +210,7 @@ class ChallengeViewModel(
             type = form.type.value,
             targetValue = form.targetValue,
             requireAllMembersCompletion = form.scope == ChallengeScope.GROUP && form.requireAllMembersCompletion,
+            activityTypes = form.activityTypes.toList(),
             startDate = form.startDate,
             endDate = form.endDate,
             createdBy = existing?.createdBy ?: userId,
