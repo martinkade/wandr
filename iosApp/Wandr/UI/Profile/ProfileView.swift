@@ -16,6 +16,8 @@ struct ProfileView: View {
     var onAvatarReady: (Data) -> Void = { _ in }
     var onRemoveAvatar: () -> Void = {}
     var onLogout: () -> Void = {}
+    var healthSummary: DailyHealthSummary? = nil
+    var onHealthSettings: () -> Void = {}
     /// Only for previews.
     var startEditing: Bool = false
 
@@ -30,6 +32,20 @@ struct ProfileView: View {
                     LabeledValueView(label: "display_name_label", value: displayName)
                     LabeledValueView(label: "bio_label", value: bio)
                 }
+
+                // Cards side by side; the stats card only appears once Apple Health is connected.
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        HealthImportCardView(onSettings: onHealthSettings)
+                            .frame(width: 300, height: 240)
+                        if let healthSummary {
+                            HealthStatsCardView(summary: healthSummary)
+                                .frame(width: 300, height: 240)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                }
+                .padding(.horizontal, -24) // let the cards scroll edge to edge inside the padded column
             }
             .padding(24)
         }
@@ -76,6 +92,8 @@ struct ProfileView: View {
 /// Connects `ProfileView` to the shared `ProfileViewModel` for a signed-in user.
 struct ProfileContainerView: View {
     let userId: String?
+    /// Owned by the main view, which also syncs it when the app becomes active.
+    @ObservedObject var healthImport: HealthKitImporter
     var onLogout: () -> Void = {}
     @StateObject private var observer = ProfileObserver()
 
@@ -92,8 +110,19 @@ struct ProfileContainerView: View {
             onCancel: observer.discard,
             onAvatarReady: observer.uploadAvatar,
             onRemoveAvatar: observer.removeAvatar,
-            onLogout: onLogout
+            onLogout: onLogout,
+            healthSummary: healthImport.isEnabled ? healthImport.summary : nil,
+            onHealthSettings: healthImport.openSettingsOrConnect
         )
+        .permissionDisclosure(
+            isPresented: $healthImport.showDisclosure,
+            title: "healthkit_disclosure_title",
+            message: "healthkit_disclosure_message"
+        ) { healthImport.disclosureConfirmed() }
+        .alert(
+            healthImport.message.map { String(localized: $0) } ?? "",
+            isPresented: Binding(get: { healthImport.message != nil }, set: { if !$0 { healthImport.message = nil } })
+        ) { Button("OK", role: .cancel) {} }
         .task(id: userId) {
             if let userId { observer.load(userId: userId) }
         }

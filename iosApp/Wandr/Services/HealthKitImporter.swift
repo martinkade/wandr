@@ -1,15 +1,24 @@
 import Foundation
 import HealthKit
+import UIKit
 @preconcurrency import shared
 
 /// Reads workouts from Apple Health (read-only: nothing is ever written) and hands them to the shared inbox, which
 /// imports them and opens the conflict wizard when they overlap existing activities. Workouts written by WANDR itself
 /// (the watch app) are skipped.
+/// Today's steps and floors climbed.
+struct DailyHealthSummary: Equatable {
+    var steps: Int
+    var floors: Int
+}
+
 @MainActor
 final class HealthKitImporter: ObservableObject {
     @Published var showDisclosure = false
     @Published var message: LocalizedStringResource?
     @Published var isImporting = false
+    /// Only set once access was requested; Apple Health does not reveal whether reading was allowed, so denied reads show 0.
+    @Published var summary: DailyHealthSummary?
 
     private let store = HKHealthStore()
     private let inbox = IosDependencies.shared.watchWorkoutInbox()
@@ -22,8 +31,60 @@ final class HealthKitImporter: ObservableObject {
         [
             HKObjectType.workoutType(),
             HKQuantityType(.distanceWalkingRunning),
-            HKQuantityType(.distanceCycling)
+            HKQuantityType(.distanceCycling),
+            HKQuantityType(.stepCount),
+            HKQuantityType(.flightsClimbed)
         ]
+    }
+
+    /// True once the user went through the disclosure and the system access request, i.e. the connection is enabled.
+    /// Apple Health does not reveal whether reading was allowed, so this is the best available signal.
+    var isEnabled: Bool { HKHealthStore.isHealthDataAvailable() && defaults.bool(forKey: disclosedKey) }
+
+    /// Called whenever the app becomes active: reads new workouts and today's steps/floors, silently, if the connection is
+    /// enabled. Overlaps with existing activities open the conflict wizard; nothing is shown otherwise.
+    func syncIfEnabled() async {
+        guard isEnabled, !isImporting else { return }
+        await refreshSummary()
+        // Quick app switches should not query Apple Health every time.
+        let last = defaults.double(forKey: lastReadKey)
+        guard Date().timeIntervalSince1970 - last > minSyncInterval else { return }
+        _ = try? await readAndOffer()
+    }
+
+    /// The settings button: connects Apple Health the first time, afterwards opens the app's settings, where the
+    /// Health access can be changed.
+    func openSettingsOrConnect() {
+        if isEnabled {
+            if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+        } else {
+            start()
+        }
+    }
+
+    private let minSyncInterval: TimeInterval = 60
+
+    private func readAndOffer() async throws -> Int {
+        let workouts = try await readWorkouts()
+        workouts.forEach { _ = inbox.offerJson(json: $0) }
+        defaults.set(Date().timeIntervalSince1970, forKey: lastReadKey)
+        await refreshSummary()
+        return workouts.count
+    }
+
+    private func refreshSummary() async {
+        let start = Calendar.current.startOfDay(for: Date())
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: Date(), options: .strictStartDate)
+
+        func total(_ type: HKQuantityType, _ unit: HKUnit) async -> Int {
+            let descriptor = HKStatisticsQueryDescriptor(predicate: .quantitySample(type: type, predicate: predicate), options: .cumulativeSum)
+            let value = try? await descriptor.result(for: store)?.sumQuantity()?.doubleValue(for: unit)
+            return Int(value ?? 0)
+        }
+        summary = DailyHealthSummary(
+            steps: await total(HKQuantityType(.stepCount), .count()),
+            floors: await total(HKQuantityType(.flightsClimbed), .count())
+        )
     }
 
     /// The button action: explains why access is needed first (once), then asks and imports.
@@ -51,10 +112,8 @@ final class HealthKitImporter: ObservableObject {
         do {
             // Read access cannot be queried; the system only asks the first time.
             try await store.requestAuthorization(toShare: [], read: readTypes)
-            let workouts = try await readWorkouts()
-            workouts.forEach { _ = inbox.offerJson(json: $0) }
-            defaults.set(Date().timeIntervalSince1970, forKey: lastReadKey)
-            message = workouts.isEmpty ? "healthkit_nothing_new" : "healthkit_found \(workouts.count)"
+            let count = try await readAndOffer()
+            message = count == 0 ? "healthkit_nothing_new" : "healthkit_found \(count)"
         } catch {
             message = "healthkit_failed"
         }

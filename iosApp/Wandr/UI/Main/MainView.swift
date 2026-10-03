@@ -6,6 +6,7 @@ struct MainView: View {
     @StateObject private var viewModel = MainObserver()
     @StateObject private var watchImport = WatchImportObserver()
     @StateObject private var healthImport = HealthKitImporter()
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var notifications = NotificationsObserver()
     @StateObject private var pushNavigation = PushNavigation.shared
     @State private var selectedTab = 0
@@ -15,7 +16,7 @@ struct MainView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                ActivityHistoryView(activities: viewModel.activities, onSelectActivity: { selectedActivity = $0 })
+                FeedView(activities: viewModel.activities, onSelectActivity: { selectedActivity = $0 })
                     .padding()
                     .navigationTitle(LocalizedStringKey("activities_title"))
                     .navigationDestination(item: $selectedActivity) { activity in
@@ -41,20 +42,7 @@ struct MainView: View {
                             }
                             .accessibilityLabel(Text(LocalizedStringKey("notifications_title")))
                         }
-                        ToolbarItem(placement: .primaryAction) {
-                            Button(LocalizedStringKey("health_import_button")) { healthImport.start() }
-                                .disabled(healthImport.isImporting)
-                        }
                     }
-                    .permissionDisclosure(
-                        isPresented: $healthImport.showDisclosure,
-                        title: "healthkit_disclosure_title",
-                        message: "healthkit_disclosure_message"
-                    ) { healthImport.disclosureConfirmed() }
-                    .alert(
-                        healthImport.message.map { String(localized: $0) } ?? "",
-                        isPresented: Binding(get: { healthImport.message != nil }, set: { if !$0 { healthImport.message = nil } })
-                    ) { Button("OK", role: .cancel) {} }
             }
             .tabItem { Label(LocalizedStringKey("tab_activity"), systemImage: "figure.hiking") }
             .tag(0)
@@ -75,13 +63,17 @@ struct MainView: View {
             }
 
             NavigationStack {
-                ProfileContainerView(userId: viewModel.userId, onLogout: { viewModel.logout(onLoggedOut) })
+                ProfileContainerView(userId: viewModel.userId, healthImport: healthImport, onLogout: { viewModel.logout(onLoggedOut) })
             }
             .tabItem { Label(LocalizedStringKey("tab_profile"), systemImage: "person.crop.circle") }
             .tag(3)
         }
         .pushPermissionPrompt(isEnabled: viewModel.userId != nil)
         .task { viewModel.start() }
+        // Sync Apple Health whenever the app becomes active (and once at launch), if it is connected.
+        .task(id: scenePhase) {
+            if scenePhase == .active { await healthImport.syncIfEnabled() }
+        }
         .task(id: viewModel.userId) {
             if let userId = viewModel.userId { notifications.start(userId: userId) }
         }

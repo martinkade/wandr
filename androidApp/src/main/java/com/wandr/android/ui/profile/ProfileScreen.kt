@@ -1,10 +1,14 @@
 package com.wandr.android.ui.profile
 
-import android.content.res.Configuration
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -30,16 +34,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.LabeledLoading
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.profile.components.HealthImportCard
+import com.wandr.android.ui.profile.components.HealthStatsCard
 import com.wandr.android.ui.profile.components.ProfileHeaderRow
 import com.wandr.android.ui.profile.components.ProfileStatsRow
-import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.util.AppDateFormatter
-import com.wandr.domain.model.Profile
 import com.wandr.presentation.profile.ProfileIntent
 import com.wandr.presentation.profile.ProfileState
 import com.wandr.presentation.profile.ProfileSuccess
@@ -142,7 +145,14 @@ private fun ProfileScreenContent(
                     // The photo is changed right here (tap), not in the edit sheet.
                     ProfileHeaderRow(
                         profile = profile,
-                        onAvatarReady = { jpeg -> onIntent(ProfileIntent.UploadAvatar(profile.id, jpeg)) },
+                        onAvatarReady = { jpeg ->
+                            onIntent(
+                                ProfileIntent.UploadAvatar(
+                                    profile.id,
+                                    jpeg
+                                )
+                            )
+                        },
                         onRemoveAvatar = { onIntent(ProfileIntent.RemoveAvatar(profile.id)) },
                         isAvatarBusy = state.isAvatarUpdating,
                         modifier = Modifier
@@ -164,6 +174,28 @@ private fun ProfileScreenContent(
                             .fillMaxWidth()
                             .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 8.dp)
                     )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(240.dp)
+                            .padding(vertical = 16.dp)
+                            .horizontalScroll(rememberScrollState())
+                    ) {
+                        HealthImportCard(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(horizontal = 8.dp)
+                                .aspectRatio(1.25f)
+                        )
+                        // Only appears once Health Connect is connected.
+                        HealthStatsCard(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(horizontal = 8.dp)
+                                .aspectRatio(1.25f)
+                        )
+                    }
                 }
             }
         }
@@ -192,24 +224,5 @@ private fun ProfileScreenContent(
                 snackbarHostState = snackbarHostState
             )
         }
-    }
-}
-
-private val previewProfile = Profile(
-    id = "1", username = "martinkade", displayName = "Martin Kade", avatarUrl = null,
-    bio = "Outdoor hiker & developer.", createdAt = 1_768_435_200_000L, updatedAt = 0L
-)
-
-@Preview(name = "Light Mode", showBackground = true)
-@Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
-@Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true)
-@Preview(name = "Tablet", widthDp = 840, heightDp = 900, showBackground = true)
-@Composable
-private fun ProfileScreenPreview() {
-    WandrTheme {
-        ProfileScreenContent(
-            state = ProfileState(profile = previewProfile, activityCount = 123),
-            onIntent = {},
-            onLogout = {})
     }
 }

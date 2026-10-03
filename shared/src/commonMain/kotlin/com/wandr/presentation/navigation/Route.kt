@@ -34,7 +34,7 @@ data class MemberListRoute(val teamId: String = "") : Route
 data class TeamInviteQRCodeRoute(val inviteCode: String = "") : Route
 
 @Serializable
-data object ActivityHistoryRoute : Route
+data object FeedRoute : Route
 
 @Serializable
 data object ManualActivityEntryRoute : Route

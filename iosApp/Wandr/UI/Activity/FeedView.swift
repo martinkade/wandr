@@ -1,7 +1,7 @@
 import SwiftUI
 import shared
 
-struct ActivityHistoryView: View {
+struct FeedView: View {
     let activities: [Activity]
     var onSelectActivity: (Activity) -> Void = { _ in }
 
@@ -35,7 +35,7 @@ struct ActivityHistoryView: View {
 }
 
 #Preview("Light Mode") {
-    ActivityHistoryView(activities: [
+    FeedView(activities: [
         Activity(
             id: "a1",
             userId: "u1",
@@ -58,7 +58,7 @@ struct ActivityHistoryView: View {
 }
 
 #Preview("Dark Mode") {
-    ActivityHistoryView(activities: [
+    FeedView(activities: [
         Activity(
             id: "a1",
             userId: "u1",

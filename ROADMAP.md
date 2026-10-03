@@ -147,7 +147,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - Create `Activity` domain entity & `ActivityEntity` in Room.
 - [x] **Step 6.2: Manual Activity Entry & Editing**
   - Build UI and UseCases for creating/editing manual logs (e.g. "Hiked 10km yesterday").
-  - Android: FAB menu in the activity history (create manually / record). Manual entry and editing use a bottom sheet; only the **owner** can edit, from the details screen (measured values of recorded activities stay read-only). The details screen shows the track if the FIT file is on this device.
+  - Android: FAB menu in the feed (create manually / record). Manual entry and editing use a bottom sheet; only the **owner** can edit, from the details screen (measured values of recorded activities stay read-only). The details screen shows the track if the FIT file is on this device.
 - [x] **Step 6.3: Garmin FIT SDK Integration**
   - Implement `.FIT` file encoder/decoder to save/parse trackpoints, distance, duration, elevation.
   - Store `.FIT` files **on the recording device only** (app-private folder via `FitFileStorage`); they are never uploaded to Supabase. Only the activity metrics are synced; the local file path is not part of the sync payload.
@@ -190,9 +190,11 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 ### 🏥 Phase 9: Apple Health & Health Connect Integrations (Read-Only)
 
 - [x] **Step 9.1: Apple HealthKit Integration (iOS)**
-  - Read-only: the app requests read access for workouts, walking/running and cycling distance (never write access) after a disclosure alert, and reads workouts since the last import (first: 30 days) via the "Import" button in the activity history (`HealthKitImporter`). Elevation comes from the workout's ascent metadata. Only hiking/walking, running and cycling are imported; workouts written by WANDR itself (the watch app) are skipped.
+  - Read-only: the app requests read access for workouts, walking/running and cycling distance (never write access) after a disclosure alert, and reads workouts since the last import (first: 30 days) via the "Import" button of the Apple Health card in the profile (`HealthKitImporter`). Elevation comes from the workout's ascent metadata. Only hiking/walking, running and cycling are imported; workouts written by WANDR itself (the watch app) are skipped.
 - [x] **Step 9.2: Health Connect Integration (Android)**
-  - Requests only `READ_EXERCISE`, `READ_DISTANCE` and `READ_ELEVATION_GAINED` (after the disclosure dialog; the rationale activity required by Health Connect is included). Exercise sessions are read since the last import, distance/elevation are aggregated per session from the session's own data origin (`HealthConnectImporter`). Revoked permission or missing Health Connect are handled with dialogs/messages.
+  - The import is started from a card in the profile (`HealthImportCard`). Requests only `READ_EXERCISE`, `READ_DISTANCE` and `READ_ELEVATION_GAINED` (after the disclosure dialog; the rationale activity required by Health Connect is included). Exercise sessions are read since the last import, distance/elevation are aggregated per session from the session's own data origin (`HealthConnectImporter`). Revoked permission or missing Health Connect are handled with dialogs/messages.
+- [x] **Step 9.1/9.2 addition: Steps & Floors**
+  - Both platforms also read today's steps and floors climbed (Health Connect `StepsRecord`/`FloorsClimbedRecord`, HealthKit `stepCount`/`flightsClimbed`, aggregated by the platform so data from several apps is not double counted) and show them on the health card in the profile. They are read-only, shown on the device and not stored or synced; they are requested together with the workout permissions after the disclosure (steps/floors are optional, workouts work without them). Challenges still use activities only.
 - [x] **Step 9.3: Import De-duplication**
   - Imports use the same pipeline as watch workouts (`WatchWorkoutInbox` → `ImportWatchWorkoutUseCase`): the activity id is derived from the platform's record id (`ExternalWorkoutId`), so reading a workout twice imports it once, and an overlap with existing activities opens the Conflict Resolution Wizard (merge / trim / discard).
 
@@ -202,7 +204,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 - [x] **Step 10.1: Group Feed, Comments & Likes**
   - `Comment`/`Like` models and `SocialRepository` (Supabase only: social data needs connectivity, no local cache), `SocialViewModel` per activity/challenge with optimistic likes. Plain-text comments (max. 1000 characters) can be created and edited by their author and deleted by the author **or the owner of the activity/challenge** (`SocialState.canEdit/canDelete`, enforced by RLS as well). Comments, likes and reactions are only visible to those who can see the activity (owner/team members) or the published challenge.
-  - Group feed: the activity history has a "Mine | Team" switch; `ActivityFeedRepository` pulls the team members' activities (and the user's own from other devices) into the local cache. Android: `SocialSection` in the activity and challenge details; iOS: `SocialSectionView` in `ActivityDetailView`.
+  - Group feed: the feed (`FeedScreen`) has a "Mine | Team" switch; `ActivityFeedRepository` pulls the team members' activities (and the user's own from other devices) into the local cache. Android: `SocialSection` in the activity and challenge details; iOS: `SocialSectionView` in `ActivityDetailView`.
 - [x] **Step 10.2: Comment Reactions**
   - Emoji reactions (`Reactions.allowed`) toggled per comment, shown as counters with the own reaction highlighted (`comment_reactions`).
 - [x] **Step 10.3: Push Notifications Engine**

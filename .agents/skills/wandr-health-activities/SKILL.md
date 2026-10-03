@@ -36,7 +36,8 @@ Use this skill when developing Apple Health / Health Connect data readers, backg
    - Request read permissions for `DistanceRecord`, `ElevationGainedRecord`, `ExerciseSessionRecord`.
    - Handle permission revocation and availability checks across API levels.
 
-3. **Import pipeline (all external workouts)**:
+3. **Steps & floors**: read as daily aggregates ("today") for display only (`HealthConnectImporter.readToday`, `HealthKitImporter.summary`); never persisted or synced, and optional (the workout import must work without these permissions).
+4. **Import pipeline (all external workouts)**:
    - Watch, Health Connect and HealthKit workouts all become a `WatchWorkout` (field `source`) and go through `WatchWorkoutInbox` → `WatchImportViewModel` → `ImportWatchWorkoutUseCase`. Never save them directly: the use case de-duplicates by id (use `ExternalWorkoutId.from(source, recordId)` for platforms without UUIDs) and routes overlaps to the conflict wizard.
    - Skip workouts written by WANDR itself (own package / bundle id prefix) to avoid duplicates.
 

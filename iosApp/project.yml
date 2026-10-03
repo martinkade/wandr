@@ -59,7 +59,7 @@ targets:
         UIBackgroundModes:
           - location
           - remote-notification
-        NSHealthShareUsageDescription: WANDR reads your workouts from Apple Health so that activities recorded with other apps appear in your history. Access is read-only.
+        NSHealthShareUsageDescription: WANDR reads your workouts, steps and floors climbed from Apple Health so that activities recorded with other apps appear in your history. Access is read-only.
         NSCameraUsageDescription: WANDR uses the camera to take your profile photo.
         NSLocationWhenInUseUsageDescription: WANDR uses your location to record your outdoor activities.
         NSLocationAlwaysAndWhenInUseUsageDescription: WANDR uses your location to keep recording your activity while the screen is off.

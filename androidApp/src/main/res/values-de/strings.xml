@@ -225,7 +225,7 @@
     </plurals>
     <string name="health_connect_import_button">Importieren</string>
     <string name="health_connect_disclosure_title">Aus Health Connect importieren</string>
-    <string name="health_connect_disclosure_message">WANDR liest deine Workouts (Art, Zeit, Distanz und Höhenmeter) aus Health Connect, damit Aktivitäten, die du mit anderen Apps aufgezeichnet hast, in deinem Verlauf erscheinen und für deine Challenges zählen. Der Zugriff ist rein lesend: WANDR ändert oder schreibt niemals Gesundheitsdaten.</string>
+    <string name="health_connect_disclosure_message">WANDR liest deine Workouts (Art, Zeit, Distanz und Höhenmeter) sowie deine täglichen Schritte und Stockwerke aus Health Connect, damit Aktivitäten, die du mit anderen Apps aufgezeichnet hast, in deinem Verlauf erscheinen und für deine Challenges zählen. Der Zugriff ist rein lesend: WANDR ändert oder schreibt niemals Gesundheitsdaten.</string>
     <string name="health_connect_denied">Ohne Zugriff auf Health Connect können keine Workouts importiert werden. Du kannst ihn in den Health-Connect-Einstellungen erlauben.</string>
     <string name="health_connect_unavailable">Health Connect ist auf diesem Gerät nicht verfügbar.</string>
     <string name="health_connect_failed">Workouts konnten nicht aus Health Connect gelesen werden.</string>
@@ -275,4 +275,13 @@
     <string name="notification_generic">Neue Benachrichtigung</string>
     <string name="activity_feed_mine">Meine</string>
     <string name="activity_feed_team">Team</string>
+    <string name="health_card_title">Health Connect</string>
+    <string name="health_card_description">Gesundheits- und Fitnessdaten zwischen WANDR und anderen Apps teilen.</string>
+    <string name="health_today_title">Heute</string>
+    <string name="health_today_steps">%s Schritte</string>
+    <string name="health_today_floors">%s Stockwerke</string>
+    <string name="health_settings_button">Einstellungen</string>
+    <string name="health_stats_title">Heute</string>
+    <string name="health_stats_steps">Schritte</string>
+    <string name="health_stats_floors">Stockwerke</string>
 </resources>

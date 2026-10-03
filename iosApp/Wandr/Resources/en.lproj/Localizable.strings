@@ -133,7 +133,7 @@
 /* Apple Health import */
 "health_import_button" = "Import";
 "healthkit_disclosure_title" = "Import from Apple Health";
-"healthkit_disclosure_message" = "WANDR reads your workouts (type, time, distance and elevation gain) from Apple Health so that activities recorded with other apps appear in your history and count for your challenges. Access is read-only: WANDR never changes or writes health data.";
+"healthkit_disclosure_message" = "WANDR reads your workouts (type, time, distance and elevation gain) and your daily steps and floors climbed from Apple Health so that activities recorded with other apps appear in your history and count for your challenges. Access is read-only: WANDR never changes or writes health data.";
 "healthkit_unavailable" = "Apple Health is not available on this device.";
 "healthkit_failed" = "Workouts could not be read from Apple Health. You can allow access in Settings > Health > Data Access.";
 "healthkit_nothing_new" = "No new workouts found.";
@@ -162,3 +162,10 @@
 "notification_reaction" = "%@ reacted %@ to a comment";
 "notification_invite" = "%@ invited you";
 "notification_unknown" = "New activity from %@";
+"health_card_title_apple" = "Apple Health";
+"health_card_description" = "Import workouts you recorded with other apps and see your steps and floors. WANDR only reads them and never changes your health data.";
+"health_today %@ %@" = "Today: %@ steps · %@ floors";
+"health_settings_button" = "Settings";
+"health_stats_title" = "Today";
+"health_stats_steps" = "Steps";
+"health_stats_floors" = "Floors climbed";

@@ -12,6 +12,7 @@
 		05E8E8C10D807B25F4C1E47E /* ActivityConflictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7779D495C80ACD2BAC579A /* ActivityConflictView.swift */; };
 		078F48F905F1A79CB905CFCA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27AAB455008898B195A0E75 /* RootView.swift */; };
 		094B22028AC7F003C207A8FB /* LiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB83B9D146EE3F83E601807 /* LiveWorkoutView.swift */; };
+		128F916F371D4894C543A0F6 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2361883567F0ADB94F46528A /* FeedView.swift */; };
 		144EBCCA19CBC96B4643523F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A9D260237F6CBF2BA089595F /* Localizable.strings */; };
 		14FD2E1610EC716E4BBD95A9 /* GroupsContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 207844348B3B1C21DABF7C63 /* GroupsContainerView.swift */; };
 		1A20FD80F9BE691D4AFF6681 /* WorkoutMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C506924DA47F20EE14FFC8C /* WorkoutMetrics.swift */; };
@@ -37,7 +38,6 @@
 		5867506F8E60AB2766E53377 /* WandrColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8AA9573F81E6187BFCB89A /* WandrColors.swift */; };
 		620C8B9FA345E0CFDE97C2DA /* PushAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD0ABF71127516D9642386D /* PushAppDelegate.swift */; };
 		62AC25544D9DEF39E1EA8B3F /* WatchWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004861D686700490F3CBAD1C /* WatchWorkout.swift */; };
-		66C1D311F99A8E0E794FFA84 /* ActivityHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */; };
 		6CAD8DEA746F339390265CEC /* TeamDetailsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5E1946BEF153BD54411032 /* TeamDetailsObserver.swift */; };
 		711781CA7537AED3F094826D /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B3FC168FBD63309A894DB29 /* WorkoutManager.swift */; };
 		72759DFE4370187BDF2C5309 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFB5478137F630B1D7AB56D /* MainView.swift */; };
@@ -76,6 +76,8 @@
 		CAF4E2EA38CABCDB8223DB01 /* PermissionFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E13FF43BEB26A3882E77034 /* PermissionFlowView.swift */; };
 		CFFCEEA267E245DAA09AD031 /* TeamEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B005E538E34F018DF5CCDF17 /* TeamEditView.swift */; };
 		DAEBECD269BBCD914921E961 /* WandrWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E02923DE8FAB5B1851037B18 /* HealthStatsCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296F996B2D85EB6A2160B976 /* HealthStatsCardView.swift */; };
+		E15716E31EC34014D8F02787 /* HealthImportCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E99E04513B9C12E013CC426 /* HealthImportCardView.swift */; };
 		E37804C242AF6993C13B5F4D /* LocationTrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */; };
 		E3797D0914B92781A032273B /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDDF344466CF9C080E23ADA /* ProfileEditView.swift */; };
 		E4DBE66F9CC3B2BD68AAEBFB /* TeamCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052F351F50B69C25F4EACC19 /* TeamCardView.swift */; };
@@ -131,16 +133,18 @@
 		052F351F50B69C25F4EACC19 /* TeamCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCardView.swift; sourceTree = "<group>"; };
 		0B3FC168FBD63309A894DB29 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		0E13FF43BEB26A3882E77034 /* PermissionFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionFlowView.swift; sourceTree = "<group>"; };
+		0E99E04513B9C12E013CC426 /* HealthImportCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthImportCardView.swift; sourceTree = "<group>"; };
 		0FBBCE9EA7DDD28A87623108 /* ImagePickerFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerFlow.swift; sourceTree = "<group>"; };
 		115EB2163FD8A62DE4182546 /* ImageCropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropperView.swift; sourceTree = "<group>"; };
 		12A03E91276A96FD5CFDD53C /* PushNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNavigation.swift; sourceTree = "<group>"; };
 		160BDCA3B8C2B858ABCC0BA6 /* TeamCoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCoverView.swift; sourceTree = "<group>"; };
 		1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualActivityEntryView.swift; sourceTree = "<group>"; };
 		1AB83B9D146EE3F83E601807 /* LiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutView.swift; sourceTree = "<group>"; };
-		1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHistoryView.swift; sourceTree = "<group>"; };
 		207844348B3B1C21DABF7C63 /* GroupsContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsContainerView.swift; sourceTree = "<group>"; };
 		20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WandrWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2361883567F0ADB94F46528A /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		2861791F7133FCA4CC705363 /* ProfileObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileObserver.swift; sourceTree = "<group>"; };
+		296F996B2D85EB6A2160B976 /* HealthStatsCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthStatsCardView.swift; sourceTree = "<group>"; };
 		2AED3E697232F3B3088A7AF3 /* WandrApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrApp.swift; sourceTree = "<group>"; };
 		2D5059C57842B55A82841770 /* MemberListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberListView.swift; sourceTree = "<group>"; };
 		2EA261884BE01CF12A529695 /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
@@ -309,7 +313,7 @@
 				4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */,
 				4B7779D495C80ACD2BAC579A /* ActivityConflictView.swift */,
 				D505906CFB45A43FCB1D6927 /* ActivityDetailView.swift */,
-				1E73EBAF3BC0E943B4580DBC /* ActivityHistoryView.swift */,
+				2361883567F0ADB94F46528A /* FeedView.swift */,
 				A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */,
 				1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */,
 				B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */,
@@ -332,6 +336,8 @@
 			children = (
 				7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */,
 				B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */,
+				0E99E04513B9C12E013CC426 /* HealthImportCardView.swift */,
+				296F996B2D85EB6A2160B976 /* HealthStatsCardView.swift */,
 				DCDDF344466CF9C080E23ADA /* ProfileEditView.swift */,
 				2861791F7133FCA4CC705363 /* ProfileObserver.swift */,
 				E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */,
@@ -674,7 +680,6 @@
 				3B53D12A92684B33CAC5F342 /* ActivityCardView.swift in Sources */,
 				05E8E8C10D807B25F4C1E47E /* ActivityConflictView.swift in Sources */,
 				76E6867A061B36EB34AB4883 /* ActivityDetailView.swift in Sources */,
-				66C1D311F99A8E0E794FFA84 /* ActivityHistoryView.swift in Sources */,
 				3502985CB1B306B97F2DBDD4 /* AvatarEditorView.swift in Sources */,
 				FE7C548F5DAF13847A8DA0B1 /* AvatarPickerView.swift in Sources */,
 				8C3233F73D055926E4428424 /* CameraPermission.swift in Sources */,
@@ -684,8 +689,11 @@
 				B854CAE9283AF10E2DB28240 /* CommentRowView.swift in Sources */,
 				51E8EBA85C5623C246A74684 /* CreateChallengeView.swift in Sources */,
 				A58A38F5B42AF95186796227 /* CreateTeamView.swift in Sources */,
+				128F916F371D4894C543A0F6 /* FeedView.swift in Sources */,
 				14FD2E1610EC716E4BBD95A9 /* GroupsContainerView.swift in Sources */,
+				E15716E31EC34014D8F02787 /* HealthImportCardView.swift in Sources */,
 				276ED48021A4DBF649D11ADE /* HealthKitImporter.swift in Sources */,
+				E02923DE8FAB5B1851037B18 /* HealthStatsCardView.swift in Sources */,
 				9478CB3A4731560C9DB82C28 /* ImageCropperView.swift in Sources */,
 				27DCDFB4ABFA0301E95753B9 /* ImagePickerFlow.swift in Sources */,
 				FAE069674DEF9E6E64EB88C8 /* ImagePipeline.swift in Sources */,

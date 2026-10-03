@@ -23,7 +23,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>WANDR uses the camera to take your profile photo.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>WANDR reads your workouts from Apple Health so that activities recorded with other apps appear in your history. Access is read-only.</string>
+	<string>WANDR reads your workouts, steps and floors climbed from Apple Health so that activities recorded with other apps appear in your history. Access is read-only.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>WANDR uses your location to keep recording your activity while the screen is off.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

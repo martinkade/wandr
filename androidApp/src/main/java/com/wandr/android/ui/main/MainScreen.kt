@@ -24,11 +24,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.wandr.android.ui.activity.ActivityDetailsScreen
-import com.wandr.android.ui.activity.ActivityHistoryScreen
 import com.wandr.android.ui.activity.LiveGpsTrackingScreen
 import com.wandr.android.ui.activity.WatchImportHost
 import com.wandr.android.ui.challenge.ChallengeDetailsScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
+import com.wandr.android.ui.feed.FeedScreen
 import com.wandr.android.ui.common.SlideInOverlay
 import com.wandr.android.ui.profile.ProfileScreen
 import com.wandr.android.ui.team.GroupsScreen
@@ -40,6 +40,7 @@ import com.wandr.presentation.notifications.NotificationsIntent
 import com.wandr.domain.model.SocialEntityType
 import com.wandr.android.ui.notifications.NotificationsScreen
 import com.wandr.android.ui.notifications.NotificationBellAction
+import com.wandr.android.health.HealthAutoSync
 import com.wandr.android.push.PushNavigation
 import com.wandr.android.push.PushPermissionPrompt
 import org.koin.compose.koinInject
@@ -98,7 +99,7 @@ fun MainScreen(
         ) { tab ->
             if (userId != null) {
                 when (tab) {
-                    MainTab.Activities -> ActivityHistoryScreen(
+                    MainTab.Activities -> FeedScreen(
                         userId = userId,
                         teamId = state.teamId,
                         onOpenActivity = { openActivityId = it },
@@ -124,6 +125,7 @@ fun MainScreen(
         if (userId != null) {
             WatchImportHost(userId = userId, teamId = state.teamId)
             PushPermissionPrompt()
+            HealthAutoSync()
         }
 
         SlideInOverlay(item = openTeamId.takeIf { userId != null }, onBack = { openTeamId = null }) { teamId ->

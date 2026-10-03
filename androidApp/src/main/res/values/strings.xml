@@ -225,7 +225,7 @@
     </plurals>
     <string name="health_connect_import_button">Import</string>
     <string name="health_connect_disclosure_title">Import from Health Connect</string>
-    <string name="health_connect_disclosure_message">WANDR reads your workouts (type, time, distance and elevation gain) from Health Connect so that activities recorded with other apps appear in your history and count for your challenges. Access is read-only: WANDR never changes or writes health data.</string>
+    <string name="health_connect_disclosure_message">WANDR reads your workouts (type, time, distance and elevation gain) and your daily steps and floors climbed from Health Connect so that activities recorded with other apps appear in your history and count for your challenges. Access is read-only: WANDR never changes or writes health data.</string>
     <string name="health_connect_denied">Without access to Health Connect, workouts cannot be imported. You can allow it in the Health Connect settings.</string>
     <string name="health_connect_unavailable">Health Connect is not available on this device.</string>
     <string name="health_connect_failed">Workouts could not be read from Health Connect.</string>
@@ -275,4 +275,13 @@
     <string name="notification_generic">New notification</string>
     <string name="activity_feed_mine">Mine</string>
     <string name="activity_feed_team">Team</string>
+    <string name="health_card_title">Health Connect</string>
+    <string name="health_card_description">Share health and fitness data between WANDR and other apps.</string>
+    <string name="health_today_title">Today</string>
+    <string name="health_today_steps">%s steps</string>
+    <string name="health_today_floors">%s floors</string>
+    <string name="health_settings_button">Settings</string>
+    <string name="health_stats_title">Today</string>
+    <string name="health_stats_steps">Steps</string>
+    <string name="health_stats_floors">Floors climbed</string>
 </resources>

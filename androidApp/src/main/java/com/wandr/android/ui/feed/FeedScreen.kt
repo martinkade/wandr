@@ -1,4 +1,4 @@
-package com.wandr.android.ui.activity
+package com.wandr.android.ui.feed
 
 import android.content.res.Configuration
 import androidx.annotation.StringRes
@@ -39,6 +39,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.activity.ActivityCard
+import com.wandr.android.ui.activity.ActivityConflictSheet
+import com.wandr.android.ui.activity.ActivityEditScreen
+import com.wandr.android.ui.activity.ActivityFabMenu
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Activity
@@ -50,13 +54,14 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
- * The user's activities. A FAB menu offers to record an activity ([onRecord]) or to log one manually, which opens a
+ * The feed: the user's activities, and the team's. A FAB menu offers to record an activity ([onRecord]) or to log one manually, which opens a
  * bottom sheet. Opening an activity ([onOpenActivity]) shows its details, where the owner can edit it.
  *
+ * @param actions extra top bar buttons (e.g. the notifications bell)
  * @param teamId the team new manual activities count for, if the user has one
  */
 @Composable
-fun ActivityHistoryScreen(
+fun FeedScreen(
     userId: String,
     teamId: String?,
     onOpenActivity: (activityId: String) -> Unit,
@@ -66,16 +71,16 @@ fun ActivityHistoryScreen(
     viewModel: ActivityViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
-    var feed by rememberSaveable { mutableStateOf(ActivityFeed.Mine) }
+    var feed by rememberSaveable { mutableStateOf(FeedScope.Mine) }
     // The team feed shows what all members of the team recorded.
     LaunchedEffect(userId, teamId, feed) {
-        if (feed == ActivityFeed.Team && teamId != null) {
+        if (feed == FeedScope.Team && teamId != null) {
             viewModel.processIntent(ActivityIntent.LoadTeamActivities(teamId))
         } else {
             viewModel.processIntent(ActivityIntent.LoadUserActivities(userId))
         }
     }
-    ActivityHistoryScreenContent(
+    FeedScreenContent(
         state = state,
         userId = userId,
         teamId = teamId,
@@ -85,16 +90,13 @@ fun ActivityHistoryScreen(
         modifier = modifier,
         feed = feed,
         onFeedChange = { feed = it },
-        importAction = {
-            actions()
-            HealthConnectImportAction()
-        }
+        actions = actions
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ActivityHistoryScreenContent(
+private fun FeedScreenContent(
     state: ActivityState,
     userId: String,
     teamId: String?,
@@ -102,9 +104,9 @@ private fun ActivityHistoryScreenContent(
     onOpenActivity: (String) -> Unit,
     onRecord: () -> Unit,
     modifier: Modifier = Modifier,
-    feed: ActivityFeed = ActivityFeed.Mine,
-    onFeedChange: (ActivityFeed) -> Unit = {},
-    importAction: @Composable () -> Unit = {}
+    feed: FeedScope = FeedScope.Mine,
+    onFeedChange: (FeedScope) -> Unit = {},
+    actions: @Composable () -> Unit = {}
 ) {
     var isCreating by rememberSaveable { mutableStateOf(false) }
     // Only a save started from the sheet may close it.
@@ -153,7 +155,7 @@ private fun ActivityHistoryScreenContent(
     ScreenScaffold(
         title = stringResource(R.string.activities_title),
         modifier = modifier,
-        actions = { importAction() },
+        actions = { actions() },
         // While the sheet is open, its own host shows the messages.
         snackbarHost = { if (!isCreating) SnackbarHost(snackbarHostState) },
         floatingActionButton = {
@@ -169,11 +171,11 @@ private fun ActivityHistoryScreenContent(
         Column(Modifier.fillMaxSize().padding(padding)) {
             if (teamId != null) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    ActivityFeed.entries.forEachIndexed { index, option ->
+                    FeedScope.entries.forEachIndexed { index, option ->
                         SegmentedButton(
                             selected = feed == option,
                             onClick = { onFeedChange(option) },
-                            shape = SegmentedButtonDefaults.itemShape(index, ActivityFeed.entries.size)
+                            shape = SegmentedButtonDefaults.itemShape(index, FeedScope.entries.size)
                         ) { Text(stringResource(option.labelRes)) }
                     }
                 }
@@ -252,9 +254,9 @@ private val previewActivities = listOf(
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Preview(name = "Tablet", widthDp = 840, heightDp = 600, showBackground = true)
 @Composable
-private fun ActivityHistoryScreenPreview() {
+private fun FeedScreenPreview() {
     WandrTheme {
-        ActivityHistoryScreenContent(
+        FeedScreenContent(
             state = ActivityState(activities = previewActivities),
             userId = "u1", teamId = "t1", onIntent = {}, onOpenActivity = {}, onRecord = {}
         )
@@ -264,16 +266,16 @@ private fun ActivityHistoryScreenPreview() {
 @Preview(name = "Empty", showBackground = true)
 @Preview(name = "Empty Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
-private fun ActivityHistoryScreenEmptyPreview() {
+private fun FeedScreenEmptyPreview() {
     WandrTheme {
-        ActivityHistoryScreenContent(
+        FeedScreenContent(
             state = ActivityState(), userId = "u1", teamId = null, onIntent = {}, onOpenActivity = {}, onRecord = {}
         )
     }
 }
 
-/** Whose activities the history shows. */
-enum class ActivityFeed(@StringRes val labelRes: Int) {
+/** Whose entries the feed shows. */
+enum class FeedScope(@StringRes val labelRes: Int) {
     Mine(R.string.activity_feed_mine),
     Team(R.string.activity_feed_team)
 }

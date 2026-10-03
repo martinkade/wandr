@@ -133,7 +133,7 @@
 /* Apple-Health-Import */
 "health_import_button" = "Importieren";
 "healthkit_disclosure_title" = "Aus Apple Health importieren";
-"healthkit_disclosure_message" = "WANDR liest deine Workouts (Art, Zeit, Distanz und Höhenmeter) aus Apple Health, damit Aktivitäten, die du mit anderen Apps aufgezeichnet hast, in deinem Verlauf erscheinen und für deine Challenges zählen. Der Zugriff ist rein lesend: WANDR ändert oder schreibt niemals Gesundheitsdaten.";
+"healthkit_disclosure_message" = "WANDR liest deine Workouts (Art, Zeit, Distanz und Höhenmeter) sowie deine täglichen Schritte und Stockwerke aus Apple Health, damit Aktivitäten, die du mit anderen Apps aufgezeichnet hast, in deinem Verlauf erscheinen und für deine Challenges zählen. Der Zugriff ist rein lesend: WANDR ändert oder schreibt niemals Gesundheitsdaten.";
 "healthkit_unavailable" = "Apple Health ist auf diesem Gerät nicht verfügbar.";
 "healthkit_failed" = "Workouts konnten nicht aus Apple Health gelesen werden. Du kannst den Zugriff unter Einstellungen > Health > Datenzugriff erlauben.";
 "healthkit_nothing_new" = "Keine neuen Workouts gefunden.";
@@ -162,3 +162,10 @@
 "notification_reaction" = "%@ hat mit %@ auf einen Kommentar reagiert";
 "notification_invite" = "%@ hat dich eingeladen";
 "notification_unknown" = "Neue Aktivität von %@";
+"health_card_title_apple" = "Apple Health";
+"health_card_description" = "Importiere Workouts, die du mit anderen Apps aufgezeichnet hast, und sieh deine Schritte und Stockwerke. WANDR liest sie nur und ändert deine Gesundheitsdaten nie.";
+"health_today %@ %@" = "Heute: %@ Schritte · %@ Stockwerke";
+"health_settings_button" = "Einstellungen";
+"health_stats_title" = "Heute";
+"health_stats_steps" = "Schritte";
+"health_stats_floors" = "Stockwerke";
