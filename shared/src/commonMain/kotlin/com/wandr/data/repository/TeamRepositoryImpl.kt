@@ -7,6 +7,10 @@ import com.wandr.data.local.entity.TeamEntity
 import com.wandr.data.local.entity.TeamMemberEntity
 import com.wandr.data.remote.TeamDto
 import com.wandr.data.remote.TeamMemberDto
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import com.wandr.data.remote.TeamMemberWithProfileDto
 import com.wandr.data.remote.toUpdatePayload
 import com.wandr.data.remote.toDto
@@ -131,7 +135,9 @@ class TeamRepositoryImpl(
             teamId = entity.id,
             userId = creatorId,
             role = TeamRole.ADMIN,
-            joinedAt = now
+            joinedAt = now,
+            // The server appends new memberships at the end of the list too.
+            priority = teamMemberDao.maxPriority(creatorId) + 1
         )
 
         // The team must exist before its membership; the creator can only read it back once they are a member.
@@ -239,24 +245,19 @@ class TeamRepositoryImpl(
         inviteCode = inviteCode, createdBy = createdBy, createdAt = createdAt, updatedAt = updatedAt
     )
 
+    /**
+     * Joining goes through a server function: a non-member cannot read a team (RLS), so the code cannot be looked up
+     * from the client. The server also appends the new membership at the end of the user's priority list.
+     */
     override suspend fun joinTeamViaInvite(inviteCode: String, userId: String): Result<Team> = runCatching {
-        val remoteTeam = supabase.postgrest.from("teams")
-            .select { filter { eq("invite_code", inviteCode) } }
-            .decodeSingle<TeamEntity>()
-
-        val now = Clock.System.now().toEpochMilliseconds()
-        val memberEntity = TeamMemberEntity(
-            id = "member_${remoteTeam.id}_$userId",
-            teamId = remoteTeam.id,
-            userId = userId,
-            role = TeamRole.MEMBER,
-            joinedAt = now,
-            syncStatus = "DIRTY"
-        )
+        val remoteTeam = supabase.postgrest
+            .rpc("join_team_by_invite", buildJsonObject { put("p_invite_code", inviteCode) })
+            .decodeAs<TeamDto>()
+            .toEntity()
 
         teamDao.insertTeam(remoteTeam)
-        teamMemberDao.insertMember(memberEntity)
-        supabase.postgrest.from("team_members").upsert(memberEntity)
+        // Pulls the new membership (with its priority); the team itself is already cached.
+        refreshUserTeams(userId)
 
         Team(
             id = remoteTeam.id,
@@ -269,6 +270,13 @@ class TeamRepositoryImpl(
             createdAt = remoteTeam.createdAt,
             updatedAt = remoteTeam.updatedAt
         )
+    }
+
+    override suspend fun reorderTeams(userId: String, orderedTeamIds: List<String>): Result<Unit> = runCatching {
+        supabase.postgrest.rpc("set_team_priorities", buildJsonObject {
+            put("p_team_ids", JsonArray(orderedTeamIds.map { JsonPrimitive(it) }))
+        })
+        orderedTeamIds.forEachIndexed { index, teamId -> teamMemberDao.setPriority(teamId, userId, index) }
     }
 
     override suspend fun generateInviteUrl(inviteCode: String): String {

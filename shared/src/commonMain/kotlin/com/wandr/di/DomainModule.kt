@@ -35,6 +35,7 @@ val domainModule = module {
     factory { com.wandr.domain.usecase.RemoveTeamImageUseCase(get()) }
     factory { com.wandr.domain.usecase.RefreshUserTeamsUseCase(get()) }
     factory { JoinTeamViaInviteUseCase(get()) }
+    factory { com.wandr.domain.usecase.ReorderTeamsUseCase(get()) }
     factory { CreateChallengeUseCase(get()) }
     factory { com.wandr.domain.usecase.UpdateChallengeUseCase(get()) }
     factory { com.wandr.domain.usecase.GetChallengesUseCase(get()) }

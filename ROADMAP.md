@@ -120,6 +120,8 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 - [x] **Step 4.3: Team Management UI**
   - Build `CreateTeamScreen`/`View`, `TeamDetailsScreen`/`View` (with Team Cover banner), `MemberListScreen`/`View`, `TeamInviteQRCodeScreen`/`View`.
   - Ensure 1 UI component per file with Dark Mode previews and localization (EN & DE).
+- [x] **Step 4.4: Team memberships, priority & joining by invite (profile)**
+  - The profile lists the user's groups (`TeamMembershipList`), reorderable by drag and drop (`team_members.priority`, saved via `set_team_priorities`), with a trailing item to join a group by typing the invite code or scanning its QR code (Google code scanner, no camera permission). Joining goes through `join_team_by_invite` (a non-member cannot read a team, so the previous client-side lookup could not work). The highest-priority group is the user's primary group (also used as the team for new activities).
 
 ---
 
@@ -127,7 +129,7 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 - [x] **Step 5.1: Challenge Domain Models & Lifecycle**
   - Define `Challenge` (Types: Distance, Elevation, Time; Scope: Group, Individual; Option: `requireAllMembersCompletion` for All-or-Nothing team completion).
-  - **Group means team vs. team**: a group challenge is *not* tied to one team and its members do **not** compete against each other. Several teams enroll and compete as teams against the other enrolled teams; every member contributes to their own team's result. An individual challenge is open to everyone and has no team.
+  - **Group means team vs. team**: a group challenge is *not* tied to one team and its members do **not** compete against each other. Several teams enroll and compete as teams against the other enrolled teams; every member contributes to their own team's result. A user in several teams contributes for **one** team only: the one with the highest priority (the user orders their teams by drag and drop in the profile); the other teams' group challenges do not count their progress. An individual challenge is open to everyone and has no team.
   - Only `draft` (unpublished, visible to the creator only) and `active` (published) are stored (`challenge_status`, a toggle in the form; new challenges start as drafts). Start and end are picked as date + time, so challenges can be **planned in the future**. **Planned, Completed and Expired are derived at runtime** from the flag, the dates and the participants' progress (`EvaluateChallengeStatusUseCase`; Completed requires every member of a team when `requireAllMembersCompletion` is set), so they can never be stale.
 - [x] **Step 5.2: Challenge Management & Role-Based Access**
   - Challenge creation is restricted to users with system `manager` role; editing, deleting and changing the cover is restricted to the **creator (owner)** of the challenge (buttons are only shown to them on the detail screen).

@@ -41,6 +41,7 @@ import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.profile.components.HealthImportCard
 import com.wandr.android.ui.profile.components.HealthStatsCard
 import com.wandr.android.ui.profile.components.ProfileHeaderRow
+import com.wandr.android.ui.profile.components.TeamMembershipsSection
 import com.wandr.android.ui.profile.components.ProfileStatsRow
 import com.wandr.android.util.AppDateFormatter
 import com.wandr.presentation.profile.ProfileIntent
@@ -188,6 +189,7 @@ private fun ProfileScreenContent(
                                 .padding(horizontal = 8.dp)
                                 .aspectRatio(1.25f)
                         )
+                        
                         // Only appears once Health Connect is connected.
                         HealthStatsCard(
                             modifier = Modifier
@@ -196,6 +198,13 @@ private fun ProfileScreenContent(
                                 .aspectRatio(1.25f)
                         )
                     }
+
+                    TeamMembershipsSection(
+                        userId = profile.id,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 16.dp)
+                    )
                 }
             }
         }

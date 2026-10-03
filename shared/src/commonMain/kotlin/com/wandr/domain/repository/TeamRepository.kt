@@ -25,6 +25,12 @@ interface TeamRepository {
     /** Clears the avatar or cover and deletes the stored files of that kind. */
     suspend fun removeTeamImage(teamId: String, kind: TeamImageKind): Result<Team>
 
+    /**
+     * Saves the priority order of the user's teams (first = highest). Needs the server, because it decides for which
+     * team the user contributes to group challenges; the local cache follows once the server accepted the order.
+     */
+    suspend fun reorderTeams(userId: String, orderedTeamIds: List<String>): Result<Unit>
+
     suspend fun joinTeamViaInvite(inviteCode: String, userId: String): Result<Team>
     suspend fun generateInviteUrl(inviteCode: String): String
 }

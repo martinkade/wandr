@@ -39,6 +39,7 @@ fun AvatarImage(
 ) {
     val initials = displayName.take(1).uppercase().ifEmpty { "-" }
     var isLoading by remember { mutableStateOf(isBusy) }
+    val scale = size.div(64.dp)
 
     Box(
         modifier = modifier
@@ -64,7 +65,10 @@ fun AvatarImage(
         } else {
             Text(
                 text = initials,
-                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.SemiBold),
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize.times(scale)
+                ),
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
@@ -78,6 +82,7 @@ fun AvatarImage(
             ) {
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(48.dp.times(scale))
                 )
             }
         }

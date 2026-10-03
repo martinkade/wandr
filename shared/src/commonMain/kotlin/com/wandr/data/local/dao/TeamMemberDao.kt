@@ -20,4 +20,11 @@ interface TeamMemberDao {
 
     @Query("DELETE FROM team_members WHERE team_id = :teamId AND user_id = :userId")
     suspend fun deleteMember(teamId: String, userId: String)
+
+    @Query("UPDATE team_members SET priority = :priority WHERE team_id = :teamId AND user_id = :userId")
+    suspend fun setPriority(teamId: String, userId: String, priority: Int)
+
+    /** The lowest priority (highest number) the user has, -1 without memberships. */
+    @Query("SELECT COALESCE(MAX(priority), -1) FROM team_members WHERE user_id = :userId")
+    suspend fun maxPriority(userId: String): Int
 }

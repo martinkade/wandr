@@ -284,4 +284,14 @@
     <string name="health_stats_title">Today</string>
     <string name="health_stats_steps">Steps</string>
     <string name="health_stats_floors">Floors climbed</string>
+    <string name="memberships_title">My groups</string>
+    <string name="memberships_hint">Drag to change the priority. Only your first group counts for group challenges.</string>
+    <string name="memberships_primary">Counts for group challenges</string>
+    <string name="memberships_reorder">Reorder</string>
+    <string name="memberships_join_item">Join a group</string>
+    <string name="join_team_hint">Enter the invite code or scan the QR code of the group.</string>
+    <string name="join_team_code_label">Invite code</string>
+    <string name="join_team_scan">Scan QR code</string>
+    <string name="join_team_scan_failed">The QR code could not be scanned.</string>
+    <string name="join_team_success">You joined the group.</string>
 </resources>

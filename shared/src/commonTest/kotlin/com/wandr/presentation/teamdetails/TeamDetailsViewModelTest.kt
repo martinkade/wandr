@@ -56,6 +56,7 @@ private class FakeTeamRepository(initial: Team?, members: List<TeamMember>) : Te
         team.value = updated
         return Result.success(updated)
     }
+    override suspend fun reorderTeams(userId: String, orderedTeamIds: List<String>): Result<Unit> = Result.success(Unit)
     override suspend fun joinTeamViaInvite(inviteCode: String, userId: String): Result<Team> =
         Result.failure(UnsupportedOperationException())
     override suspend fun generateInviteUrl(inviteCode: String): String = ""

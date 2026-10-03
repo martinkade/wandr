@@ -1,0 +1,109 @@
+package com.wandr.android.ui.profile.components
+
+import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.wandr.android.R
+import com.wandr.android.ui.common.AvatarImage
+import com.wandr.android.ui.theme.WandrTheme
+import com.wandr.domain.model.Team
+
+/**
+ * One group of the user. The first one (highest priority) is marked: it is the only group that counts for group
+ * challenges. [dragHandleModifier] makes the handle the grip for drag and drop.
+ */
+@Composable
+fun TeamMembershipItem(
+    team: Team,
+    isPrimary: Boolean,
+    isFirstItemInSection: Boolean,
+    isLastItemInSection: Boolean,
+    dragHandleModifier: Modifier,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .background(
+                color = CardDefaults.cardColors().containerColor,
+                shape = RoundedCornerShape(
+                    topStart = if (isFirstItemInSection) 16.dp else 4.dp,
+                    topEnd = if (isFirstItemInSection) 16.dp else 4.dp,
+                    bottomStart = if (isLastItemInSection) 16.dp else 4.dp,
+                    bottomEnd = if (isLastItemInSection) 16.dp else 4.dp
+                )
+            )
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AvatarImage(avatarUrl = team.avatarUrl, displayName = team.name, size = 40.dp)
+        Column(Modifier.weight(1f)) {
+            Text(
+                team.name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (isPrimary) {
+                Text(
+                    text = stringResource(R.string.memberships_primary),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        Icon(
+            painter = painterResource(R.drawable.ic_drag_handle),
+            contentDescription = stringResource(R.string.memberships_reorder),
+            modifier = dragHandleModifier.padding(8.dp)
+        )
+    }
+}
+
+private val previewTeam =
+    Team("t1", "Alpine Trail Blazers", null, null, null, "X7K9P2W1", "u1", 0L, 0L)
+
+@Preview(name = "Light Mode", showBackground = true)
+@Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true)
+@Composable
+private fun TeamMembershipItemPreview() {
+    WandrTheme {
+        Column {
+            TeamMembershipItem(
+                previewTeam,
+                isPrimary = true,
+                isFirstItemInSection = true,
+                isLastItemInSection = false,
+                dragHandleModifier = Modifier
+            )
+            TeamMembershipItem(
+                previewTeam.copy(name = "City Runners"),
+                isFirstItemInSection = false,
+                isLastItemInSection = true,
+                isPrimary = false,
+                dragHandleModifier = Modifier
+            )
+        }
+    }
+}

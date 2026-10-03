@@ -56,7 +56,9 @@ data class TeamMemberDto(
     @SerialName("team_id") val teamId: String,
     @SerialName("user_id") val userId: String,
     val role: String,
-    @SerialName("joined_at") val joinedAt: String
+    @SerialName("joined_at") val joinedAt: String,
+    /** Assigned by the server when the membership is created (appended at the end). */
+    val priority: Int = 0
 ) {
     fun toEntity(syncStatus: String = "SYNCED") = TeamMemberEntity(
         id = id,
@@ -64,6 +66,7 @@ data class TeamMemberDto(
         userId = userId,
         role = TeamRole.fromValue(role),
         joinedAt = Instant.parse(joinedAt).toEpochMilliseconds(),
+        priority = priority,
         syncStatus = syncStatus
     )
 }
@@ -73,7 +76,8 @@ fun TeamMemberEntity.toDto() = TeamMemberDto(
     teamId = teamId,
     userId = userId,
     role = role.value,
-    joinedAt = Instant.fromEpochMilliseconds(joinedAt).toString()
+    joinedAt = Instant.fromEpochMilliseconds(joinedAt).toString(),
+    priority = priority
 )
 
 /**
@@ -98,8 +102,9 @@ data class TeamMemberWithProfileDto(
     @SerialName("user_id") val userId: String,
     val role: String,
     @SerialName("joined_at") val joinedAt: String,
+    val priority: Int = 0,
     val profiles: ProfileDto? = null
 ) {
     fun toMemberEntity(syncStatus: String = "SYNCED") =
-        TeamMemberDto(id, teamId, userId, role, joinedAt).toEntity(syncStatus)
+        TeamMemberDto(id, teamId, userId, role, joinedAt, priority).toEntity(syncStatus)
 }

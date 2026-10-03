@@ -98,6 +98,9 @@ CREATE TABLE public.team_members (
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     role team_role NOT NULL DEFAULT 'member',
     joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Order of the user's teams, 0 = highest priority (set by the user via set_team_priorities). Only the team with
+    -- the highest priority counts for group challenges. New memberships are appended (trigger).
+    priority INTEGER NOT NULL DEFAULT 0,
     UNIQUE(team_id, user_id)
 );
 
@@ -623,27 +626,6 @@ CREATE POLICY "Challenge Cover Delete Access" ON storage.objects FOR DELETE TO a
 
 ```
 
-### Migration: only the creator edits a challenge (existing projects)
-
-Run once. Editing and deleting a challenge (and, through the storage policies, changing its cover) is limited to
-the user who created it. Previously the creator also had to be a manager at that moment.
-
-```sql
-DROP POLICY IF EXISTS "Only managers can edit challenges" ON public.challenges;
-DROP POLICY IF EXISTS "Only managers can delete challenges" ON public.challenges;
-DROP POLICY IF EXISTS "Only the creator can edit a challenge" ON public.challenges;
-DROP POLICY IF EXISTS "Only the creator can delete a challenge" ON public.challenges;
-
-CREATE POLICY "Only the creator can edit a challenge"
-    ON public.challenges FOR UPDATE TO authenticated
-    USING (auth.uid() = created_by)
-    WITH CHECK (auth.uid() = created_by);
-
-CREATE POLICY "Only the creator can delete a challenge"
-    ON public.challenges FOR DELETE TO authenticated
-    USING (auth.uid() = created_by);
-```
-
 ---
 
 ## 5. Database Functions & Triggers
@@ -674,17 +656,48 @@ CREATE TRIGGER on_auth_user_created
 ### Group challenges: team enrollment & standings
 
 Teams compete against other teams. When a team is enrolled, all its members become participants for that team;
-joining or leaving the team keeps this in sync; withdrawing the team removes them again. A user contributes to one
-team per challenge (`UNIQUE(challenge_id, user_id)`), the first enrolled team wins.
+joining or leaving the team keeps this in sync; withdrawing the team removes them again. A user contributes for ONE
+team only: the team with the highest priority (`team_members.priority`, the user orders their teams in the profile).
+Group challenges of the user's other teams do not count their progress. Changing the order moves the user's
+participation (in challenges that are not over yet) to the new top team.
 
 ```sql
--- Enrolling a team adds all current members as participants.
+-- The team a user contributes for: their highest-priority membership (lowest number).
+CREATE OR REPLACE FUNCTION public.primary_team_id(p_user UUID)
+RETURNS UUID AS $$
+    SELECT team_id FROM public.team_members WHERE user_id = p_user ORDER BY priority, joined_at LIMIT 1;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
+
+-- Brings the group participations of a user in line with their primary team (challenges that are not over yet).
+CREATE OR REPLACE FUNCTION public.sync_group_participation(p_user UUID)
+RETURNS VOID AS $$
+DECLARE
+    v_primary UUID := public.primary_team_id(p_user);
+BEGIN
+    DELETE FROM public.challenge_participants p
+    USING public.challenges c
+    WHERE p.user_id = p_user AND p.team_id IS NOT NULL AND c.id = p.challenge_id
+      AND c.end_date >= NOW() AND p.team_id IS DISTINCT FROM v_primary;
+
+    IF v_primary IS NOT NULL THEN
+        INSERT INTO public.challenge_participants (challenge_id, user_id, team_id)
+        SELECT ct.challenge_id, p_user, v_primary
+        FROM public.challenge_teams ct
+        JOIN public.challenges c ON c.id = ct.challenge_id
+        WHERE ct.team_id = v_primary AND c.end_date >= NOW()
+        ON CONFLICT (challenge_id, user_id) DO NOTHING;
+    END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Enrolling a team adds those members as participants for whom it is the highest-priority team.
 CREATE OR REPLACE FUNCTION public.enroll_team_members()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO public.challenge_participants (challenge_id, user_id, team_id)
     SELECT NEW.challenge_id, tm.user_id, NEW.team_id
-    FROM public.team_members tm WHERE tm.team_id = NEW.team_id
+    FROM public.team_members tm
+    WHERE tm.team_id = NEW.team_id AND public.primary_team_id(tm.user_id) = NEW.team_id
     ON CONFLICT (challenge_id, user_id) DO NOTHING;
     RETURN NEW;
 END;
@@ -708,16 +721,24 @@ CREATE TRIGGER on_team_withdrawn
     AFTER DELETE ON public.challenge_teams
     FOR EACH ROW EXECUTE FUNCTION public.withdraw_team_members();
 
--- A new team member joins the challenges of the team that are not over yet.
+-- A new membership is appended at the end of the user's priority list.
+CREATE OR REPLACE FUNCTION public.assign_team_member_priority()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.priority := COALESCE((SELECT MAX(priority) + 1 FROM public.team_members WHERE user_id = NEW.user_id), 0);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER on_team_member_priority
+    BEFORE INSERT ON public.team_members
+    FOR EACH ROW EXECUTE FUNCTION public.assign_team_member_priority();
+
+-- Joining a team (as the first one) makes the user take part in its running challenges.
 CREATE OR REPLACE FUNCTION public.join_team_challenges()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.challenge_participants (challenge_id, user_id, team_id)
-    SELECT ct.challenge_id, NEW.user_id, NEW.team_id
-    FROM public.challenge_teams ct
-    JOIN public.challenges c ON c.id = ct.challenge_id
-    WHERE ct.team_id = NEW.team_id AND c.end_date >= NOW() -- not over yet (status is derived, not stored)
-    ON CONFLICT (challenge_id, user_id) DO NOTHING;
+    PERFORM public.sync_group_participation(NEW.user_id);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
@@ -726,11 +747,11 @@ CREATE TRIGGER on_team_member_added
     AFTER INSERT ON public.team_members
     FOR EACH ROW EXECUTE FUNCTION public.join_team_challenges();
 
--- A member who leaves a team stops contributing for it.
+-- Leaving a team stops contributing for it; the next team in line takes over.
 CREATE OR REPLACE FUNCTION public.leave_team_challenges()
 RETURNS TRIGGER AS $$
 BEGIN
-    DELETE FROM public.challenge_participants WHERE user_id = OLD.user_id AND team_id = OLD.team_id;
+    PERFORM public.sync_group_participation(OLD.user_id);
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
@@ -738,6 +759,59 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 CREATE TRIGGER on_team_member_removed
     AFTER DELETE ON public.team_members
     FOR EACH ROW EXECUTE FUNCTION public.leave_team_challenges();
+
+-- Saves the order of the caller's teams: the listed teams first (in that order), memberships that are not listed keep
+-- their relative order behind them. Then the group participations follow the new top team.
+CREATE OR REPLACE FUNCTION public.set_team_priorities(p_team_ids UUID[])
+RETURNS VOID AS $$
+BEGIN
+    IF auth.uid() IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+
+    UPDATE public.team_members m
+    SET priority = o.rank - 1
+    FROM (
+        SELECT x.team_id,
+               ROW_NUMBER() OVER (ORDER BY (x.idx IS NULL), x.idx, x.priority, x.joined_at) AS rank
+        FROM (
+            SELECT tm.team_id, tm.priority, tm.joined_at, array_position(p_team_ids, tm.team_id) AS idx
+            FROM public.team_members tm WHERE tm.user_id = auth.uid()
+        ) x
+    ) o
+    WHERE m.user_id = auth.uid() AND m.team_id = o.team_id;
+
+    PERFORM public.sync_group_participation(auth.uid());
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+REVOKE ALL ON FUNCTION public.set_team_priorities(UUID[]) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.set_team_priorities(UUID[]) TO authenticated;
+
+-- Joins a team by its invite code (typed or scanned). A function, because a non-member cannot read the team (RLS)
+-- to look the code up. The code is compared case-insensitively.
+CREATE OR REPLACE FUNCTION public.join_team_by_invite(p_invite_code TEXT)
+RETURNS public.teams AS $$
+DECLARE
+    v_team public.teams;
+BEGIN
+    IF auth.uid() IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+
+    SELECT * INTO v_team FROM public.teams WHERE lower(invite_code) = lower(trim(p_invite_code));
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Invalid invite code';
+    END IF;
+
+    INSERT INTO public.team_members (team_id, user_id) VALUES (v_team.id, auth.uid())
+    ON CONFLICT (team_id, user_id) DO NOTHING;
+    RETURN v_team;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+REVOKE ALL ON FUNCTION public.join_team_by_invite(TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.join_team_by_invite(TEXT) TO authenticated;
 
 -- Team vs. team standings: only aggregates per team, so nobody sees individual members of other teams.
 CREATE OR REPLACE FUNCTION public.challenge_team_standings(p_challenge_id UUID)

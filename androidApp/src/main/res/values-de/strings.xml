@@ -284,4 +284,14 @@
     <string name="health_stats_title">Heute</string>
     <string name="health_stats_steps">Schritte</string>
     <string name="health_stats_floors">Stockwerke</string>
+    <string name="memberships_title">Meine Gruppen</string>
+    <string name="memberships_hint">Zum Ändern der Priorität ziehen. Nur deine erste Gruppe zählt für Gruppen-Challenges.</string>
+    <string name="memberships_primary">Zählt für Gruppen-Challenges</string>
+    <string name="memberships_reorder">Verschieben</string>
+    <string name="memberships_join_item">Gruppe beitreten</string>
+    <string name="join_team_hint">Gib den Einladungscode ein oder scanne den QR-Code der Gruppe.</string>
+    <string name="join_team_code_label">Einladungscode</string>
+    <string name="join_team_scan">QR-Code scannen</string>
+    <string name="join_team_scan_failed">Der QR-Code konnte nicht gescannt werden.</string>
+    <string name="join_team_success">Du bist der Gruppe beigetreten.</string>
 </resources>

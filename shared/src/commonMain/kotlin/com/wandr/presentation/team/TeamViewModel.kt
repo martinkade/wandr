@@ -5,6 +5,7 @@ import com.wandr.domain.usecase.CreateTeamUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinTeamViaInviteUseCase
 import com.wandr.domain.usecase.RefreshUserTeamsUseCase
+import com.wandr.domain.usecase.ReorderTeamsUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -19,6 +20,7 @@ class TeamViewModel(
     private val createTeamUseCase: CreateTeamUseCase,
     private val joinTeamViaInviteUseCase: JoinTeamViaInviteUseCase,
     private val refreshUserTeamsUseCase: RefreshUserTeamsUseCase,
+    private val reorderTeamsUseCase: ReorderTeamsUseCase,
     private val teamRepository: TeamRepository,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
@@ -34,6 +36,7 @@ class TeamViewModel(
             is TeamIntent.JoinInviteCodeChanged -> _uiState.update { it.copy(joinInviteCode = intent.code) }
             is TeamIntent.SubmitCreateTeam -> createTeam(intent.creatorId)
             is TeamIntent.SubmitJoinTeam -> joinTeam(intent.userId)
+            is TeamIntent.ReorderTeams -> reorderTeams(intent.userId, intent.teamIds)
             is TeamIntent.GenerateQRCode -> generateQRCodeUrl(intent.inviteCode)
             is TeamIntent.ClearMessages -> _uiState.update { it.copy(errorMessage = null, successMessage = null) }
         }
@@ -100,6 +103,20 @@ class TeamViewModel(
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Failed to join team") }
                 }
+        }
+    }
+
+    /** Shows the new order at once; if the server rejects it (e.g. offline) the previous order is restored. */
+    private fun reorderTeams(userId: String, teamIds: List<String>) {
+        val previous = _uiState.value.teams
+        val byId = previous.associateBy { it.id }
+        val reordered = teamIds.mapNotNull { byId[it] } + previous.filter { it.id !in teamIds }
+        if (reordered.map { it.id } == previous.map { it.id }) return
+        _uiState.update { it.copy(teams = reordered, errorMessage = null) }
+        scope.launch {
+            reorderTeamsUseCase(userId, teamIds).onFailure { error ->
+                _uiState.update { it.copy(teams = previous, errorMessage = error.message ?: "Failed to save the order") }
+            }
         }
     }
 

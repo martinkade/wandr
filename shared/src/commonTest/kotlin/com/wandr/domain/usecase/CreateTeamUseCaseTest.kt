@@ -32,6 +32,7 @@ private class RecordingTeamRepository : TeamRepository {
         Result.failure(UnsupportedOperationException())
     override suspend fun removeTeamImage(teamId: String, kind: TeamImageKind): Result<Team> =
         Result.failure(UnsupportedOperationException())
+    override suspend fun reorderTeams(userId: String, orderedTeamIds: List<String>): Result<Unit> = Result.success(Unit)
     override suspend fun joinTeamViaInvite(inviteCode: String, userId: String): Result<Team> =
         Result.failure(UnsupportedOperationException())
     override suspend fun generateInviteUrl(inviteCode: String): String = "wandr://invite/$inviteCode"

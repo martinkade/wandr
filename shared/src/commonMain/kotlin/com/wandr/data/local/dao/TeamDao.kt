@@ -16,9 +16,11 @@ interface TeamDao {
     @Query("SELECT * FROM teams WHERE id = :id")
     fun getTeamById(id: String): Flow<TeamEntity?>
 
+    /** The user's teams by priority: the first one is the team that counts for group challenges. */
     @Query(
-        "SELECT * FROM teams WHERE created_by = :userId " +
-            "OR id IN (SELECT team_id FROM team_members WHERE user_id = :userId) ORDER BY created_at DESC"
+        "SELECT t.* FROM teams t LEFT JOIN team_members m ON m.team_id = t.id AND m.user_id = :userId " +
+            "WHERE t.created_by = :userId OR m.user_id IS NOT NULL " +
+            "ORDER BY COALESCE(m.priority, 2147483647), t.created_at DESC"
     )
     fun getTeamsForUser(userId: String): Flow<List<TeamEntity>>
 
