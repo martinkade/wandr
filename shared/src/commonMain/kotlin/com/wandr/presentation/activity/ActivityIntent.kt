@@ -34,6 +34,12 @@ sealed interface ActivityIntent {
 
     data class StartGpsTracking(val activityType: String) : ActivityIntent
     data class AddTrackpoint(val trackpoint: GpsTrackpoint) : ActivityIntent
+    /** Accuracy in meters of the latest GPS fix, or null when the fix was lost; also reported before a recording starts. */
+    data class GpsFixChanged(val accuracyMeters: Float?) : ActivityIntent
+    /** Advances the recording clock; the foreground service sends it every second while recording. Paused time is not counted. */
+    data class Tick(val nowMillis: Long) : ActivityIntent
+    /** Throws the running recording away. */
+    object DiscardRecording : ActivityIntent
     object PauseGpsTracking : ActivityIntent
     object ResumeGpsTracking : ActivityIntent
     data class StopAndSaveGpsTracking(val userId: String, val teamId: String?, val title: String) : ActivityIntent

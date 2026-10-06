@@ -28,8 +28,14 @@ class SyncManager(
     private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
     val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
 
+    /** A change arrived while a sync was running; that run may have missed it, so another one follows. */
+    private var resyncRequested = false
+
     fun triggerSync() {
-        if (_syncState.value is SyncState.Syncing) return
+        if (_syncState.value is SyncState.Syncing) {
+            resyncRequested = true
+            return
+        }
         _syncState.value = SyncState.Syncing
 
         scope.launch {
@@ -78,9 +84,21 @@ class SyncManager(
                     totalSynced++
                 }
 
+                // 5. Deleted activities: delete on the server, then forget the row. (The route and, via a trigger, the
+                // likes and comments of the activity go with it.)
+                for (activity in activityDao.getDeletedActivities()) {
+                    supabase.postgrest.from("activities").delete { filter { eq("id", activity.id) } }
+                    activityDao.deleteActivity(activity.id)
+                    totalSynced++
+                }
+
                 _syncState.value = SyncState.Success(syncedCount = totalSynced)
             } catch (e: Exception) {
                 _syncState.value = SyncState.Error(message = e.message ?: "Sync failed")
+            }
+            if (resyncRequested) {
+                resyncRequested = false
+                triggerSync()
             }
         }
     }

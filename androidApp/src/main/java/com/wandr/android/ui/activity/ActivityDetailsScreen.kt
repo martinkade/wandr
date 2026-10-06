@@ -10,10 +10,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -99,6 +102,7 @@ private fun ActivityDetailsScreenContent(
 ) {
     val activity = state.selectedActivity
     var isEditing by rememberSaveable { mutableStateOf(false) }
+    var confirmDelete by rememberSaveable { mutableStateOf(false) }
     // Only a save started from the sheet may close it.
     var saveRequested by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -121,6 +125,11 @@ private fun ActivityDetailsScreenContent(
     val trimmedText = stringResource(R.string.activity_trimmed_message)
     val discardedText = stringResource(R.string.activity_discarded_message)
     LaunchedEffect(state.success, state.errorMessage) {
+        if (state.success == ActivitySuccess.DELETED) {
+            onIntent(ActivityIntent.ClearMessages)
+            onBack() // the activity is gone
+            return@LaunchedEffect
+        }
         val message = when {
             state.errorMessage != null -> state.errorMessage
             state.success == ActivitySuccess.UPDATED -> updatedText
@@ -199,11 +208,35 @@ private fun ActivityDetailsScreenContent(
                         stringResource(R.string.activity_source_label),
                         stringResource(if (activity.isManualEntry) R.string.manual_entry else R.string.gps_tracked)
                     )
+                    if (state.canEdit) {
+                        Spacer(Modifier.height(16.dp))
+                        OutlinedButton(
+                            onClick = { confirmDelete = true },
+                            enabled = !state.isSaving,
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(stringResource(R.string.activity_delete_button)) }
+                    }
                     Spacer(Modifier.height(16.dp))
                     socialSection(activity)
                 }
             }
         }
+    }
+
+    if (confirmDelete && activity != null) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text(stringResource(R.string.activity_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.activity_delete_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmDelete = false
+                    onIntent(ActivityIntent.DeleteActivity(activity.id))
+                }) { Text(stringResource(R.string.social_delete), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel_button)) } }
+        )
     }
 
     val form = state.form

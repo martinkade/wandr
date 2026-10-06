@@ -85,7 +85,7 @@ fun TeamEditScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(stringResource(R.string.save_profile_button))
+                    Text(stringResource(R.string.save_team_button))
                 }
             }
         }

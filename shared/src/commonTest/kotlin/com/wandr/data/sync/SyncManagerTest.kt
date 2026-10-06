@@ -56,6 +56,8 @@ private class FakeActivityDao : ActivityDao {
     override suspend fun updateActivity(activity: ActivityEntity) { }
     override suspend fun deleteActivity(id: String) { }
     override suspend fun getDirtyActivities(): List<ActivityEntity> = emptyList()
+    override suspend fun markDeleted(id: String) { }
+    override suspend fun getDeletedActivities(): List<ActivityEntity> = emptyList()
 }
 
 class SyncManagerTest {

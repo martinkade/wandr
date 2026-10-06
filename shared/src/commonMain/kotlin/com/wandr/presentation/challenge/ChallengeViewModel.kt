@@ -4,7 +4,7 @@ import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeType
 import com.wandr.domain.usecase.CreateChallengeUseCase
-import com.wandr.domain.usecase.GetChallengeLeaderboardUseCase
+import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
 import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
@@ -45,7 +45,7 @@ class ChallengeViewModel(
     private val getUserTeamsUseCase: GetUserTeamsUseCase,
     private val createChallengeUseCase: CreateChallengeUseCase,
     private val updateChallengeUseCase: UpdateChallengeUseCase,
-    private val getChallengeLeaderboardUseCase: GetChallengeLeaderboardUseCase,
+    private val getMemberRankingUseCase: GetMemberRankingUseCase,
     private val getTeamStandingsUseCase: GetTeamStandingsUseCase,
     private val enrollTeamInChallengeUseCase: EnrollTeamInChallengeUseCase,
     private val joinChallengeUseCase: JoinChallengeUseCase,
@@ -61,7 +61,7 @@ class ChallengeViewModel(
     fun processIntent(intent: ChallengeIntent) {
         when (intent) {
             is ChallengeIntent.LoadChallenges -> load(intent.userId)
-            is ChallengeIntent.SelectChallenge -> selectChallenge(intent.challengeId, intent.teamId)
+            is ChallengeIntent.SelectChallenge -> selectChallenge(intent.challengeId)
             is ChallengeIntent.StartCreate -> startCreate()
             is ChallengeIntent.StartEdit -> startEdit(intent.challengeId)
             is ChallengeIntent.TitleChanged -> updateForm { it.copy(title = intent.title) }
@@ -125,7 +125,7 @@ class ChallengeViewModel(
         }
     }
 
-    private fun selectChallenge(challengeId: String, teamId: String?) {
+    private fun selectChallenge(challengeId: String) {
         _uiState.update { it.copy(isLoading = true, standings = emptyList(), leaderboard = emptyList()) }
         selectJob?.cancel()
         selectJob = scope.launch {
@@ -142,10 +142,9 @@ class ChallengeViewModel(
                     .onSuccess { standings -> _uiState.update { it.copy(standings = standings, isLoading = false) } }
                     .onFailure { error -> _uiState.update { it.copy(isLoading = false, errorMessage = error.message) } }
             }
-            if (teamId != null) {
-                getChallengeLeaderboardUseCase(challengeId, teamId).collect { leaderboard ->
-                    _uiState.update { it.copy(leaderboard = leaderboard) }
-                }
+            launch {
+                // The members the server lets this user see; fails quietly while offline (the list just stays empty).
+                getMemberRankingUseCase(challengeId).onSuccess { ranking -> _uiState.update { it.copy(leaderboard = ranking) } }
             }
         }
     }

@@ -20,6 +20,8 @@ object IosDependencies {
     fun loginViewModel(): LoginViewModel = KoinPlatform.getKoin().get()
     fun mainViewModel(): MainViewModel = KoinPlatform.getKoin().get()
     fun activityViewModel(): ActivityViewModel = KoinPlatform.getKoin().get()
+    /** The process-wide instance that holds the running recording. */
+    fun recordingViewModel(): ActivityViewModel = KoinPlatform.getKoin().get(RecordingScope)
     fun profileViewModel(): ProfileViewModel = KoinPlatform.getKoin().get()
     fun teamViewModel(): TeamViewModel = KoinPlatform.getKoin().get()
     fun teamDetailsViewModel(): TeamDetailsViewModel = KoinPlatform.getKoin().get()

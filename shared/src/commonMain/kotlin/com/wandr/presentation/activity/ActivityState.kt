@@ -5,6 +5,22 @@ import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.model.Profile
 import com.wandr.domain.model.SocialCounts
 
+/** How good the GPS signal is, derived from the accuracy of the latest fix. */
+enum class GpsStatus {
+    SEARCHING, WEAK, GOOD;
+
+    companion object {
+        /** Fixes less accurate than this (meters) are "weak". */
+        const val WEAK_ACCURACY_METERS = 30f
+
+        fun of(accuracyMeters: Float?): GpsStatus = when {
+            accuracyMeters == null -> SEARCHING
+            accuracyMeters > WEAK_ACCURACY_METERS -> WEAK
+            else -> GOOD
+        }
+    }
+}
+
 enum class ActivitySuccess { CREATED, UPDATED, RECORDED, DELETED, MERGED, TRIMMED, DISCARDED }
 
 /**
@@ -68,6 +84,12 @@ data class ActivityState(
     val liveDurationSeconds: Double = 0.0,
     val liveElevationGainMeters: Double = 0.0,
     val liveTrackpoints: List<GpsTrackpoint> = emptyList(),
+    /** Pace over the last seconds in s/km; null while standing still or without a fix. */
+    val liveCurrentPaceSecondsPerKm: Double? = null,
+    /** Time in seconds of every completed kilometer, in order. */
+    val liveSplitsSeconds: List<Double> = emptyList(),
+    /** Accuracy of the latest GPS fix in meters; null while no fix has arrived (searching). */
+    val gpsAccuracyMeters: Float? = null,
 
     /** Non-null while the conflict resolution wizard is shown. */
     val conflict: ActivityConflict? = null,
@@ -77,4 +99,6 @@ data class ActivityState(
     val errorMessage: String? = null,
     /** What succeeded last; the UI maps it to a localized message. Cleared via [ActivityIntent.ClearMessages]. */
     val success: ActivitySuccess? = null
-)
+) {
+    val gpsStatus: GpsStatus get() = GpsStatus.of(gpsAccuracyMeters)
+}

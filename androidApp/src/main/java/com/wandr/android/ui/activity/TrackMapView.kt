@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -33,7 +34,8 @@ import kotlin.math.min
 @Composable
 fun TrackMapView(
     trackpoints: List<GpsTrackpoint>,
-    modifier: Modifier = Modifier.fillMaxWidth().height(200.dp)
+    modifier: Modifier = Modifier.fillMaxWidth().height(200.dp),
+    shape: Shape = RoundedCornerShape(12.dp)
 ) {
     val routeColor = MaterialTheme.colorScheme.primary
     val startColor = Color(0xFF4CAF50)
@@ -41,7 +43,7 @@ fun TrackMapView(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {

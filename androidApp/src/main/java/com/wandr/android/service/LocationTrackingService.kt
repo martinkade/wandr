@@ -1,18 +1,49 @@
 package com.wandr.android.service
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.wandr.domain.model.GpsTrackpoint
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
+import com.wandr.android.MainActivity
+import com.wandr.android.R
+import com.wandr.android.location.FusedLocationSource
+import com.wandr.android.location.toTrackpoint
+import com.wandr.android.ui.activity.ActivityFormat
+import com.wandr.di.RecordingScope
+import com.wandr.domain.geo.RecordingPolicy
+import com.wandr.presentation.activity.ActivityIntent
+import com.wandr.presentation.activity.ActivityState
+import com.wandr.presentation.activity.ActivityViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.koin.mp.KoinPlatform
 
+/**
+ * Keeps a recording alive while the app is in the background: a foreground service with an ongoing notification
+ * (live distance and time). It reads the GPS (one fix per second for fast sports, every 3 seconds for hiking), feeds the
+ * fixes into the process-wide recording view model and ticks its clock. It stops itself when the recording ends.
+ */
 class LocationTrackingService : Service() {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var job: Job? = null
+    private var lastNotificationText: String? = null
+
+    private val recording: ActivityViewModel by lazy { KoinPlatform.getKoin().get(RecordingScope) }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -22,38 +53,88 @@ class LocationTrackingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("WANDR GPS Tracking")
-            .setContentText("Recording activity in background...")
-            .setSmallIcon(android.R.drawable.ic_menu_compass)
-            .setOngoing(true)
-            .build()
+        // A foreground service must show its notification right away.
+        val type = recording.state.value.trackingActivityType
+        ServiceCompat.startForeground(
+            this, NOTIFICATION_ID, buildNotification(recording.state.value),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
+        )
 
-        startForeground(NOTIFICATION_ID, notification)
-        return START_STICKY
+        val permitted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (!permitted || !recording.state.value.isTracking) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        if (job == null) {
+            job = scope.launch {
+                launch {
+                    runCatching {
+                        FusedLocationSource(this@LocationTrackingService)
+                            .updates(RecordingPolicy.sampleIntervalMillis(type))
+                            .collect { location ->
+                                recording.processIntent(ActivityIntent.GpsFixChanged(location.accuracy))
+                                recording.processIntent(ActivityIntent.AddTrackpoint(location.toTrackpoint()))
+                            }
+                    }
+                }
+                // The clock counts seconds even when no fix arrives (e.g. in a tunnel).
+                while (isActive) {
+                    delay(CLOCK_MILLIS)
+                    val state = recording.state.value
+                    if (!state.isTracking) {
+                        stopSelf()
+                        break
+                    }
+                    recording.processIntent(ActivityIntent.Tick(System.currentTimeMillis()))
+                    updateNotification(recording.state.value)
+                }
+            }
+        }
+        // After a process death the recording is gone, so the service must not come back on its own.
+        return START_NOT_STICKY
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
+    }
+
+    private fun notificationText(state: ActivityState): String =
+        "${ActivityFormat.distanceKm(state.liveDistanceMeters)} km · ${ActivityFormat.clock(state.liveDurationSeconds)}"
+
+    private fun buildNotification(state: ActivityState) = NotificationCompat.Builder(this, CHANNEL_ID)
+        .setContentTitle(getString(if (state.isPaused) R.string.recording_notification_paused else R.string.recording_notification_title))
+        .setContentText(notificationText(state))
+        .setSmallIcon(R.drawable.ic_record)
+        .setOngoing(true)
+        .setOnlyAlertOnce(true)
+        .setCategory(NotificationCompat.CATEGORY_WORKOUT)
+        .setContentIntent(
+            PendingIntent.getActivity(
+                this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        )
+        .build()
+
+    private fun updateNotification(state: ActivityState) {
+        val text = "${state.isPaused}${notificationText(state)}"
+        if (text == lastNotificationText) return
+        lastNotificationText = text
+        getSystemService(NotificationManager::class.java)?.notify(NOTIFICATION_ID, buildNotification(state))
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "WANDR Location Tracking",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager?.createNotificationChannel(channel)
+            val channel = NotificationChannel(CHANNEL_ID, getString(R.string.recording_channel_name), NotificationManager.IMPORTANCE_LOW)
+            getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         }
     }
 
-    companion object {
-        private const val CHANNEL_ID = "wandr_location_channel"
-        private const val NOTIFICATION_ID = 1001
-
-        private val _locationFlow = MutableSharedFlow<GpsTrackpoint>(replay = 1)
-        val locationFlow: SharedFlow<GpsTrackpoint> = _locationFlow.asSharedFlow()
-
-        fun emitTrackpoint(trackpoint: GpsTrackpoint) {
-            _locationFlow.tryEmit(trackpoint)
-        }
+    private companion object {
+        const val CHANNEL_ID = "wandr_location_channel"
+        const val NOTIFICATION_ID = 1001
+        const val CLOCK_MILLIS = 1_000L
     }
 }

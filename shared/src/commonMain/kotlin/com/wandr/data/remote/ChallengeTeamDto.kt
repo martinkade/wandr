@@ -31,6 +31,16 @@ data class TeamStandingDto(
     @SerialName("completed_count") val completedCount: Int = 0
 )
 
+/** Row of the `challenge_member_ranking` function. */
+@Serializable
+data class MemberRankingDto(
+    @SerialName("user_id") val userId: String,
+    @SerialName("display_name") val displayName: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    @SerialName("progress_value") val progressValue: Double = 0.0,
+    @SerialName("is_completed") val isCompleted: Boolean = false
+)
+
 /** Row of `public.challenge_participants`. */
 @Serializable
 data class ChallengeParticipantDto(

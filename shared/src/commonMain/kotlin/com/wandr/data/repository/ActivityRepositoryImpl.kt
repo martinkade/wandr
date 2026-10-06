@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.map
 
 class ActivityRepositoryImpl(
     private val activityDao: ActivityDao,
-    private val fitFileStorage: FitFileStorage
+    private val fitFileStorage: FitFileStorage,
+    /** Called after every local change that has to reach the server (create, edit, delete), e.g. to start the sync. */
+    private val onLocalChange: () -> Unit = {}
 ) : ActivityRepository {
 
     override fun getUserActivities(userId: String): Flow<List<Activity>> {
@@ -88,6 +90,7 @@ class ActivityRepositoryImpl(
             )
 
             activityDao.insertActivity(entity)
+            onLocalChange()
             entity.toDomain()
         }
     }
@@ -95,7 +98,8 @@ class ActivityRepositoryImpl(
     override suspend fun deleteActivity(id: String): Result<Unit> {
         return runCatching {
             activityDao.getActivityOnce(id)?.fitFilePath?.let(fitFileStorage::delete)
-            activityDao.deleteActivity(id)
+            activityDao.markDeleted(id) // the sync engine deletes it on the server and then removes the row
+            onLocalChange()
         }
     }
 

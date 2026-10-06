@@ -24,8 +24,8 @@ interface ChallengeRepository {
 
     fun getChallengeParticipants(challengeId: String): Flow<List<ChallengeParticipant>>
 
-    /** Progress of the members of one team (visible to that team only) in a group challenge. */
-    fun getTeamContributions(challengeId: String, teamId: String): Flow<List<LeaderboardEntry>>
+    /** The ranking of the members in the challenge, from the server (it decides who may see whom). */
+    suspend fun getMemberRanking(challengeId: String): Result<List<LeaderboardEntry>>
 
     /** Team vs. team ranking of a group challenge; aggregates only, computed on the server. */
     suspend fun getTeamStandings(challengeId: String): Result<List<TeamStanding>>

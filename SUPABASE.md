@@ -1134,6 +1134,58 @@ supabase secrets set WEBHOOK_SECRET=<WEBHOOK_SECRET> FIREBASE_SERVICE_ACCOUNT="$
 Webhook: Dashboard > Database > Webhooks > table `public.notifications`, event `Insert`, type Supabase Edge Function
 `send-push` (POST), HTTP header `x-webhook-secret: <WEBHOOK_SECRET>`. If the dashboard reports `schema "supabase_functions" does not exist`, enable webhooks first or use the SQL trigger alternative. Details: `supabase/functions/send-push/README.md`.
 
+### Challenge ranking & activity cleanup
+
+```sql
+-- The ranking of the members inside a challenge. Individual challenge: all participants, visible to participants and
+-- the creator. Group challenge: only the members of the caller's own team(s); other teams only appear as aggregates
+-- (challenge_team_standings), never as single members.
+CREATE OR REPLACE FUNCTION public.challenge_member_ranking(p_challenge_id UUID)
+RETURNS TABLE (
+    user_id UUID,
+    display_name TEXT,
+    avatar_url TEXT,
+    progress_value DOUBLE PRECISION,
+    is_completed BOOLEAN
+) AS $$
+    SELECT p.user_id, pr.display_name, pr.avatar_url, p.progress_value, p.is_completed
+    FROM public.challenges c
+    JOIN public.challenge_participants p ON p.challenge_id = c.id
+    JOIN public.profiles pr ON pr.id = p.user_id
+    WHERE c.id = p_challenge_id
+      AND (
+        (c.scope = 'individual' AND (
+            c.created_by = auth.uid() OR
+            EXISTS (SELECT 1 FROM public.challenge_participants me WHERE me.challenge_id = c.id AND me.user_id = auth.uid())
+        ))
+        OR
+        (c.scope = 'group' AND p.team_id IS NOT NULL AND public.is_team_member(p.team_id, auth.uid()))
+      )
+    ORDER BY p.progress_value DESC, pr.display_name;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
+
+REVOKE ALL ON FUNCTION public.challenge_member_ranking(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.challenge_member_ranking(UUID) TO authenticated;
+
+-- Deleting an activity removes what hangs on it. Likes and comments point at their activity by a type + id (no
+-- foreign key, they also exist for challenges), so a trigger cleans them up; reactions go with their comments, the
+-- route with the activity (foreign keys), and the challenge progress is recalculated by on_activity_changed.
+CREATE OR REPLACE FUNCTION public.delete_activity_social()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM public.comments WHERE entity_type = 'activity' AND entity_id = OLD.id;
+    DELETE FROM public.likes WHERE entity_type = 'activity' AND entity_id = OLD.id;
+    DELETE FROM public.notifications WHERE target_id = OLD.id;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS on_activity_deleted ON public.activities;
+CREATE TRIGGER on_activity_deleted
+    AFTER DELETE ON public.activities
+    FOR EACH ROW EXECUTE FUNCTION public.delete_activity_social();
+```
+
 ### Activity routes, map privacy & social counts
 
 - `activities.show_map` (default `TRUE`) is the owner's privacy setting. The route is stored in `activity_routes`

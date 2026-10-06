@@ -257,6 +257,20 @@ private fun ChallengeDetailsScreenContent(
                         }
                     }
 
+                    // Who is ahead: everybody in an individual challenge, your own team in a group challenge.
+                    if (state.leaderboard.isNotEmpty()) {
+                        Spacer(Modifier.height(24.dp))
+                        HorizontalDivider()
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(if (isGroup) R.string.challenge_team_ranking_title else R.string.challenge_ranking_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        state.leaderboard.forEach { entry -> LeaderboardRow(entry, type, isMe = entry.userId == userId) }
+                    }
+
                     Spacer(Modifier.height(24.dp))
                     HorizontalDivider()
                     Spacer(Modifier.height(12.dp))

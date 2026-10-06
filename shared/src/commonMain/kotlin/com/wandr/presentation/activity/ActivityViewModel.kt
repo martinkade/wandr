@@ -1,5 +1,9 @@
 package com.wandr.presentation.activity
 
+import com.wandr.domain.geo.ElevationGainTracker
+import com.wandr.domain.geo.GeoMath
+import com.wandr.domain.geo.RecordingMetrics
+import com.wandr.domain.geo.RecordingPolicy
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ActivityConflictException
 import com.wandr.domain.model.ConflictResolution
@@ -42,12 +46,20 @@ class ActivityViewModel(
     private val getSocialCountsUseCase: GetSocialCountsUseCase,
     private val setLikeUseCase: SetLikeUseCase,
     private val getProfilesUseCase: GetProfilesUseCase,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
+    /** The clock of the recording (milliseconds); replaced in tests. The recording clock itself is advanced by [ActivityIntent.Tick]. */
+    private val nowMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() }
 ) {
     private val _state = MutableStateFlow(ActivityState())
     val state: StateFlow<ActivityState> = _state.asStateFlow()
 
     private var trackingStartTime: Long = 0
+
+    // Live recording bookkeeping that is not part of the state
+    private var lastTickAt: Long = 0
+    private var lastSplitSeconds = 0.0
+    private var skipDistanceOfNextPoint = false
+    private val elevationTracker = ElevationGainTracker()
     private var listJob: Job? = null
     private var selectJob: Job? = null
     private var currentUserId: String? = null
@@ -85,8 +97,15 @@ class ActivityViewModel(
             is ActivityIntent.DiscardForm -> _state.update { it.copy(form = null) }
             is ActivityIntent.StartGpsTracking -> startGpsTracking(intent.activityType)
             is ActivityIntent.AddTrackpoint -> addTrackpoint(intent.trackpoint)
-            is ActivityIntent.PauseGpsTracking -> _state.update { it.copy(isPaused = true) }
-            is ActivityIntent.ResumeGpsTracking -> _state.update { it.copy(isPaused = false) }
+            is ActivityIntent.GpsFixChanged -> _state.update { it.copy(gpsAccuracyMeters = intent.accuracyMeters) }
+            is ActivityIntent.Tick -> onTick(intent.nowMillis)
+            is ActivityIntent.DiscardRecording -> discardRecording()
+            is ActivityIntent.PauseGpsTracking -> if (_state.value.isTracking) _state.update { it.copy(isPaused = true) }
+            is ActivityIntent.ResumeGpsTracking -> if (_state.value.isTracking && _state.value.isPaused) {
+                // The first point after a break is far from the last one; the way in between is not part of the activity.
+                skipDistanceOfNextPoint = true
+                _state.update { it.copy(isPaused = false) }
+            }
             is ActivityIntent.StopAndSaveGpsTracking -> stopAndSaveGpsTracking(intent.userId, intent.teamId, intent.title)
             is ActivityIntent.ResolveConflict -> resolveConflict(intent.resolution)
             is ActivityIntent.DismissConflict -> dismissConflict()
@@ -316,7 +335,10 @@ class ActivityViewModel(
         success = success,
         liveTrackpoints = if (pending.isRecording) emptyList() else liveTrackpoints,
         liveDistanceMeters = if (pending.isRecording) 0.0 else liveDistanceMeters,
-        liveDurationSeconds = if (pending.isRecording) 0.0 else liveDurationSeconds
+        liveDurationSeconds = if (pending.isRecording) 0.0 else liveDurationSeconds,
+        liveElevationGainMeters = if (pending.isRecording) 0.0 else liveElevationGainMeters,
+        liveCurrentPaceSecondsPerKm = if (pending.isRecording) null else liveCurrentPaceSecondsPerKm,
+        liveSplitsSeconds = if (pending.isRecording) emptyList() else liveSplitsSeconds
     )
 
     private fun resolveConflict(resolution: ConflictResolution) {
@@ -337,7 +359,11 @@ class ActivityViewModel(
     }
 
     private fun startGpsTracking(activityType: String) {
-        trackingStartTime = Clock.System.now().toEpochMilliseconds()
+        trackingStartTime = nowMillis()
+        lastTickAt = trackingStartTime
+        lastSplitSeconds = 0.0
+        skipDistanceOfNextPoint = false
+        elevationTracker.reset()
         _state.update {
             it.copy(
                 isTracking = true,
@@ -346,25 +372,65 @@ class ActivityViewModel(
                 liveDurationSeconds = 0.0,
                 liveElevationGainMeters = 0.0,
                 liveTrackpoints = emptyList(),
+                liveCurrentPaceSecondsPerKm = null,
+                liveSplitsSeconds = emptyList(),
                 trackingActivityType = activityType
             )
         }
     }
 
+    private fun onTick(now: Long) {
+        val state = _state.value
+        if (!state.isTracking) return
+        val delta = (now - lastTickAt).coerceAtLeast(0)
+        lastTickAt = now
+        if (state.isPaused || delta == 0L) return
+        _state.update { it.copy(liveDurationSeconds = it.liveDurationSeconds + delta / 1000.0) }
+    }
+
     private fun addTrackpoint(trackpoint: GpsTrackpoint) {
-        if (!_state.value.isTracking || _state.value.isPaused) return
-        _state.update { s ->
-            val updatedPoints = s.liveTrackpoints + trackpoint
-            var addedDistance = 0.0
-            if (s.liveTrackpoints.isNotEmpty()) {
-                val last = s.liveTrackpoints.last()
-                addedDistance = calculateDistanceMeters(last.latitude, last.longitude, trackpoint.latitude, trackpoint.longitude)
-            }
-            val elapsedSec = (trackpoint.timestamp - trackingStartTime) / 1000.0
-            s.copy(
+        val s = _state.value
+        if (!s.isTracking || s.isPaused) return
+        val last = s.liveTrackpoints.lastOrNull()
+        // Fast sports record every second, hiking every 3 seconds; providers may deliver more often than requested.
+        if (last != null && trackpoint.timestamp - last.timestamp < RecordingPolicy.minGapMillis(s.trackingActivityType)) return
+        val gain = elevationTracker.add(trackpoint.altitudeMeters)
+        val updatedPoints = s.liveTrackpoints + trackpoint
+        val addedDistance = if (last == null || skipDistanceOfNextPoint) 0.0 else {
+            GeoMath.distanceMeters(last.latitude, last.longitude, trackpoint.latitude, trackpoint.longitude)
+        }
+        skipDistanceOfNextPoint = false
+        val distance = s.liveDistanceMeters + addedDistance
+
+        // A split is the time of each full kilometer.
+        val splits = s.liveSplitsSeconds.toMutableList()
+        while (splits.size < (distance / METERS_PER_KM).toInt()) {
+            splits += (s.liveDurationSeconds - lastSplitSeconds).coerceAtLeast(0.0)
+            lastSplitSeconds = s.liveDurationSeconds
+        }
+
+        _state.update {
+            it.copy(
                 liveTrackpoints = updatedPoints,
-                liveDistanceMeters = s.liveDistanceMeters + addedDistance,
-                liveDurationSeconds = elapsedSec.coerceAtLeast(0.0)
+                liveDistanceMeters = distance,
+                liveElevationGainMeters = it.liveElevationGainMeters + gain,
+                liveCurrentPaceSecondsPerKm = RecordingMetrics.recentPaceSecondsPerKm(updatedPoints),
+                liveSplitsSeconds = splits
+            )
+        }
+    }
+
+    private fun discardRecording() {
+        _state.update {
+            it.copy(
+                isTracking = false,
+                isPaused = false,
+                liveTrackpoints = emptyList(),
+                liveDistanceMeters = 0.0,
+                liveDurationSeconds = 0.0,
+                liveElevationGainMeters = 0.0,
+                liveCurrentPaceSecondsPerKm = null,
+                liveSplitsSeconds = emptyList()
             )
         }
     }
@@ -372,7 +438,7 @@ class ActivityViewModel(
     private fun stopAndSaveGpsTracking(userId: String, teamId: String?, title: String) {
         val currentState = _state.value
         _state.update { it.copy(isTracking = false) }
-        val endTime = Clock.System.now().toEpochMilliseconds()
+        val endTime = nowMillis()
         val startTime = trackingStartTime
         val pending = PendingSave(ActivitySuccess.RECORDED, isRecording = true) { resolution ->
             recordGpsActivityUseCase(
@@ -411,19 +477,9 @@ class ActivityViewModel(
         }
     }
 
-    private fun calculateDistanceMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val r = 6371000.0 // Earth radius in meters
-        val dLat = (lat2 - lat1) * (kotlin.math.PI / 180.0)
-        val dLon = (lon2 - lon1) * (kotlin.math.PI / 180.0)
-        val a = kotlin.math.sin(dLat / 2) * kotlin.math.sin(dLat / 2) +
-                kotlin.math.cos(lat1 * (kotlin.math.PI / 180.0)) * kotlin.math.cos(lat2 * (kotlin.math.PI / 180.0)) *
-                kotlin.math.sin(dLon / 2) * kotlin.math.sin(dLon / 2)
-        val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
-        return r * c
-    }
-
     private companion object {
         const val MINUTE_MILLIS = 60_000L
+        const val METERS_PER_KM = 1_000.0
         /** The feed page size; counts are requested for at most this many cards. */
         const val MAX_FEED_ITEMS = 100
         const val NOT_OWNER_MESSAGE = "Only the owner can change this activity"

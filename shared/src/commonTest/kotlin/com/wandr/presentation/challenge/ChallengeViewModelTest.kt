@@ -14,7 +14,7 @@ import com.wandr.domain.model.TeamMember
 import com.wandr.domain.repository.ChallengeRepository
 import com.wandr.domain.repository.TeamRepository
 import com.wandr.domain.usecase.CreateChallengeUseCase
-import com.wandr.domain.usecase.GetChallengeLeaderboardUseCase
+import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
 import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
@@ -52,7 +52,8 @@ private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : 
     var enrolled: Triple<String, String, String>? = null
     var failEnroll = false
     var standings: List<TeamStanding> = emptyList()
-    val contributions = MutableStateFlow<List<LeaderboardEntry>>(emptyList())
+    var ranking: List<LeaderboardEntry> = emptyList()
+    var rankingFails = false
 
     override fun getChallengeById(challengeId: String): Flow<Challenge?> = challenges.map { list -> list.firstOrNull { it.id == challengeId } }
     override fun getChallenges(): Flow<List<Challenge>> = challenges
@@ -77,7 +78,8 @@ private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : 
         return Result.success(Unit)
     }
     override fun getChallengeParticipants(challengeId: String): Flow<List<ChallengeParticipant>> = emptyFlow()
-    override fun getTeamContributions(challengeId: String, teamId: String): Flow<List<LeaderboardEntry>> = contributions
+    override suspend fun getMemberRanking(challengeId: String): Result<List<LeaderboardEntry>> =
+        if (rankingFails) Result.failure(IllegalStateException("offline")) else Result.success(ranking)
     override suspend fun getTeamStandings(challengeId: String): Result<List<TeamStanding>> = Result.success(standings)
     override suspend fun createChallenge(challenge: Challenge): Result<Challenge> {
         created = challenge
@@ -142,7 +144,7 @@ class ChallengeViewModelTest {
         WithdrawTeamFromChallengeUseCase(repo), GetChallengeUseCase(repo), SetChallengeCoverUseCase(repo), RemoveChallengeCoverUseCase(repo),
         EvaluateChallengeStatusUseCase(), RefreshChallengesUseCase(repo), GetUserTeamsUseCase(FakeTeamRepository(teams)),
         CreateChallengeUseCase(repo), UpdateChallengeUseCase(repo),
-        GetChallengeLeaderboardUseCase(repo), GetTeamStandingsUseCase(repo), EnrollTeamInChallengeUseCase(repo),
+        GetMemberRankingUseCase(repo), GetTeamStandingsUseCase(repo), EnrollTeamInChallengeUseCase(repo),
         JoinChallengeUseCase(repo), scope
     )
 
@@ -336,16 +338,16 @@ class ChallengeViewModelTest {
     }
 
     @Test
-    fun selectChallengeLoadsTeamStandingsAndOwnTeamContributions() = runTest {
+    fun selectChallengeLoadsTeamStandingsAndTheMemberRanking() = runTest {
         val repo = FakeChallengeRepository().apply {
             standings = listOf(
                 TeamStanding(1, "t2", "City Runners", null, 80_000.0, 80.0, 4, 1, false),
                 TeamStanding(2, "t1", "Trail Blazers", null, 50_000.0, 50.0, 3, 0, false)
             )
-            contributions.value = listOf(LeaderboardEntry(1, "u1", "u1", "A", null, 30_000.0, 30.0, false))
+            ranking = listOf(LeaderboardEntry(1, "u1", "A", null, 30_000.0, 30.0, false))
         }
         val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-        vm.processIntent(ChallengeIntent.SelectChallenge("c2", teamId = "t1"))
+        vm.processIntent(ChallengeIntent.SelectChallenge("c2"))
 
         assertEquals(listOf("t2", "t1"), vm.uiState.value.standings.map { it.teamId })
         assertEquals(1, vm.uiState.value.leaderboard.size)
@@ -353,14 +355,13 @@ class ChallengeViewModelTest {
     }
 
     @Test
-    fun selectChallengeWithoutTeamShowsNoMemberProgress() = runTest {
-        val repo = FakeChallengeRepository().apply {
-            contributions.value = listOf(LeaderboardEntry(1, "u9", "u9", "Other", null, 1.0, 1.0, false))
-        }
+    fun anUnavailableRankingLeavesTheListEmptyWithoutAnError() = runTest {
+        val repo = FakeChallengeRepository().apply { rankingFails = true }
         val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         vm.processIntent(ChallengeIntent.SelectChallenge("c2"))
 
         assertTrue(vm.uiState.value.leaderboard.isEmpty())
+        assertNull(vm.uiState.value.errorMessage)
     }
 
     @Test

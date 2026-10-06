@@ -8,6 +8,7 @@ import com.wandr.data.remote.ChallengeDto
 import com.wandr.data.remote.ChallengeParticipantDto
 import com.wandr.data.remote.ChallengeParticipantInsertDto
 import com.wandr.data.remote.ChallengeTeamInsertDto
+import com.wandr.data.remote.MemberRankingDto
 import com.wandr.data.remote.TeamStandingDto
 import com.wandr.data.remote.toDto
 import com.wandr.data.remote.toUpdatePayload
@@ -60,24 +61,22 @@ class ChallengeRepositoryImpl(
         }
     }
 
-    override fun getTeamContributions(challengeId: String, teamId: String): Flow<List<LeaderboardEntry>> {
-        return combine(
-            challengeDao.getChallengeById(challengeId),
-            participantDao.getParticipantsForChallengeAndTeam(challengeId, teamId)
-        ) { challenge, list ->
-            val target = challenge?.targetValue?.takeIf { it > 0.0 } ?: return@combine emptyList()
-            list.mapIndexed { index, participant ->
-                LeaderboardEntry(
-                    rank = index + 1,
-                    userId = participant.userId,
-                    username = "user_${participant.userId.take(4)}",
-                    displayName = "Athlete ${index + 1}",
-                    avatarUrl = null,
-                    progressValue = participant.progressValue,
-                    progressPercentage = ((participant.progressValue / target) * 100).coerceAtMost(100.0),
-                    isCompleted = participant.isCompleted
-                )
-            }
+    override suspend fun getMemberRanking(challengeId: String): Result<List<LeaderboardEntry>> = runCatching {
+        val target = challengeDao.getChallengeOnce(challengeId)?.targetValue?.takeIf { it > 0.0 }
+        val rows = supabase.postgrest.rpc("challenge_member_ranking", buildJsonObject { put("p_challenge_id", challengeId) })
+            .decodeList<MemberRankingDto>()
+            .sortedByDescending { it.progressValue }
+        rows.mapIndexed { index, row ->
+            LeaderboardEntry(
+                // Equal progress shares the rank of the first of them.
+                rank = rows.indexOfFirst { it.progressValue == row.progressValue } + 1,
+                userId = row.userId,
+                displayName = row.displayName.orEmpty(),
+                avatarUrl = row.avatarUrl,
+                progressValue = row.progressValue,
+                progressPercentage = target?.let { ((row.progressValue / it) * 100).coerceAtMost(100.0) } ?: 0.0,
+                isCompleted = row.isCompleted
+            )
         }
     }
 

@@ -87,6 +87,8 @@ private class FakeAuthors(val profiles: List<com.wandr.domain.model.Profile> = e
     override suspend fun removeAvatar(userId: String) = Result.failure<com.wandr.domain.model.Profile>(UnsupportedOperationException())
 }
 
+private object System0 { fun now() = kotlin.time.Clock.System.now().toEpochMilliseconds() }
+
 private object NoFeed : ActivityFeedRepository {
     override suspend fun refreshTeam(teamId: String, userId: String) = Result.success(Unit)
     override suspend fun refreshUser(userId: String) = Result.success(Unit)
@@ -109,13 +111,14 @@ class ActivityViewModelTest {
         repo: FakeActivityRepository,
         scope: CoroutineScope,
         social: CountingSocialRepository = CountingSocialRepository(),
-        authors: FakeAuthors = FakeAuthors()
+        authors: FakeAuthors = FakeAuthors(),
+        clock: () -> Long = { System0.now() }
     ) = ActivityViewModel(
         GetUserActivitiesUseCase(repo), GetTeamActivitiesUseCase(repo), GetActivityUseCase(repo),
         GetActivityTrackUseCase(repo), CreateManualActivityUseCase(repo), UpdateActivityUseCase(repo),
         RecordGpsActivityUseCase(repo), DeleteActivityUseCase(repo), RefreshActivitiesUseCase(NoFeed),
         com.wandr.domain.usecase.GetSocialCountsUseCase(social), com.wandr.domain.usecase.SetLikeUseCase(social),
-        com.wandr.domain.usecase.GetProfilesUseCase(authors), scope
+        com.wandr.domain.usecase.GetProfilesUseCase(authors), scope, clock
     )
 
     @Test
@@ -482,5 +485,135 @@ class ActivityViewModelTest {
         vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
         vm.processIntent(ActivityIntent.StartEdit("a1"))
         assertFalse(assertNotNull(vm.uiState().form).hasRoute)
+    }
+
+    // --- Recording ----------------------------------------------------------------------------------------
+
+    /** About 111 m north of the previous latitude step. */
+    private fun fix(index: Int, altitude: Double = 400.0) = GpsTrackpoint(47.0 + index * 0.001, 8.0, altitude, index * 3000L)
+
+    @Test
+    fun theClockCountsSecondsAndSkipsPausedTime() = runTest {
+        var now = 1_000_000L
+        val vm = viewModel(FakeActivityRepository(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)), clock = { now })
+        vm.processIntent(ActivityIntent.StartGpsTracking("running"))
+
+        now += 3_000; vm.processIntent(ActivityIntent.Tick(now))
+        assertEquals(3.0, vm.uiState().liveDurationSeconds)
+
+        vm.processIntent(ActivityIntent.PauseGpsTracking)
+        now += 60_000; vm.processIntent(ActivityIntent.Tick(now))
+        assertEquals(3.0, vm.uiState().liveDurationSeconds) // a minute of pause does not count
+
+        vm.processIntent(ActivityIntent.ResumeGpsTracking)
+        now += 2_000; vm.processIntent(ActivityIntent.Tick(now))
+        assertEquals(5.0, vm.uiState().liveDurationSeconds)
+    }
+
+    @Test
+    fun distanceSplitsAndPaceFromFixes() = runTest {
+        var now = 0L
+        val vm = viewModel(FakeActivityRepository(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)), clock = { now })
+        vm.processIntent(ActivityIntent.StartGpsTracking("running"))
+        // 10 fixes, 111 m and 30 s apart (a 4:30 min/km pace)
+        for (i in 0..10) {
+            now = i * 30_000L
+            vm.processIntent(ActivityIntent.Tick(now))
+            vm.processIntent(ActivityIntent.AddTrackpoint(GpsTrackpoint(47.0 + i * 0.001, 8.0, 400.0, now)))
+        }
+        val s = vm.uiState()
+        assertEquals(1_112.0, s.liveDistanceMeters, 15.0)
+        assertEquals(1, s.liveSplitsSeconds.size) // one full kilometer
+        assertEquals(270.0, assertNotNull(s.liveCurrentPaceSecondsPerKm), 8.0)
+    }
+
+    @Test
+    fun theWayWalkedWhilePausedIsNotCounted() = runTest {
+        var now = 0L
+        val vm = viewModel(FakeActivityRepository(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)), clock = { now })
+        vm.processIntent(ActivityIntent.StartGpsTracking("hiking"))
+        vm.processIntent(ActivityIntent.AddTrackpoint(fix(0)))
+        vm.processIntent(ActivityIntent.AddTrackpoint(fix(1)))
+        val before = vm.uiState().liveDistanceMeters
+
+        vm.processIntent(ActivityIntent.PauseGpsTracking)
+        vm.processIntent(ActivityIntent.AddTrackpoint(fix(5))) // ignored while paused
+        vm.processIntent(ActivityIntent.ResumeGpsTracking)
+        vm.processIntent(ActivityIntent.AddTrackpoint(fix(9))) // first point after the break: a jump of ~800 m
+        assertEquals(before, vm.uiState().liveDistanceMeters, 1e-6)
+
+        vm.processIntent(ActivityIntent.AddTrackpoint(fix(10)))
+        assertEquals(before + 111.2, vm.uiState().liveDistanceMeters, 3.0)
+    }
+
+    @Test
+    fun elevationGainIsMeasuredFromTheFixes() = runTest {
+        val vm = viewModel(FakeActivityRepository(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ActivityIntent.StartGpsTracking("hiking"))
+        listOf(400.0, 401.0, 408.0, 408.5, 420.0).forEachIndexed { i, alt -> vm.processIntent(ActivityIntent.AddTrackpoint(fix(i, alt))) }
+        assertEquals(20.0, vm.uiState().liveElevationGainMeters, 1e-6) // 400 -> 408 -> 420
+    }
+
+    @Test
+    fun gpsStatusFollowsTheAccuracyAlsoBeforeTheRecordingStarts() = runTest {
+        val vm = viewModel(FakeActivityRepository(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        assertEquals(GpsStatus.SEARCHING, vm.uiState().gpsStatus)
+        vm.processIntent(ActivityIntent.GpsFixChanged(65f))
+        assertEquals(GpsStatus.WEAK, vm.uiState().gpsStatus)
+        vm.processIntent(ActivityIntent.GpsFixChanged(6f))
+        assertEquals(GpsStatus.GOOD, vm.uiState().gpsStatus)
+        vm.processIntent(ActivityIntent.GpsFixChanged(null))
+        assertEquals(GpsStatus.SEARCHING, vm.uiState().gpsStatus)
+    }
+
+    @Test
+    fun discardingARecordingResetsEverythingAndSavesNothing() = runTest {
+        val repo = FakeActivityRepository()
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ActivityIntent.StartGpsTracking("running"))
+        vm.processIntent(ActivityIntent.AddTrackpoint(fix(0)))
+        vm.processIntent(ActivityIntent.AddTrackpoint(fix(1)))
+        vm.processIntent(ActivityIntent.DiscardRecording)
+
+        val s = vm.uiState()
+        assertFalse(s.isTracking)
+        assertTrue(s.liveTrackpoints.isEmpty())
+        assertEquals(0.0, s.liveDistanceMeters)
+        assertNull(repo.saved)
+    }
+
+    @Test
+    fun savedRecordingKeepsRouteAndMovingTime() = runTest {
+        var now = 0L
+        val repo = FakeActivityRepository()
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)), clock = { now })
+        vm.processIntent(ActivityIntent.StartGpsTracking("running"))
+        for (i in 0..4) {
+            now = i * 10_000L
+            vm.processIntent(ActivityIntent.Tick(now))
+            vm.processIntent(ActivityIntent.AddTrackpoint(fix(i)))
+        }
+        vm.processIntent(ActivityIntent.StopAndSaveGpsTracking("u1", null, "Run"))
+
+        val saved = assertNotNull(repo.saved)
+        assertEquals(40.0, saved.durationSeconds)
+        assertEquals(5, repo.savedTrackpoints?.size) // the repository turns these into the stored polyline
+        assertEquals(ActivitySuccess.RECORDED, vm.uiState().success)
+        assertTrue(vm.uiState().liveSplitsSeconds.isEmpty())
+    }
+
+    @Test
+    fun hikingKeepsOnePointEveryThreeSecondsAndCyclingEverySecond() = runTest {
+        fun points(seconds: Int) = (0..seconds).map { GpsTrackpoint(47.0 + it * 0.00001, 8.0, 400.0, it * 1000L) }
+
+        val hiking = viewModel(FakeActivityRepository(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        hiking.processIntent(ActivityIntent.StartGpsTracking("hiking"))
+        points(9).forEach { hiking.processIntent(ActivityIntent.AddTrackpoint(it)) } // a fix every second
+        assertEquals(listOf(0L, 3_000L, 6_000L, 9_000L), hiking.uiState().liveTrackpoints.map { it.timestamp })
+
+        val cycling = viewModel(FakeActivityRepository(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        cycling.processIntent(ActivityIntent.StartGpsTracking("cycling"))
+        points(9).forEach { cycling.processIntent(ActivityIntent.AddTrackpoint(it)) }
+        assertEquals(10, cycling.uiState().liveTrackpoints.size)
     }
 }

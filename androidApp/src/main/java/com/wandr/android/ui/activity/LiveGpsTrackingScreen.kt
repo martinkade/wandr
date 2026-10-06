@@ -1,25 +1,22 @@
 package com.wandr.android.ui.activity
 
 import android.Manifest
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,13 +28,28 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.wandr.android.R
-import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.location.FusedLocationSource
+import com.wandr.android.location.toTrackpoint
+import com.wandr.android.service.LocationTrackingService
+import com.wandr.android.ui.activity.recording.GpsStatusBox
+import com.wandr.android.ui.activity.recording.RecordingControls
+import com.wandr.android.ui.activity.recording.RecordingFinishDialog
+import com.wandr.android.ui.activity.recording.RecordingMap
+import com.wandr.android.ui.activity.recording.RecordingOverlay
 import com.wandr.android.ui.permission.rememberPermissionGate
 import com.wandr.android.ui.theme.WandrTheme
+import com.wandr.di.RecordingScope
 import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
 import com.wandr.presentation.activity.ActivitySuccess
@@ -47,8 +59,9 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
- * Records an activity. Leaving the screen while recording would lose the track, so back is blocked until the
- * recording is stopped and saved. A saved recording closes the screen via [onClose].
+ * Records an activity: the route over a map backdrop, a GPS status box that expands to a full-screen data overlay, and
+ * start / pause / finish controls. The recording lives in a process-wide view model fed by a foreground service, so it
+ * survives rotation and leaving the app. Leaving this screen is blocked while recording; a finished recording closes it.
  */
 @Composable
 fun LiveGpsTrackingScreen(
@@ -56,10 +69,9 @@ fun LiveGpsTrackingScreen(
     teamId: String?,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ActivityViewModel = koinInject()
+    viewModel: ActivityViewModel = koinInject(RecordingScope)
 ) {
     val state by viewModel.state.collectAsState()
-    LaunchedEffect(userId) { viewModel.processIntent(ActivityIntent.LoadUserActivities(userId)) }
     LaunchedEffect(state.success) {
         if (state.success == ActivitySuccess.RECORDED || state.success == ActivitySuccess.DISCARDED ||
             state.success == ActivitySuccess.MERGED || state.success == ActivitySuccess.TRIMMED
@@ -85,15 +97,21 @@ private fun LiveGpsTrackingScreenContent(
     teamId: String?,
     onIntent: (ActivityIntent) -> Unit,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** Previews have no location permission and no service. */
+    isPreview: Boolean = false
 ) {
-    var activityType by rememberSaveable { mutableStateOf(ActivityTypes.all.first()) }
-    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var activityType by rememberSaveable { mutableStateOf(ActivityTypes.all.first()) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    var finishing by rememberSaveable { mutableStateOf(false) }
+    var permissionGranted by remember { mutableStateOf(isPreview) }
+    // Before the start the screen shows the position; while recording the route comes from the view model.
+    var currentLocation by remember { mutableStateOf<com.wandr.domain.model.GpsTrackpoint?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
     val blockedText = stringResource(R.string.activity_tracking_back_blocked)
-    val defaultTitle = stringResource(R.string.live_gps_tracking_title)
-    // Title of a recorded activity until the owner renames it from the details screen.
-    val recordingTitle = activityTypeText(activityType)
+    val recordingTitle = activityTypeText(state.trackingActivityType.takeIf { state.isTracking } ?: activityType)
 
     fun tryLeave() {
         if (state.isTracking) {
@@ -105,7 +123,7 @@ private fun LiveGpsTrackingScreenContent(
             onClose()
         }
     }
-    BackHandler(onBack = ::tryLeave)
+    BackHandler(onBack = { if (expanded) expanded = false else tryLeave() })
 
     // Disclosure first, then the system dialog; the foreground-service notification is optional (Android 13+).
     val locationPermission = rememberPermissionGate(
@@ -118,114 +136,114 @@ private fun LiveGpsTrackingScreenContent(
         disclosureMessage = R.string.permission_location_message,
         deniedMessage = R.string.permission_location_denied
     )
+    if (!isPreview) {
+        // Ask when the screen opens, so the GPS fix is ready when the user taps start.
+        LaunchedEffect(Unit) { locationPermission.request { permissionGranted = true } }
 
-    ScreenScaffold(
-        title = defaultTitle,
-        modifier = modifier,
-        onBack = ::tryLeave,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (!state.isTracking) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ActivityTypes.all.forEach { type ->
-                        FilterChip(
-                            selected = type == activityType,
-                            onClick = { activityType = type },
-                            label = { Text(activityTypeText(type)) }
-                        )
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-            }
-
-            TrackMapView(trackpoints = state.liveTrackpoints)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(R.string.distance_label), style = MaterialTheme.typography.labelMedium)
-                    Text(
-                        text = "%.2f".format(state.liveDistanceMeters / 1000.0),
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(R.string.duration_label), style = MaterialTheme.typography.labelMedium)
-                    val mins = (state.liveDurationSeconds / 60.0).toInt()
-                    val secs = (state.liveDurationSeconds % 60.0).toInt()
-                    Text(
-                        text = "%02d:%02d".format(mins, secs),
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            if (!state.isTracking) {
-                Button(
-                    onClick = { locationPermission.request { onIntent(ActivityIntent.StartGpsTracking(activityType)) } },
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
-                ) {
-                    Text(stringResource(R.string.start_tracking_button))
-                }
-            } else {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(
-                        onClick = {
-                            if (state.isPaused) onIntent(ActivityIntent.ResumeGpsTracking)
-                            else onIntent(ActivityIntent.PauseGpsTracking)
-                        },
-                        modifier = Modifier.weight(1f).height(56.dp)
-                    ) {
-                        Text(stringResource(if (state.isPaused) R.string.resume_button else R.string.pause_button))
-                    }
-                    Button(
-                        onClick = { onIntent(ActivityIntent.StopAndSaveGpsTracking(userId, teamId, recordingTitle)) },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        modifier = Modifier.weight(1f).height(56.dp)
-                    ) {
-                        Text(stringResource(R.string.stop_save_button))
+        // Before the start: only watch the GPS (status and position). While recording the foreground service does it.
+        val lifecycleOwner = LocalLifecycleOwner.current
+        LaunchedEffect(permissionGranted, state.isTracking) {
+            if (!permissionGranted || state.isTracking) return@LaunchedEffect
+            lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                runCatching {
+                    FusedLocationSource(context).updates(PREVIEW_INTERVAL_MILLIS).collect { location ->
+                        onIntent(ActivityIntent.GpsFixChanged(location.accuracy))
+                        currentLocation = location.toTrackpoint()
                     }
                 }
             }
         }
     }
 
-    state.conflict?.let { conflict ->
-        ActivityConflictSheet(
-            conflict = conflict,
-            isSaving = state.isSaving,
-            onResolve = { onIntent(ActivityIntent.ResolveConflict(it)) },
-            onDismiss = null // a finished recording must be resolved, otherwise it would be lost
+    fun start() {
+        onIntent(ActivityIntent.StartGpsTracking(activityType))
+        if (!isPreview) ContextCompat.startForegroundService(context, Intent(context, LocationTrackingService::class.java))
+    }
+
+    val route = if (state.isTracking) state.liveTrackpoints else listOfNotNull(currentLocation)
+
+    Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Column(Modifier.fillMaxSize()) {
+            Box(Modifier.weight(1f).fillMaxSize()) {
+                RecordingMap(route)
+                IconButton(
+                    onClick = ::tryLeave,
+                    modifier = Modifier.statusBarsPadding().padding(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surface)
+                ) {
+                    Icon(painterResource(R.drawable.ic_expand_more), contentDescription = stringResource(R.string.recording_leave))
+                }
+                GpsStatusBox(state, onExpand = { expanded = true }, modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp))
+                SnackbarHost(snackbarHostState, Modifier.align(Alignment.TopCenter).statusBarsPadding())
+
+                if (expanded) RecordingOverlay(state, onCollapse = { expanded = false })
+            }
+            RecordingControls(
+                activityType = if (state.isTracking) state.trackingActivityType else activityType,
+                isTracking = state.isTracking,
+                isPaused = state.isPaused,
+                onTypeChange = { activityType = it },
+                onPrimaryAction = {
+                    when {
+                        !state.isTracking -> if (permissionGranted) start() else locationPermission.request {
+                            permissionGranted = true
+                            start()
+                        }
+                        state.isPaused -> onIntent(ActivityIntent.ResumeGpsTracking)
+                        else -> onIntent(ActivityIntent.PauseGpsTracking)
+                    }
+                },
+                onFinish = {
+                    onIntent(ActivityIntent.PauseGpsTracking) // the clock stops while the user decides
+                    finishing = true
+                }
+            )
+        }
+    }
+
+    if (finishing) {
+        RecordingFinishDialog(
+            onSave = {
+                finishing = false
+                onIntent(ActivityIntent.StopAndSaveGpsTracking(userId, teamId, recordingTitle))
+            },
+            onDiscard = {
+                finishing = false
+                onIntent(ActivityIntent.DiscardRecording)
+                onClose()
+            },
+            onContinue = {
+                finishing = false
+                onIntent(ActivityIntent.ResumeGpsTracking)
+            }
         )
     }
 }
 
-@Preview(name = "Tracking", showBackground = true)
-@Preview(name = "Tracking Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
-@Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true)
-@Composable
-private fun LiveGpsTrackingScreenPreview() {
-    WandrTheme {
-        LiveGpsTrackingScreenContent(
-            state = ActivityState(isTracking = true, liveDistanceMeters = 3450.0, liveDurationSeconds = 1240.0),
-            userId = "u1", teamId = "t1", onIntent = {}, onClose = {}
-        )
-    }
-}
+private const val PREVIEW_INTERVAL_MILLIS = 2_000L
 
-@Preview(name = "Idle", showBackground = true)
+@Preview(name = "Idle", showBackground = true, heightDp = 800)
+@Preview(name = "Idle Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 800)
 @Composable
 private fun LiveGpsTrackingScreenIdlePreview() {
+    WandrTheme { LiveGpsTrackingScreenContent(ActivityState(), "u1", null, onIntent = {}, onClose = {}, isPreview = true) }
+}
+
+@Preview(name = "Recording", showBackground = true, heightDp = 800)
+@Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true, heightDp = 1000)
+@Composable
+private fun LiveGpsTrackingScreenRecordingPreview() {
     WandrTheme {
-        LiveGpsTrackingScreenContent(state = ActivityState(), userId = "u1", teamId = null, onIntent = {}, onClose = {})
+        LiveGpsTrackingScreenContent(
+            ActivityState(
+                isTracking = true, gpsAccuracyMeters = 6f, liveDistanceMeters = 3_450.0, liveDurationSeconds = 1_240.0,
+                liveCurrentPaceSecondsPerKm = 302.0,
+                liveTrackpoints = listOf(
+                    com.wandr.domain.model.GpsTrackpoint(47.3769, 8.5417, 400.0, 0L),
+                    com.wandr.domain.model.GpsTrackpoint(47.3779, 8.5437, 400.0, 0L),
+                    com.wandr.domain.model.GpsTrackpoint(47.3789, 8.5427, 400.0, 0L)
+                )
+            ),
+            "u1", "t1", onIntent = {}, onClose = {}, isPreview = true
+        )
     }
 }

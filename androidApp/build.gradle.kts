@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
     implementation(libs.play.services.wearable)
+    implementation(libs.play.services.location)
     implementation(libs.play.services.code.scanner)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)

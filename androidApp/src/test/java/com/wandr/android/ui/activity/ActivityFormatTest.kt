@@ -30,4 +30,15 @@ class ActivityFormatTest {
         assertEquals("9.16", ActivityFormat.distanceKm(9_160.0))
         assertEquals("120.5", ActivityFormat.distanceKm(120_500.0))
     }
+
+    @Test
+    fun recordingClockAndLivePace() {
+        assertEquals("00:00:00", ActivityFormat.clock(0.0))
+        assertEquals("01:05:07", ActivityFormat.clock(3907.0))
+        assertEquals("5:35", ActivityFormat.paceOrDash(334.6))
+        assertEquals("-:--", ActivityFormat.paceOrDash(null))
+        assertEquals("-:--", ActivityFormat.paceOrDash(0.0))
+        assertEquals("12.0", ActivityFormat.speedFromPace(300.0))
+        assertEquals("-", ActivityFormat.speedFromPace(null))
+    }
 }

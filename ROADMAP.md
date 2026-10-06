@@ -140,6 +140,8 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 - [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
   - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).
+- [x] **Step 5.4 addition: Ranking in the challenge details**
+  - The details show who is ahead: team standings for group challenges, plus the member ranking (`challenge_member_ranking`): everybody in an individual challenge (for participants and the creator), only the own team in a group challenge. Your own row is highlighted; equal progress shares a rank.
 - [x] **Step 5.4: Challenge & Leaderboard UI**
   - Build `ChallengeListScreen`/`View`, `ChallengeCard.kt`/`.swift` (group challenges: "Enroll Team" instead of "Join"), `LeaderboardRow.kt`/`.swift` (members of the own team).
 
@@ -152,9 +154,13 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 - [x] **Step 6.2: Manual Activity Entry & Editing**
   - Build UI and UseCases for creating/editing manual logs (e.g. "Hiked 10km yesterday").
   - Android: FAB menu in the feed (create manually / record). Manual entry and editing use a bottom sheet; only the **owner** can edit, from the details screen (measured values of recorded activities stay read-only). The details screen shows the track if the FIT file is on this device.
+  - The owner can delete an activity from its details (with confirmation). Deleting marks the row, the sync engine deletes it on the server (a plain local delete would let the next pull bring it back) and a trigger removes its likes, comments and notifications; the challenge progress is recalculated. Every local activity change (create, edit, delete) now starts a sync right away; before, changes were only uploaded at the next app start, and a change that arrives during a running sync triggers one more run.
 - [x] **Step 6.3: Garmin FIT SDK Integration**
   - Implement `.FIT` file encoder/decoder to save/parse trackpoints, distance, duration, elevation.
   - Store `.FIT` files **on the recording device only** (app-private folder via `FitFileStorage`); they are never uploaded to Supabase. Only the activity metrics are synced; the local file path is not part of the sync payload.
+- [x] **Step 6.4 addition: Recording UI (Android)**
+  - Strava-like recording screen (`LiveGpsTrackingScreen`): the route over a backdrop (no map tiles), a GPS status box (searching / weak / good, from the fix accuracy) with the clock, pace (speed for cycling) and distance, which expands to a full-screen data overlay (big clock, pace, distance and the times of the last kilometers) and collapses back; sport selector, start / pause / resume and finish (save, discard or continue).
+  - The recording runs in a process-wide view model (`RecordingScope`) fed by `LocationTrackingService`, a real foreground service with fused location and a live notification (distance, time). Sampling: one data point per second for fast sports (cycling, running), one every 3 seconds for hiking (`RecordingPolicy`). The clock counts moving time (paused time is excluded), the distance skips the way covered while paused, the elevation gain is measured with a jitter threshold. On saving, the track becomes the FIT file on the device and the encoded polyline for the server (step 6.3 addition).
 - [x] **Step 6.4: Live GPS Tracking & Background Service**
   - **Android**: Foreground service with ongoing system notification displaying live distance/time.
   - **iOS**: Background location updates using `CLLocationManager`.

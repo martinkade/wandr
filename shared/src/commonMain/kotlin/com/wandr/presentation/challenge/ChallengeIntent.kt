@@ -5,8 +5,8 @@ import com.wandr.domain.model.ChallengeType
 
 sealed interface ChallengeIntent {
     data class LoadChallenges(val userId: String) : ChallengeIntent
-    /** Loads the team standings; with [teamId] (the user's team) also that team's member progress. */
-    data class SelectChallenge(val challengeId: String, val teamId: String? = null) : ChallengeIntent
+    /** Loads the team standings (group challenges) and the member ranking the user may see. */
+    data class SelectChallenge(val challengeId: String) : ChallengeIntent
 
     /** Opens an empty form (create). Managers only; the server enforces it too. */
     data object StartCreate : ChallengeIntent

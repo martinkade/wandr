@@ -28,6 +28,8 @@ private class InMemoryActivityDao : ActivityDao {
     override suspend fun updateActivity(activity: ActivityEntity) { rows[activity.id] = activity }
     override suspend fun deleteActivity(id: String) { rows.remove(id) }
     override suspend fun getDirtyActivities(): List<ActivityEntity> = rows.values.toList()
+    override suspend fun markDeleted(id: String) { rows[id]?.let { rows[id] = it.copy(syncStatus = "DELETED") } }
+    override suspend fun getDeletedActivities(): List<ActivityEntity> = rows.values.filter { it.syncStatus == "DELETED" }
 }
 
 class ActivityRepositoryImplTest {
@@ -35,7 +37,8 @@ class ActivityRepositoryImplTest {
     private val fileSystem = FakeFileSystem()
     private val storage = FitFileStorage("/app/files/fit".toPath(), fileSystem)
     private val dao = InMemoryActivityDao()
-    private val repository = ActivityRepositoryImpl(dao, storage)
+    private var changes = 0
+    private val repository = ActivityRepositoryImpl(dao, storage, onLocalChange = { changes++ })
 
     private fun activity(id: String, manual: Boolean) = Activity(
         id = id, userId = "u1", teamId = null, title = "Walk", description = null, activityType = "hiking",
@@ -71,14 +74,14 @@ class ActivityRepositoryImplTest {
         repository.deleteActivity("a3").getOrThrow()
 
         assertNull(storage.read(path))
-        assertNull(dao.rows["a3"])
+        assertEquals("DELETED", dao.rows.getValue("a3").syncStatus) // marked, so the sync can delete it on the server
     }
 
     @Test
     fun deletingAnActivityWithoutFitFileJustRemovesTheRow() = runTest {
         repository.saveActivity(activity("a4", manual = true), trackpoints = null)
         repository.deleteActivity("a4").getOrThrow()
-        assertNull(dao.rows["a4"])
+        assertEquals("DELETED", dao.rows.getValue("a4").syncStatus)
     }
 
     @Test
@@ -127,5 +130,15 @@ class ActivityRepositoryImplTest {
     @Test
     fun manualEntryHasNoRoute() = runTest {
         assertNull(repository.saveActivity(activity("a10", manual = true), trackpoints = null).getOrThrow().polyline)
+    }
+
+    @Test
+    fun everyLocalChangeAsksForASync() = runTest {
+        val saved = repository.saveActivity(activity("a11", manual = true), trackpoints = null).getOrThrow()
+        assertEquals(1, changes)
+        repository.saveActivity(saved.copy(title = "Edited"), trackpoints = null)
+        assertEquals(2, changes)
+        repository.deleteActivity("a11")
+        assertEquals(3, changes)
     }
 }
