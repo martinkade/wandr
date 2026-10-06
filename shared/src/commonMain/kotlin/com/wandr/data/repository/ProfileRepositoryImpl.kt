@@ -14,6 +14,9 @@ class ProfileRepositoryImpl(
     private val remote: ProfileRemoteDataSource
 ) : ProfileRepository {
 
+    override fun getProfiles(userIds: List<String>): Flow<List<Profile>> =
+        profileDao.getProfilesByIds(userIds).map { list -> list.map { it.toDomain() } }
+
     override fun getProfile(userId: String): Flow<Profile?> =
         profileDao.getProfileById(userId).map { it?.toDomain() }
 

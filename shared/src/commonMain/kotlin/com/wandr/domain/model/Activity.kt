@@ -16,5 +16,9 @@ data class Activity(
     val endTime: Long,
     val isManualEntry: Boolean,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    /** Privacy: other users may see the route on the map (the owner always sees it). */
+    val showMap: Boolean = true,
+    /** The simplified route as a Google encoded polyline (precision 5); null without GPS data. Synced, unlike the FIT file. */
+    val polyline: String? = null
 )

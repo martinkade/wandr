@@ -55,8 +55,40 @@ private class FakeActivityRepository(initial: List<Activity> = emptyList()) : Ac
     }
 }
 
+private class CountingSocialRepository : com.wandr.domain.repository.SocialRepository {
+    var countCalls = 0
+    var failLike = false
+    val likes = mutableListOf<Pair<String, Boolean>>()
+    var counts: Map<String, com.wandr.domain.model.SocialCounts> = emptyMap()
+
+    override suspend fun getCounts(type: com.wandr.domain.model.SocialEntityType, entityIds: List<String>): Result<Map<String, com.wandr.domain.model.SocialCounts>> {
+        countCalls++
+        return Result.success(entityIds.associateWith { counts[it] ?: com.wandr.domain.model.SocialCounts() })
+    }
+    override suspend fun setLike(type: com.wandr.domain.model.SocialEntityType, entityId: String, userId: String, liked: Boolean): Result<Unit> {
+        if (failLike) return Result.failure(IllegalStateException("offline"))
+        likes += entityId to liked
+        return Result.success(Unit)
+    }
+    override suspend fun getSummary(type: com.wandr.domain.model.SocialEntityType, entityId: String, userId: String) = Result.failure<com.wandr.domain.model.SocialSummary>(UnsupportedOperationException())
+    override suspend fun getComments(type: com.wandr.domain.model.SocialEntityType, entityId: String, userId: String) = Result.failure<List<com.wandr.domain.model.Comment>>(UnsupportedOperationException())
+    override suspend fun addComment(type: com.wandr.domain.model.SocialEntityType, entityId: String, userId: String, content: String) = Result.failure<com.wandr.domain.model.Comment>(UnsupportedOperationException())
+    override suspend fun updateComment(commentId: String, content: String) = Result.failure<com.wandr.domain.model.Comment>(UnsupportedOperationException())
+    override suspend fun deleteComment(commentId: String) = Result.failure<Unit>(UnsupportedOperationException())
+    override suspend fun setReaction(commentId: String, userId: String, emoji: String, reacted: Boolean) = Result.failure<Unit>(UnsupportedOperationException())
+}
+
+private class FakeAuthors(val profiles: List<com.wandr.domain.model.Profile> = emptyList()) : com.wandr.domain.repository.ProfileRepository {
+    override fun getProfile(userId: String): Flow<com.wandr.domain.model.Profile?> = MutableStateFlow(null)
+    override fun getProfiles(userIds: List<String>): Flow<List<com.wandr.domain.model.Profile>> = MutableStateFlow(profiles.filter { it.id in userIds })
+    override suspend fun refreshProfile(userId: String) = Result.success(Unit)
+    override suspend fun updateProfile(profile: com.wandr.domain.model.Profile) = Result.success(profile)
+    override suspend fun setAvatar(userId: String, jpegBytes: ByteArray) = Result.failure<com.wandr.domain.model.Profile>(UnsupportedOperationException())
+    override suspend fun removeAvatar(userId: String) = Result.failure<com.wandr.domain.model.Profile>(UnsupportedOperationException())
+}
+
 private object NoFeed : ActivityFeedRepository {
-    override suspend fun refreshTeam(teamId: String) = Result.success(Unit)
+    override suspend fun refreshTeam(teamId: String, userId: String) = Result.success(Unit)
     override suspend fun refreshUser(userId: String) = Result.success(Unit)
 }
 
@@ -73,10 +105,17 @@ class ActivityViewModelTest {
         fitFilePath = "/files/fit/a2.fit", distanceMeters = 10_000.0, durationSeconds = 3000.0
     )
 
-    private fun viewModel(repo: FakeActivityRepository, scope: CoroutineScope) = ActivityViewModel(
+    private fun viewModel(
+        repo: FakeActivityRepository,
+        scope: CoroutineScope,
+        social: CountingSocialRepository = CountingSocialRepository(),
+        authors: FakeAuthors = FakeAuthors()
+    ) = ActivityViewModel(
         GetUserActivitiesUseCase(repo), GetTeamActivitiesUseCase(repo), GetActivityUseCase(repo),
         GetActivityTrackUseCase(repo), CreateManualActivityUseCase(repo), UpdateActivityUseCase(repo),
-        RecordGpsActivityUseCase(repo), DeleteActivityUseCase(repo), RefreshActivitiesUseCase(NoFeed), scope
+        RecordGpsActivityUseCase(repo), DeleteActivityUseCase(repo), RefreshActivitiesUseCase(NoFeed),
+        com.wandr.domain.usecase.GetSocialCountsUseCase(social), com.wandr.domain.usecase.SetLikeUseCase(social),
+        com.wandr.domain.usecase.GetProfilesUseCase(authors), scope
     )
 
     @Test
@@ -362,5 +401,86 @@ class ActivityViewModelTest {
         assertEquals(ActivitySuccess.DISCARDED, vm.uiState().success)
         assertTrue(vm.uiState().liveTrackpoints.isEmpty())
         assertNull(repo.saved)
+    }
+
+    // --- Feed cards: counts, authors, privacy -----------------------------------------------------------------
+
+    @Test
+    fun likesAndCommentsOfTheWholeListAreFetchedInOneCall() = runTest {
+        val social = CountingSocialRepository().apply {
+            counts = mapOf("a1" to com.wandr.domain.model.SocialCounts(3, 2, true))
+        }
+        val repo = FakeActivityRepository(listOf(manual, recorded))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)), social)
+        vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
+
+        assertEquals(1, social.countCalls) // one call for both cards, not two per card
+        assertEquals(3, vm.uiState().socialCounts.getValue("a1").likeCount)
+        assertEquals(0, vm.uiState().socialCounts.getValue("a2").commentCount)
+    }
+
+    @Test
+    fun anEditedItemDoesNotTriggerNewCountRequests() = runTest {
+        val social = CountingSocialRepository()
+        val repo = FakeActivityRepository(listOf(manual))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)), social)
+        vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
+        repo.activities.value = listOf(manual.copy(title = "Renamed"))
+        assertEquals(1, social.countCalls)
+
+        repo.activities.value = listOf(manual, recorded) // a new card appears
+        assertEquals(2, social.countCalls)
+    }
+
+    @Test
+    fun authorsOfTheCardsAreProvided() = runTest {
+        val author = com.wandr.domain.model.Profile(
+            id = "u1", username = "alex", displayName = "Alex", avatarUrl = null, bio = null, createdAt = 0L, updatedAt = 0L
+        )
+        val vm = viewModel(FakeActivityRepository(listOf(manual)), CoroutineScope(UnconfinedTestDispatcher(testScheduler)), authors = FakeAuthors(listOf(author)))
+        vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
+        assertEquals("Alex", vm.uiState().authors["u1"]?.displayName)
+    }
+
+    @Test
+    fun likeFromTheCardIsOptimisticAndRevertedOnFailure() = runTest {
+        val social = CountingSocialRepository().apply { counts = mapOf("a1" to com.wandr.domain.model.SocialCounts(2, 0, false)) }
+        val vm = viewModel(FakeActivityRepository(listOf(manual)), CoroutineScope(UnconfinedTestDispatcher(testScheduler)), social)
+        vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
+
+        vm.processIntent(ActivityIntent.ToggleActivityLike("a1"))
+        assertEquals(com.wandr.domain.model.SocialCounts(3, 0, true), vm.uiState().socialCounts["a1"])
+        assertEquals(listOf("a1" to true), social.likes)
+
+        social.failLike = true
+        vm.processIntent(ActivityIntent.ToggleActivityLike("a1")) // un-like fails
+        assertEquals(com.wandr.domain.model.SocialCounts(3, 0, true), vm.uiState().socialCounts["a1"])
+        assertEquals("offline", vm.uiState().errorMessage)
+    }
+
+    @Test
+    fun ownerCanHideTheMapOfARecordedActivity() = runTest {
+        val withRoute = recorded.copy(polyline = "_p~iF~ps|U_ulLnnqC")
+        val repo = FakeActivityRepository(listOf(withRoute))
+        val vm = viewModel(repo, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
+        vm.processIntent(ActivityIntent.StartEdit("a2"))
+
+        val form = assertNotNull(vm.uiState().form)
+        assertTrue(form.hasRoute)
+        assertTrue(form.showMap)
+
+        vm.processIntent(ActivityIntent.ShowMapChanged(false))
+        vm.processIntent(ActivityIntent.SubmitForm("u1", null))
+        assertFalse(assertNotNull(repo.saved).showMap)
+        assertEquals(withRoute.polyline, repo.saved?.polyline) // only the visibility changes
+    }
+
+    @Test
+    fun manualActivityHasNoRouteSoThePrivacySwitchIsNotOffered() = runTest {
+        val vm = viewModel(FakeActivityRepository(listOf(manual)), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ActivityIntent.LoadUserActivities("u1"))
+        vm.processIntent(ActivityIntent.StartEdit("a1"))
+        assertFalse(assertNotNull(vm.uiState().form).hasRoute)
     }
 }

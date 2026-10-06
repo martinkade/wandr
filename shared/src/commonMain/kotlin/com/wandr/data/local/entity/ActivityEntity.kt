@@ -51,6 +51,12 @@ data class ActivityEntity(
     @ColumnInfo(name = "updated_at")
     val updatedAt: Long,
     
+    @ColumnInfo(name = "show_map", defaultValue = "1")
+    val showMap: Boolean = true,
+
+    @ColumnInfo(name = "polyline")
+    val polyline: String? = null,
+
     @ColumnInfo(name = "sync_status")
     val syncStatus: String = "SYNCED"
 )

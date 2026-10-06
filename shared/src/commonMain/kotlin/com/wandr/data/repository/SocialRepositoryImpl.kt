@@ -4,7 +4,9 @@ import com.wandr.data.remote.COMMENT_COLUMNS
 import com.wandr.data.remote.CommentDto
 import com.wandr.data.remote.LikeDto
 import com.wandr.data.remote.ReactionDto
+import com.wandr.data.remote.SocialCountsDto
 import com.wandr.domain.model.Comment
+import com.wandr.domain.model.SocialCounts
 import com.wandr.domain.model.SocialEntityType
 import com.wandr.domain.model.SocialSummary
 import com.wandr.domain.repository.SocialRepository
@@ -13,6 +15,8 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.time.Clock
@@ -27,6 +31,16 @@ class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialReposit
             }
         }.decodeList<LikeDto>()
         SocialSummary(likeCount = likes.size, likedByMe = likes.any { it.userId == userId })
+    }
+
+    override suspend fun getCounts(type: SocialEntityType, entityIds: List<String>): Result<Map<String, SocialCounts>> = runCatching {
+        val counts = entityIds.distinct().chunked(COUNTS_BATCH).flatMap { ids ->
+            supabase.postgrest.rpc("social_counts", buildJsonObject {
+                put("p_type", type.wire)
+                put("p_ids", JsonArray(ids.map { JsonPrimitive(it) }))
+            }).decodeList<SocialCountsDto>()
+        }.associate { it.entityId to it.toDomain() }
+        entityIds.associateWith { counts[it] ?: SocialCounts() }
     }
 
     override suspend fun setLike(type: SocialEntityType, entityId: String, userId: String, liked: Boolean): Result<Unit> = runCatching {
@@ -104,5 +118,10 @@ class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialReposit
                 }
             }
         }
+    }
+
+    private companion object {
+        /** Ids per `social_counts` call; keeps the request small. */
+        const val COUNTS_BATCH = 100
     }
 }

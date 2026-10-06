@@ -158,6 +158,8 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 - [x] **Step 6.4: Live GPS Tracking & Background Service**
   - **Android**: Foreground service with ongoing system notification displaying live distance/time.
   - **iOS**: Background location updates using `CLLocationManager`.
+- [x] **Step 6.3 addition: Route polyline & map privacy**
+  - The recorded track is simplified (Douglas-Peucker, max. 500 points) and encoded with Google's Encoded Polyline Algorithm (`PolylineCodec`); only this route is stored on the server, in its own table `activity_routes` (the FIT file still never leaves the device). The owner decides per activity whether others may see the map (`Activity.showMap`, switch in the edit sheet); because row-level security cannot hide a single column, the route table's policy only returns routes with `show_map = true` to team members, the owner always sees their route.
 - [x] **Step 6.5: Track Map Visualization**
   - Render GPS track polyline on dynamic map view.
 
@@ -209,6 +211,8 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 - [x] **Step 10.1: Group Feed, Comments & Likes**
   - `Comment`/`Like` models and `SocialRepository` (Supabase only: social data needs connectivity, no local cache), `SocialViewModel` per activity/challenge with optimistic likes. Plain-text comments (max. 1000 characters) can be created and edited by their author and deleted by the author **or the owner of the activity/challenge** (`SocialState.canEdit/canDelete`, enforced by RLS as well). Comments, likes and reactions are only visible to those who can see the activity (owner/team members) or the published challenge.
   - Group feed: the feed (`FeedScreen`) has a "Mine | Team" switch; `ActivityFeedRepository` pulls the team members' activities (and the user's own from other devices) into the local cache. Android: `SocialSection` in the activity and challenge details; iOS: `SocialSectionView` in `ActivityDetailView`.
+- [x] **Step 10.1 addition: Fast feed cards**
+  - The feed loads like and comment counts of ALL its cards in one call (`social_counts`, at most 100 ids per call, indexed) instead of two queries per card, and the authors' profiles in one query; `ActivityCard` shows author, date, distance/pace/time/elevation, the route (a light canvas drawing, no map tiles per card) and likes/comments with an optimistic like button.
 - [x] **Step 10.2: Comment Reactions**
   - Emoji reactions (`Reactions.allowed`) toggled per comment, shown as counters with the own reaction highlighted (`comment_reactions`).
 - [x] **Step 10.3: Push Notifications Engine**

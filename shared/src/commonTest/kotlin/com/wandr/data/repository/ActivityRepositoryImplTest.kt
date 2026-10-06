@@ -101,4 +101,31 @@ class ActivityRepositoryImplTest {
         assertEquals(emptyList(), repository.getTrackpoints("a7"))
         assertEquals(emptyList(), repository.getTrackpoints("unknown"))
     }
+
+    @Test
+    fun recordedRouteIsStoredAsEncodedPolylineForTheServer() = runTest {
+        val saved = repository.saveActivity(activity("a8", manual = false), trackpoints).getOrThrow()
+
+        val polyline = assertNotNull(saved.polyline)
+        assertEquals(dao.rows.getValue("a8").polyline, polyline)
+        val decoded = com.wandr.domain.geo.PolylineCodec.decode(polyline)
+        assertEquals(2, decoded.size)
+        assertEquals(47.001, decoded.last().latitude, 1e-5)
+        assertTrue(saved.showMap) // shared on the map unless the owner opts out
+    }
+
+    @Test
+    fun editingKeepsTheRouteAndAppliesThePrivacySetting() = runTest {
+        val recorded = repository.saveActivity(activity("a9", manual = false), trackpoints).getOrThrow()
+
+        val edited = repository.saveActivity(recorded.copy(title = "Renamed", showMap = false), trackpoints = null).getOrThrow()
+
+        assertEquals(recorded.polyline, edited.polyline)
+        assertEquals(false, dao.rows.getValue("a9").showMap)
+    }
+
+    @Test
+    fun manualEntryHasNoRoute() = runTest {
+        assertNull(repository.saveActivity(activity("a10", manual = true), trackpoints = null).getOrThrow().polyline)
+    }
 }

@@ -172,12 +172,27 @@ CREATE TABLE public.activities (
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
     is_manual_entry BOOLEAN NOT NULL DEFAULT FALSE,
+    -- Privacy setting of the owner: FALSE = other users must not see the route (the owner always sees it).
+    -- The route itself lives in activity_routes (below), because RLS cannot hide a single column per row.
+    show_map BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Index for time overlap detection (Conflict Resolution Wizard)
 CREATE INDEX idx_activities_user_time ON public.activities(user_id, start_time, end_time);
+
+-- Simplified track of an activity as Google Encoded Polyline (precision 5). Separate table on purpose: a polyline
+-- column on activities would be readable by everybody who may read the activity, i.e. it would leak the routes of
+-- activities with show_map = FALSE. The client upserts the route right after the activity (on conflict activity_id).
+-- Other users only get the row if show_map is TRUE (policies in section 3).
+CREATE TABLE IF NOT EXISTS public.activity_routes (
+    activity_id UUID PRIMARY KEY REFERENCES public.activities(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    polyline TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
 -- ============================================================================
 -- 5. Social Feeds: Likes, Comments & Reactions
@@ -260,6 +275,7 @@ ALTER TABLE public.challenges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.challenge_teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.challenge_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.activity_routes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comment_reactions ENABLE ROW LEVEL SECURITY;
@@ -491,6 +507,47 @@ CREATE POLICY "Users can insert their own activities"
 CREATE POLICY "Users can update or delete their own activities"
     ON public.activities FOR ALL TO authenticated
     USING (auth.uid() = user_id);
+
+-- ----------------------------------------------------------------------------
+-- Activity Routes Policies (map privacy)
+-- Visible to the owner, and to the activity's team members only while the activity has show_map = TRUE.
+-- Writes: own rows only, and only for an activity that belongs to the caller.
+-- ----------------------------------------------------------------------------
+DROP POLICY IF EXISTS "Users can view own routes or shared team routes" ON public.activity_routes;
+CREATE POLICY "Users can view own routes or shared team routes"
+    ON public.activity_routes FOR SELECT TO authenticated
+    USING (
+        user_id = auth.uid() OR
+        EXISTS (
+            SELECT 1 FROM public.activities a
+            WHERE a.id = activity_routes.activity_id
+              AND a.show_map = TRUE
+              AND a.team_id IS NOT NULL
+              AND public.is_team_member(a.team_id, auth.uid())
+        )
+    );
+
+DROP POLICY IF EXISTS "Users can insert their own routes" ON public.activity_routes;
+CREATE POLICY "Users can insert their own routes"
+    ON public.activity_routes FOR INSERT TO authenticated
+    WITH CHECK (
+        user_id = auth.uid() AND
+        EXISTS (SELECT 1 FROM public.activities a WHERE a.id = activity_routes.activity_id AND a.user_id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Users can update their own routes" ON public.activity_routes;
+CREATE POLICY "Users can update their own routes"
+    ON public.activity_routes FOR UPDATE TO authenticated
+    USING (user_id = auth.uid())
+    WITH CHECK (
+        user_id = auth.uid() AND
+        EXISTS (SELECT 1 FROM public.activities a WHERE a.id = activity_routes.activity_id AND a.user_id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Users can delete their own routes" ON public.activity_routes;
+CREATE POLICY "Users can delete their own routes"
+    ON public.activity_routes FOR DELETE TO authenticated
+    USING (user_id = auth.uid());
 
 -- ----------------------------------------------------------------------------
 -- Likes, Comments, Reactions & Notifications Policies
@@ -1076,6 +1133,37 @@ supabase secrets set WEBHOOK_SECRET=<WEBHOOK_SECRET> FIREBASE_SERVICE_ACCOUNT="$
 
 Webhook: Dashboard > Database > Webhooks > table `public.notifications`, event `Insert`, type Supabase Edge Function
 `send-push` (POST), HTTP header `x-webhook-secret: <WEBHOOK_SECRET>`. If the dashboard reports `schema "supabase_functions" does not exist`, enable webhooks first or use the SQL trigger alternative. Details: `supabase/functions/send-push/README.md`.
+
+### Activity routes, map privacy & social counts
+
+- `activities.show_map` (default `TRUE`) is the owner's privacy setting. The route is stored in `activity_routes`
+  (Encoded Polyline, precision 5), one row per activity, upserted by the client right after the activity. Other users
+  can read a route only if `show_map` is `TRUE` and they are members of the activity's team; the owner always can.
+- `social_counts(p_type, p_ids)` returns like count, comment count and `liked_by_me` for a whole feed page in ONE
+  round trip. It is `SECURITY INVOKER`, so RLS applies and only visible likes/comments are counted. It uses
+  `idx_likes_entity` / `idx_comments_entity_created`. The client sends at most 100 ids per call (not enforced
+  server-side; keep pages small).
+
+```sql
+CREATE OR REPLACE FUNCTION public.social_counts(p_type social_entity_type, p_ids UUID[])
+RETURNS TABLE (entity_id UUID, like_count INTEGER, comment_count INTEGER, liked_by_me BOOLEAN)
+LANGUAGE sql STABLE SECURITY INVOKER SET search_path = public AS $$
+    SELECT
+        i.id,
+        (SELECT COUNT(*)::int FROM public.likes l
+          WHERE l.entity_type = p_type AND l.entity_id = i.id),
+        (SELECT COUNT(*)::int FROM public.comments c
+          WHERE c.entity_type = p_type AND c.entity_id = i.id),
+        EXISTS (SELECT 1 FROM public.likes l2
+                 WHERE l2.entity_type = p_type AND l2.entity_id = i.id AND l2.user_id = auth.uid())
+    FROM unnest(p_ids) AS i(id);
+$$;
+
+REVOKE ALL ON FUNCTION public.social_counts(social_entity_type, UUID[]) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.social_counts(social_entity_type, UUID[]) TO authenticated;
+```
+
+---
 
 ### Realtime
 

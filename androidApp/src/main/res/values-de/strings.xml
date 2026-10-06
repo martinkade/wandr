@@ -297,4 +297,12 @@
     <string name="challenge_activity_types_label">Zählende Aktivitäten</string>
     <string name="challenge_activity_types_hint">Wähle die Aktivitätsarten, die zählen. Ist keine gewählt, zählen alle Aktivitätsarten.</string>
     <string name="challenge_activity_types_all">Alle Aktivitätsarten</string>
+    <string name="activity_stat_distance">Distanz</string>
+    <string name="activity_stat_pace">Tempo</string>
+    <string name="activity_stat_speed">Geschwindigkeit</string>
+    <string name="activity_stat_time">Zeit</string>
+    <string name="activity_stat_elevation">Höhenmeter</string>
+    <string name="activity_map_hidden_hint">Nur du siehst diese Route.</string>
+    <string name="activity_show_map_label">Route für andere anzeigen</string>
+    <string name="activity_show_map_hint">Andere Nutzer sehen die Route dieser Aktivität auf der Karte. Du siehst sie immer selbst.</string>
 </resources>

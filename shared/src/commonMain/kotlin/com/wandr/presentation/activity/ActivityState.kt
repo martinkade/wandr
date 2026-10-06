@@ -2,6 +2,8 @@ package com.wandr.presentation.activity
 
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
+import com.wandr.domain.model.Profile
+import com.wandr.domain.model.SocialCounts
 
 enum class ActivitySuccess { CREATED, UPDATED, RECORDED, DELETED, MERGED, TRIMMED, DISCARDED }
 
@@ -34,13 +36,21 @@ data class ActivityForm(
     /** Epoch milliseconds. */
     val startTime: Long = 0L,
     /** GPS-recorded activities keep their measured values; only title, description and type can change. */
-    val isMeasured: Boolean = false
+    val isMeasured: Boolean = false,
+    /** Privacy: other users may see the route of this activity on the map. */
+    val showMap: Boolean = true,
+    /** The activity has a route (so the privacy switch makes sense). */
+    val hasRoute: Boolean = false
 ) {
     val isEditing: Boolean get() = activityId != null
 }
 
 data class ActivityState(
     val activities: List<Activity> = emptyList(),
+    /** The authors of [activities] by user id, for name and avatar on the feed cards. */
+    val authors: Map<String, Profile> = emptyMap(),
+    /** Likes and comments per activity id, fetched for the whole list in one call. */
+    val socialCounts: Map<String, SocialCounts> = emptyMap(),
     val selectedActivity: Activity? = null,
     /** The recorded track of the selected activity; empty for manual entries and on other devices. */
     val selectedTrack: List<GpsTrackpoint> = emptyList(),

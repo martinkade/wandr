@@ -5,7 +5,7 @@ import com.wandr.domain.model.GpsTrackpoint
 
 sealed interface ActivityIntent {
     data class LoadUserActivities(val userId: String) : ActivityIntent
-    data class LoadTeamActivities(val teamId: String) : ActivityIntent
+    data class LoadTeamActivities(val teamId: String, val userId: String) : ActivityIntent
 
     /** Loads one activity (and its local GPS track) for the detail screen. */
     data class SelectActivity(val activityId: String) : ActivityIntent
@@ -24,6 +24,9 @@ sealed interface ActivityIntent {
     data class StartTimeChanged(val millis: Long) : ActivityIntent
 
     /** Creates or updates, depending on the form. [teamId] only applies to new activities. */
+    data class ShowMapChanged(val show: Boolean) : ActivityIntent
+    /** Likes or un-likes an activity from its feed card. */
+    data class ToggleActivityLike(val activityId: String) : ActivityIntent
     data class SubmitForm(val userId: String, val teamId: String?) : ActivityIntent
 
     /** Closes the form and drops its content. */

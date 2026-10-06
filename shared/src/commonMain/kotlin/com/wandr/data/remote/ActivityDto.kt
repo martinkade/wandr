@@ -23,6 +23,7 @@ data class ActivityDto(
     @SerialName("start_time") val startTime: String,
     @SerialName("end_time") val endTime: String,
     @SerialName("is_manual_entry") val isManualEntry: Boolean,
+    @SerialName("show_map") val showMap: Boolean = true,
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String
 )
@@ -40,12 +41,13 @@ fun ActivityEntity.toDto() = ActivityDto(
     startTime = Instant.fromEpochMilliseconds(startTime).toString(),
     endTime = Instant.fromEpochMilliseconds(endTime).toString(),
     isManualEntry = isManualEntry,
+    showMap = showMap,
     createdAt = Instant.fromEpochMilliseconds(createdAt).toString(),
     updatedAt = Instant.fromEpochMilliseconds(updatedAt).toString()
 )
 
 /** [fitFilePath] stays whatever this device already has; the server never knows it. */
-fun ActivityDto.toEntity(fitFilePath: String? = null, syncStatus: String = "SYNCED") = ActivityEntity(
+fun ActivityDto.toEntity(fitFilePath: String? = null, polyline: String? = null, syncStatus: String = "SYNCED") = ActivityEntity(
     id = id,
     userId = userId,
     teamId = teamId,
@@ -59,7 +61,17 @@ fun ActivityDto.toEntity(fitFilePath: String? = null, syncStatus: String = "SYNC
     startTime = Instant.parse(startTime).toEpochMilliseconds(),
     endTime = Instant.parse(endTime).toEpochMilliseconds(),
     isManualEntry = isManualEntry,
+    showMap = showMap,
+    polyline = polyline,
     createdAt = Instant.parse(createdAt).toEpochMilliseconds(),
     updatedAt = Instant.parse(updatedAt).toEpochMilliseconds(),
     syncStatus = syncStatus
+)
+
+/** Row of `public.activity_routes`: the route is stored apart from the activity so the server can hide it (map privacy). */
+@Serializable
+data class ActivityRouteDto(
+    @SerialName("activity_id") val activityId: String,
+    @SerialName("user_id") val userId: String,
+    val polyline: String
 )

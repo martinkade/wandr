@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.Flow
 interface ProfileRepository {
     fun getProfile(userId: String): Flow<Profile?>
 
+    /** The cached profiles of [userIds] (those not cached yet are missing). */
+    fun getProfiles(userIds: List<String>): Flow<List<Profile>>
+
     /** Pulls the remote profile into the local cache (never overwrites unsynced local edits). */
     suspend fun refreshProfile(userId: String): Result<Unit>
 

@@ -92,3 +92,14 @@ data class NotificationDto(
         createdAt = Instant.parse(createdAt).toEpochMilliseconds()
     )
 }
+
+/** Row of the `social_counts` function. */
+@Serializable
+data class SocialCountsDto(
+    @SerialName("entity_id") val entityId: String,
+    @SerialName("like_count") val likeCount: Int = 0,
+    @SerialName("comment_count") val commentCount: Int = 0,
+    @SerialName("liked_by_me") val likedByMe: Boolean = false
+) {
+    fun toDomain() = com.wandr.domain.model.SocialCounts(likeCount, commentCount, likedByMe)
+}

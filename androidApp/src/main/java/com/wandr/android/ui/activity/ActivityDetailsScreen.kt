@@ -41,6 +41,7 @@ import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.social.SocialSectionHost
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.util.AppDateFormatter
+import com.wandr.domain.geo.PolylineCodec
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.model.SocialEntityType
@@ -160,11 +161,22 @@ private fun ActivityDetailsScreenContent(
             } else {
                 val locale = LocalConfiguration.current.locales[0]
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
-                    if (state.selectedTrack.isNotEmpty()) {
-                        TrackMapView(trackpoints = state.selectedTrack, modifier = Modifier.fillMaxWidth().height(200.dp))
+                    // The full track from this device's FIT file, otherwise the simplified route from the server.
+                    val route = remember(state.selectedTrack, activity.polyline) {
+                        state.selectedTrack.ifEmpty { activity.polyline?.let(PolylineCodec::decode).orEmpty() }
+                    }
+                    if (route.size >= 2) {
+                        TrackMapView(trackpoints = route, modifier = Modifier.fillMaxWidth().height(200.dp))
+                        if (activity.userId == userId && !activity.showMap) {
+                            Text(
+                                text = stringResource(R.string.activity_map_hidden_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                         Spacer(Modifier.height(8.dp))
                     } else if (!activity.isManualEntry) {
-                        // The FIT file never leaves the recording device.
+                        // No route for this user: recorded on another device, or its owner keeps the map private.
                         Text(
                             text = stringResource(R.string.activity_track_local_hint),
                             style = MaterialTheme.typography.bodySmall,

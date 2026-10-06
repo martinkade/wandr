@@ -51,7 +51,9 @@ struct FeedView: View {
             endTime: 0,
             isManualEntry: true,
             createdAt: 0,
-            updatedAt: 0
+            updatedAt: 0,
+            showMap: true,
+            polyline: nil
         )
     ])
     .preferredColorScheme(.light)
@@ -74,7 +76,9 @@ struct FeedView: View {
             endTime: 0,
             isManualEntry: true,
             createdAt: 0,
-            updatedAt: 0
+            updatedAt: 0,
+            showMap: true,
+            polyline: nil
         )
     ])
     .preferredColorScheme(.dark)

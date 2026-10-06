@@ -10,6 +10,9 @@ enum class SocialEntityType(val wire: String) {
     }
 }
 
+/** Like and comment numbers of one activity/challenge as shown on a feed card. */
+data class SocialCounts(val likeCount: Int = 0, val commentCount: Int = 0, val likedByMe: Boolean = false)
+
 data class SocialSummary(val likeCount: Int = 0, val likedByMe: Boolean = false)
 
 /** One emoji on a comment: how many users reacted with it, and whether the signed-in user is one of them. */

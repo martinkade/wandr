@@ -31,6 +31,8 @@ private class FakeSocialRepository(var comments: MutableList<Comment> = mutableL
         if (failNext) { failNext = false; Result.failure(IllegalStateException("offline")) } else Result.success(value)
 
     override suspend fun getSummary(type: SocialEntityType, entityId: String, userId: String) = result(SocialSummary(likes, likedByMe))
+    override suspend fun getCounts(type: SocialEntityType, entityIds: List<String>): Result<Map<String, com.wandr.domain.model.SocialCounts>> =
+        result(entityIds.associateWith { com.wandr.domain.model.SocialCounts() })
     override suspend fun setLike(type: SocialEntityType, entityId: String, userId: String, liked: Boolean): Result<Unit> {
         calls += "like:$liked"
         return result(Unit)

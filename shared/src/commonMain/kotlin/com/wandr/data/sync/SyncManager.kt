@@ -4,6 +4,7 @@ import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.dao.ChallengeDao
 import com.wandr.data.local.dao.ProfileDao
 import com.wandr.data.local.dao.TeamDao
+import com.wandr.data.remote.ActivityRouteDto
 import com.wandr.data.remote.toDto
 import com.wandr.data.remote.toUpdatePayload
 import io.github.jan.supabase.SupabaseClient
@@ -69,6 +70,10 @@ class SyncManager(
                 val dirtyActivities = activityDao.getDirtyActivities()
                 for (activity in dirtyActivities) {
                     supabase.postgrest.from("activities").upsert(activity.toDto()) // never includes the local FIT path
+                    // The route (simplified polyline) lives in its own table so the server can hide it per activity.
+                    activity.polyline?.let {
+                        supabase.postgrest.from("activity_routes").upsert(ActivityRouteDto(activity.id, activity.userId, it))
+                    }
                     activityDao.insertActivity(activity.copy(syncStatus = "SYNCED"))
                     totalSynced++
                 }

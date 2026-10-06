@@ -5,6 +5,8 @@ import com.wandr.data.fit.FitFileEncoder
 import com.wandr.data.fit.FitFileStorage
 import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.entity.ActivityEntity
+import com.wandr.domain.geo.PolylineCodec
+import com.wandr.domain.geo.TrackSimplifier
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.repository.ActivityRepository
@@ -45,6 +47,7 @@ class ActivityRepositoryImpl(
     override suspend fun saveActivity(activity: Activity, trackpoints: List<GpsTrackpoint>?): Result<Activity> {
         return runCatching {
             var fitFilePath = activity.fitFilePath
+            var polyline = activity.polyline
 
             if (!trackpoints.isNullOrEmpty()) {
                 val fitBytes = FitFileEncoder.encode(
@@ -59,6 +62,8 @@ class ActivityRepositoryImpl(
                 // The FIT file stays on this device; it is never uploaded. A write failure fails the save, so a
                 // recorded track is not silently dropped.
                 fitFilePath = fitFileStorage.save(activity.id, fitBytes)
+                // Only the simplified route goes to the server (see activity_routes).
+                polyline = PolylineCodec.encode(TrackSimplifier.simplify(trackpoints))
             }
 
             val entity = ActivityEntity(
@@ -77,6 +82,8 @@ class ActivityRepositoryImpl(
                 isManualEntry = activity.isManualEntry,
                 createdAt = activity.createdAt,
                 updatedAt = activity.updatedAt,
+                showMap = activity.showMap,
+                polyline = polyline,
                 syncStatus = "DIRTY"
             )
 
@@ -108,7 +115,9 @@ class ActivityRepositoryImpl(
             endTime = endTime,
             isManualEntry = isManualEntry,
             createdAt = createdAt,
-            updatedAt = updatedAt
+            updatedAt = updatedAt,
+            showMap = showMap,
+            polyline = polyline
         )
     }
 }

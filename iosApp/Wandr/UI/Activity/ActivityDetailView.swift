@@ -57,7 +57,9 @@ extension Activity {
             id: "a1", userId: "u1", teamId: "t1", title: "Weekend Trail Walk", description: "Lovely day.",
             activityType: "hiking", distanceMeters: 5400, durationSeconds: 3600, elevationGainMeters: 150,
             fitFilePath: nil, startTime: 1_700_000_000_000, endTime: 1_700_003_600_000,
-            isManualEntry: true, createdAt: 0, updatedAt: 0
+            isManualEntry: true, createdAt: 0, updatedAt: 0,
+            showMap: true,
+            polyline: nil
         )
     }
 }

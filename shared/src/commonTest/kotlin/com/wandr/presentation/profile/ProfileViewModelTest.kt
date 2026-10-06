@@ -45,6 +45,7 @@ private class FakeProfileRepository(initial: Profile?) : ProfileRepository {
     var refreshed = 0
     var uploaded: ByteArray? = null
 
+    override fun getProfiles(userIds: List<String>): Flow<List<Profile>> = kotlinx.coroutines.flow.flowOf(emptyList())
     override fun getProfile(userId: String): Flow<Profile?> = profile
 
     override suspend fun refreshProfile(userId: String): Result<Unit> {

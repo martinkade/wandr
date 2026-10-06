@@ -68,6 +68,8 @@ val domainModule = module {
     factory { com.wandr.domain.usecase.RegisterPushTokenUseCase(get()) }
     factory { com.wandr.domain.usecase.UnregisterPushTokenUseCase(get()) }
     single { com.wandr.domain.push.PushTokenManager(get(), get()) }
+    factory { com.wandr.domain.usecase.GetSocialCountsUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetProfilesUseCase(get()) }
     factory { com.wandr.domain.usecase.RefreshActivitiesUseCase(get()) }
     factory { com.wandr.domain.usecase.GetUserActivitiesUseCase(get()) }
     factory { com.wandr.domain.usecase.GetActivityUseCase(get()) }

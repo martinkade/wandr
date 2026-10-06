@@ -46,6 +46,7 @@ import com.wandr.android.ui.activity.ActivityFabMenu
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Activity
+import com.wandr.domain.model.SocialCounts
 import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
 import com.wandr.presentation.activity.ActivitySuccess
@@ -75,7 +76,7 @@ fun FeedScreen(
     // The team feed shows what all members of the team recorded.
     LaunchedEffect(userId, teamId, feed) {
         if (feed == FeedScope.Team && teamId != null) {
-            viewModel.processIntent(ActivityIntent.LoadTeamActivities(teamId))
+            viewModel.processIntent(ActivityIntent.LoadTeamActivities(teamId, userId))
         } else {
             viewModel.processIntent(ActivityIntent.LoadUserActivities(userId))
         }
@@ -199,7 +200,16 @@ private fun FeedScreenContent(
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp)
                 ) {
                     items(state.activities, key = { it.id }) { activity ->
-                        ActivityCard(activity = activity, onClick = { onOpenActivity(activity.id) })
+                        val author = state.authors[activity.userId]
+                        ActivityCard(
+                            activity = activity,
+                            authorName = author?.displayName.orEmpty(),
+                            authorAvatarUrl = author?.avatarUrl,
+                            counts = state.socialCounts[activity.id] ?: SocialCounts(),
+                            onClick = { onOpenActivity(activity.id) },
+                            onLikeClick = { onIntent(ActivityIntent.ToggleActivityLike(activity.id)) },
+                            isOwn = activity.userId == userId
+                        )
                     }
                 }
             }

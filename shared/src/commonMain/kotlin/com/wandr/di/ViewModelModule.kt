@@ -14,7 +14,7 @@ val viewModelModule = module {
     factory { ProfileViewModel(get(), get(), get(), get(), get(), get()) }
     factory { TeamViewModel(get(), get(), get(), get(), get(), get()) }
     factory { ChallengeViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    factory { com.wandr.presentation.activity.ActivityViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { com.wandr.presentation.activity.ActivityViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     factory { com.wandr.presentation.watch.WatchImportViewModel(get(), get()) }
     factory { com.wandr.presentation.social.SocialViewModel(get(), get(), get(), get(), get(), get(), get()) }
     factory { com.wandr.presentation.notifications.NotificationsViewModel(get(), get(), get()) }

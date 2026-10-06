@@ -3,10 +3,15 @@ package com.wandr.presentation.activity
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ActivityConflictException
 import com.wandr.domain.model.ConflictResolution
+import com.wandr.domain.model.SocialCounts
+import com.wandr.domain.model.SocialEntityType
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.usecase.CreateManualActivityUseCase
 import com.wandr.domain.usecase.DeleteActivityUseCase
 import com.wandr.domain.usecase.GetActivityTrackUseCase
+import com.wandr.domain.usecase.GetProfilesUseCase
+import com.wandr.domain.usecase.GetSocialCountsUseCase
+import com.wandr.domain.usecase.SetLikeUseCase
 import com.wandr.domain.usecase.GetActivityUseCase
 import com.wandr.domain.usecase.GetTeamActivitiesUseCase
 import com.wandr.domain.usecase.GetUserActivitiesUseCase
@@ -34,6 +39,9 @@ class ActivityViewModel(
     private val recordGpsActivityUseCase: RecordGpsActivityUseCase,
     private val deleteActivityUseCase: DeleteActivityUseCase,
     private val refreshActivitiesUseCase: RefreshActivitiesUseCase,
+    private val getSocialCountsUseCase: GetSocialCountsUseCase,
+    private val setLikeUseCase: SetLikeUseCase,
+    private val getProfilesUseCase: GetProfilesUseCase,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 ) {
     private val _state = MutableStateFlow(ActivityState())
@@ -43,6 +51,10 @@ class ActivityViewModel(
     private var listJob: Job? = null
     private var selectJob: Job? = null
     private var currentUserId: String? = null
+    private var countsJob: Job? = null
+    private var authorsJob: Job? = null
+    private var countedIds: List<String> = emptyList()
+    private var observedAuthors: List<String> = emptyList()
 
     /** A save that was held back by a time conflict, waiting for the user's resolution. */
     private var pendingSave: PendingSave? = null
@@ -56,7 +68,7 @@ class ActivityViewModel(
     fun processIntent(intent: ActivityIntent) {
         when (intent) {
             is ActivityIntent.LoadUserActivities -> loadUserActivities(intent.userId)
-            is ActivityIntent.LoadTeamActivities -> loadTeamActivities(intent.teamId)
+            is ActivityIntent.LoadTeamActivities -> loadTeamActivities(intent.teamId, intent.userId)
             is ActivityIntent.SelectActivity -> selectActivity(intent.activityId)
             is ActivityIntent.StartCreate -> startCreate()
             is ActivityIntent.StartEdit -> startEdit(intent.activityId)
@@ -67,6 +79,8 @@ class ActivityViewModel(
             is ActivityIntent.DurationChanged -> updateForm { it.copy(durationMinutes = intent.minutes) }
             is ActivityIntent.ElevationChanged -> updateForm { it.copy(elevationMeters = intent.meters) }
             is ActivityIntent.StartTimeChanged -> updateForm { it.copy(startTime = intent.millis) }
+            is ActivityIntent.ShowMapChanged -> updateForm { it.copy(showMap = intent.show) }
+            is ActivityIntent.ToggleActivityLike -> toggleActivityLike(intent.activityId)
             is ActivityIntent.SubmitForm -> submit(intent.userId, intent.teamId)
             is ActivityIntent.DiscardForm -> _state.update { it.copy(form = null) }
             is ActivityIntent.StartGpsTracking -> startGpsTracking(intent.activityType)
@@ -89,17 +103,57 @@ class ActivityViewModel(
         listJob = scope.launch {
             getUserActivitiesUseCase(userId).collect { list ->
                 _state.update { it.copy(activities = list, isLoading = false) }
+                onListChanged(list)
             }
         }
     }
 
-    private fun loadTeamActivities(teamId: String) {
+    private fun loadTeamActivities(teamId: String, userId: String) {
+        currentUserId = userId
         listJob?.cancel()
-        scope.launch { refreshActivitiesUseCase.team(teamId) } // the feed also holds what teammates recorded
+        scope.launch { refreshActivitiesUseCase.team(teamId, userId) } // the feed also holds what teammates recorded
         listJob = scope.launch {
             _state.update { it.copy(isLoading = true) }
             getTeamActivitiesUseCase(teamId).collect { list ->
                 _state.update { it.copy(activities = list, isLoading = false) }
+                onListChanged(list)
+            }
+        }
+    }
+
+    /** Fetches what the cards need besides the activity itself: social counts and authors, each in one call. */
+    private fun onListChanged(list: List<Activity>) {
+        val ids = list.map { it.id }.take(MAX_FEED_ITEMS)
+        // Only when the list has other items than before; edits of an item do not change its likes.
+        if (ids != countedIds) {
+            countedIds = ids
+            countsJob?.cancel()
+            countsJob = scope.launch {
+                getSocialCountsUseCase(SocialEntityType.ACTIVITY, ids)
+                    .onSuccess { counts -> _state.update { it.copy(socialCounts = it.socialCounts + counts) } }
+            }
+        }
+        val authorIds = list.map { it.userId }.distinct()
+        if (authorIds != observedAuthors) {
+            observedAuthors = authorIds
+            authorsJob?.cancel()
+            authorsJob = scope.launch {
+                getProfilesUseCase(authorIds).collect { profiles ->
+                    _state.update { it.copy(authors = profiles.associateBy { p -> p.id }) }
+                }
+            }
+        }
+    }
+
+    private fun toggleActivityLike(activityId: String) {
+        val userId = currentUserId ?: return
+        val before = _state.value.socialCounts[activityId] ?: SocialCounts()
+        val liked = !before.likedByMe
+        val after = before.copy(likeCount = (before.likeCount + if (liked) 1 else -1).coerceAtLeast(0), likedByMe = liked)
+        _state.update { it.copy(socialCounts = it.socialCounts + (activityId to after)) }
+        scope.launch {
+            setLikeUseCase(SocialEntityType.ACTIVITY, activityId, userId, liked).onFailure { error ->
+                _state.update { it.copy(socialCounts = it.socialCounts + (activityId to before), errorMessage = error.message ?: "Could not save the like") }
             }
         }
     }
@@ -154,7 +208,9 @@ class ActivityViewModel(
                     durationMinutes = activity.durationSeconds / 60.0,
                     elevationMeters = activity.elevationGainMeters,
                     startTime = activity.startTime,
-                    isMeasured = !activity.isManualEntry
+                    isMeasured = !activity.isManualEntry,
+                    showMap = activity.showMap,
+                    hasRoute = activity.polyline != null
                 )
             )
         }
@@ -205,6 +261,7 @@ class ActivityViewModel(
                 elevationGainMeters = if (form.isMeasured) existing.elevationGainMeters else form.elevationMeters,
                 startTime = startTime,
                 endTime = if (form.isMeasured) existing.endTime else startTime + (durationSeconds * 1000).toLong(),
+                showMap = form.showMap,
                 updatedAt = now
             )
             // Overlaps that already exist must not block edits that leave the time range alone.
@@ -367,6 +424,8 @@ class ActivityViewModel(
 
     private companion object {
         const val MINUTE_MILLIS = 60_000L
+        /** The feed page size; counts are requested for at most this many cards. */
+        const val MAX_FEED_ITEMS = 100
         const val NOT_OWNER_MESSAGE = "Only the owner can change this activity"
     }
 }

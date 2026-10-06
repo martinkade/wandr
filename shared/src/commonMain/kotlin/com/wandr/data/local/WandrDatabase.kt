@@ -30,7 +30,7 @@ import kotlinx.coroutines.IO
         ChallengeParticipantEntity::class,
         ActivityEntity::class
     ],
-    version = 4, // 2: challenges lost team_id (teams enroll in group challenges), participants gained team_id; 3: team_members.priority; 4: challenges.activity_types
+    version = 5, // 2: challenges lost team_id (teams enroll in group challenges), participants gained team_id; 3: team_members.priority; 4: challenges.activity_types; 5: activities.show_map / polyline
     exportSchema = true
 )
 @ColumnTypeConverters(Converters::class)
