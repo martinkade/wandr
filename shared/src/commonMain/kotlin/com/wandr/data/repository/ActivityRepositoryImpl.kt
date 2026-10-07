@@ -5,6 +5,7 @@ import com.wandr.data.fit.FitFileEncoder
 import com.wandr.data.fit.FitFileStorage
 import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.entity.ActivityEntity
+import com.wandr.data.localResult
 import com.wandr.domain.geo.PolylineCodec
 import com.wandr.domain.geo.TrackSimplifier
 import com.wandr.domain.model.Activity
@@ -47,7 +48,7 @@ class ActivityRepositoryImpl(
     }
 
     override suspend fun saveActivity(activity: Activity, trackpoints: List<GpsTrackpoint>?): Result<Activity> {
-        return runCatching {
+        return localResult {
             var fitFilePath = activity.fitFilePath
             var polyline = activity.polyline
 
@@ -96,7 +97,7 @@ class ActivityRepositoryImpl(
     }
 
     override suspend fun deleteActivity(id: String): Result<Unit> {
-        return runCatching {
+        return localResult {
             activityDao.getActivityOnce(id)?.fitFilePath?.let(fitFileStorage::delete)
             activityDao.markDeleted(id) // the sync engine deletes it on the server and then removes the row
             onLocalChange()

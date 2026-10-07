@@ -1,5 +1,7 @@
 package com.wandr.presentation.teamdetails
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.InputProblem
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamImageKind
 import com.wandr.domain.model.TeamMember
@@ -21,6 +23,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -123,7 +126,8 @@ class TeamDetailsViewModelTest {
         vm.processIntent(TeamDetailsIntent.NameChanged("   "))
         vm.processIntent(TeamDetailsIntent.Save)
 
-        assertEquals("Team name cannot be empty", vm.uiState.value.errorMessage)
+        val error = assertIs<AppError.InvalidInput>(vm.uiState.value.error)
+        assertEquals(InputProblem.NAME_REQUIRED, error.problem)
         assertEquals("Trail Blazers", repo.team.value?.name)
     }
 
@@ -158,7 +162,7 @@ class TeamDetailsViewModelTest {
         vm.processIntent(TeamDetailsIntent.Load("t1", "owner"))
         vm.processIntent(TeamDetailsIntent.UploadAvatar(byteArrayOf(1)))
 
-        assertEquals("offline", vm.uiState.value.errorMessage)
+        assertEquals("offline", vm.uiState.value.error?.cause?.message)
         assertNull(vm.uiState.value.team?.avatarUrl)
         assertFalse(vm.uiState.value.isImageUpdating)
     }

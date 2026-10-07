@@ -7,13 +7,10 @@ import com.wandr.data.local.entity.TeamEntity
 import com.wandr.data.local.entity.TeamMemberEntity
 import com.wandr.data.remote.TeamDto
 import com.wandr.data.remote.TeamMemberDto
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import com.wandr.data.remote.TeamMemberWithProfileDto
-import com.wandr.data.remote.toUpdatePayload
+import com.wandr.data.remote.supabaseResult
 import com.wandr.data.remote.toDto
+import com.wandr.data.remote.toUpdatePayload
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamImageKind
 import com.wandr.domain.model.TeamMember
@@ -22,13 +19,17 @@ import com.wandr.domain.repository.TeamRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import io.github.jan.supabase.storage.storage
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -102,7 +103,7 @@ class TeamRepositoryImpl(
         }
     }
 
-    override suspend fun refreshUserTeams(userId: String): Result<Unit> = runCatching {
+    override suspend fun refreshUserTeams(userId: String): Result<Unit> = supabaseResult {
         // RLS only returns teams the user is a member of, and the memberships of those teams.
         val teams = supabase.postgrest.from("teams").select().decodeList<TeamDto>()
         val memberships = supabase.postgrest.from("team_members").select {
@@ -117,7 +118,11 @@ class TeamRepositoryImpl(
      * So the remote insert happens first and the local cache is only written after it succeeded.
      */
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun createTeam(name: String, description: String?, creatorId: String): Result<Team> = runCatching {
+    override suspend fun createTeam(
+        name: String,
+        description: String?,
+        creatorId: String
+    ): Result<Team> = supabaseResult {
         val now = Clock.System.now().toEpochMilliseconds()
         val entity = TeamEntity(
             id = Uuid.random().toString(),
@@ -159,11 +164,11 @@ class TeamRepositoryImpl(
         )
     }
 
-    override suspend fun refreshTeamDetails(teamId: String): Result<Unit> = runCatching {
+    override suspend fun refreshTeamDetails(teamId: String): Result<Unit> = supabaseResult {
         val local = teamDao.getTeamOnce(teamId)
         if (local != null && local.syncStatus != SYNCED) {
             // Unsynced local edits win; try to push them instead of overwriting.
-            runCatching { pushTeam(local) }.onSuccess { teamDao.insertTeam(local.copy(syncStatus = SYNCED)) }
+            supabaseResult { pushTeam(local) }.onSuccess { teamDao.insertTeam(local.copy(syncStatus = SYNCED)) }
         } else {
             supabase.postgrest.from("teams").select { filter { eq("id", teamId) } }
                 .decodeSingleOrNull<TeamDto>()
@@ -184,7 +189,7 @@ class TeamRepositoryImpl(
         }
     }
 
-    override suspend fun updateTeam(team: Team): Result<Team> = runCatching {
+    override suspend fun updateTeam(team: Team): Result<Team> = supabaseResult {
         val existing = requireNotNull(teamDao.getTeamOnce(team.id)) { "Team is not loaded yet" }
         val entity = existing.copy(
             name = team.name,
@@ -195,11 +200,15 @@ class TeamRepositoryImpl(
             syncStatus = DIRTY
         )
         teamDao.insertTeam(entity) // local first
-        runCatching { pushTeam(entity) }.onSuccess { teamDao.insertTeam(entity.copy(syncStatus = SYNCED)) }
+        supabaseResult { pushTeam(entity) }.onSuccess { teamDao.insertTeam(entity.copy(syncStatus = SYNCED)) }
         entity.toDomain()
     }
 
-    override suspend fun setTeamImage(teamId: String, kind: TeamImageKind, jpegBytes: ByteArray): Result<Team> = runCatching {
+    override suspend fun setTeamImage(
+        teamId: String,
+        kind: TeamImageKind,
+        jpegBytes: ByteArray
+    ): Result<Team> = supabaseResult {
         val current = requireNotNull(teamDao.getTeamOnce(teamId)) { "Team is not loaded yet" }.toDomain()
         val fileName = "${kind.filePrefix}_${Clock.System.now().toEpochMilliseconds()}.jpg"
         val bucket = supabase.storage.from(TEAM_BUCKET)
@@ -213,11 +222,12 @@ class TeamRepositoryImpl(
             }
         ).getOrThrow()
         // Best effort: stale files are harmless, a failed cleanup must not fail the update.
-        runCatching { deleteImages(teamId, kind, keepFileName = fileName) }
+        supabaseResult { deleteImages(teamId, kind, keepFileName = fileName) }
         updated
     }
 
-    override suspend fun removeTeamImage(teamId: String, kind: TeamImageKind): Result<Team> = runCatching {
+    override suspend fun removeTeamImage(teamId: String, kind: TeamImageKind): Result<Team> =
+        supabaseResult {
         val current = requireNotNull(teamDao.getTeamOnce(teamId)) { "Team is not loaded yet" }.toDomain()
         val updated = updateTeam(
             when (kind) {
@@ -225,7 +235,7 @@ class TeamRepositoryImpl(
                 TeamImageKind.COVER -> current.copy(coverUrl = null)
             }
         ).getOrThrow()
-        runCatching { deleteImages(teamId, kind, keepFileName = null) }
+            supabaseResult { deleteImages(teamId, kind, keepFileName = null) }
         updated
     }
 
@@ -249,7 +259,8 @@ class TeamRepositoryImpl(
      * Joining goes through a server function: a non-member cannot read a team (RLS), so the code cannot be looked up
      * from the client. The server also appends the new membership at the end of the user's priority list.
      */
-    override suspend fun joinTeamViaInvite(inviteCode: String, userId: String): Result<Team> = runCatching {
+    override suspend fun joinTeamViaInvite(inviteCode: String, userId: String): Result<Team> =
+        supabaseResult {
         val remoteTeam = supabase.postgrest
             .rpc("join_team_by_invite", buildJsonObject { put("p_invite_code", inviteCode) })
             .decodeAs<TeamDto>()
@@ -272,7 +283,8 @@ class TeamRepositoryImpl(
         )
     }
 
-    override suspend fun reorderTeams(userId: String, orderedTeamIds: List<String>): Result<Unit> = runCatching {
+    override suspend fun reorderTeams(userId: String, orderedTeamIds: List<String>): Result<Unit> =
+        supabaseResult {
         supabase.postgrest.rpc("set_team_priorities", buildJsonObject {
             put("p_team_ids", JsonArray(orderedTeamIds.map { JsonPrimitive(it) }))
         })

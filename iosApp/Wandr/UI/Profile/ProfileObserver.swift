@@ -62,8 +62,8 @@ final class ProfileObserver: ObservableObject {
         isLoading = state.isLoading
         isSaving = state.isSaving
         isAvatarUpdating = state.isAvatarUpdating
-        if let error = state.errorMessage {
-            snackbar = SnackbarMessage(text: error, isError: true)
+        if let error = state.error {
+            snackbar = SnackbarMessage(text: error.userMessage, isError: true)
             viewModel.processIntent(intent: ProfileIntentClearMessages.shared)
         } else if let success = state.success {
             switch success {

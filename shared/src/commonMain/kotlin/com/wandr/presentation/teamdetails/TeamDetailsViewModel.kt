@@ -1,5 +1,6 @@
 package com.wandr.presentation.teamdetails
 
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamImageKind
 import com.wandr.domain.model.TeamMember
@@ -53,7 +54,12 @@ class TeamDetailsViewModel(
             is TeamDetailsIntent.DiscardChanges -> _uiState.update {
                 it.copy(team = cachedTeam ?: it.team, hasUnsavedChanges = false)
             }
-            is TeamDetailsIntent.ClearMessages -> _uiState.update { it.copy(errorMessage = null, success = null) }
+            is TeamDetailsIntent.ClearMessages -> _uiState.update {
+                it.copy(
+                    error = null,
+                    success = null
+                )
+            }
         }
     }
 
@@ -93,7 +99,7 @@ class TeamDetailsViewModel(
 
     private fun save() {
         val team = _uiState.value.team ?: return
-        _uiState.update { it.copy(isSaving = true, errorMessage = null, success = null) }
+        _uiState.update { it.copy(isSaving = true, error = null, success = null) }
         scope.launch {
             updateTeamUseCase(team)
                 .onSuccess { updated ->
@@ -102,14 +108,14 @@ class TeamDetailsViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isSaving = false, errorMessage = error.message ?: "Save failed") }
+                    _uiState.update { it.copy(isSaving = false, error = error.asAppError()) }
                 }
         }
     }
 
     private fun updateImage(action: suspend (teamId: String) -> Result<Team>) {
         val teamId = _uiState.value.team?.id ?: return
-        _uiState.update { it.copy(isImageUpdating = true, errorMessage = null, success = null) }
+        _uiState.update { it.copy(isImageUpdating = true, error = null, success = null) }
         scope.launch {
             action(teamId)
                 .onSuccess { updated ->
@@ -123,7 +129,7 @@ class TeamDetailsViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isImageUpdating = false, errorMessage = error.message ?: "Image update failed") }
+                    _uiState.update { it.copy(isImageUpdating = false, error = error.asAppError()) }
                 }
         }
     }

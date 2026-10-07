@@ -1,15 +1,24 @@
 import SwiftUI
+@preconcurrency import shared
 
 struct RegisterView: View {
     @State private var emailInput: String = ""
     @State private var passwordInput: String = ""
+    var error: AppError? = nil
+    var isLoading: Bool = false
+    var needsEmailConfirmation: Bool = false
+    var onContinueToLogin: () -> Void = {
+    }
     var onRegister: (String, String) -> Void = { _, _ in }
     var onNavigateToLogin: () -> Void = {}
 
     var body: some View {
+        ContourBackground {
         VStack(spacing: 20) {
             Spacer()
-            
+
+            AppLogoView()
+
             Text(LocalizedStringKey("join_wandr_title"))
                 .font(.system(size: 36, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
@@ -17,6 +26,10 @@ struct RegisterView: View {
             Text(LocalizedStringKey("join_wandr_subtitle"))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
+
+            Text(LocalizedStringKey("register_title"))
+                .font(.title2.weight(.semibold))
+                .padding(.top, 12)
 
             VStack(spacing: 16) {
                 TextField(LocalizedStringKey("email_address_label"), text: $emailInput)
@@ -32,7 +45,11 @@ struct RegisterView: View {
                     .background(.ultraThinMaterial)
                     .cornerRadius(12)
             }
-            .padding(.top, 24)
+            .padding(.top, 4)
+
+            if let error {
+                AuthErrorView(error: error)
+            }
 
             Button(action: {
                 onRegister(emailInput, passwordInput)
@@ -56,14 +73,14 @@ struct RegisterView: View {
             Spacer()
         }
         .padding(24)
-        .background(
-            LinearGradient(
-                colors: [Color.wandrSecondary.opacity(0.1), Color.wandrPrimary.opacity(0.05)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-        )
+        }
+        .sheet(isPresented: Binding(get: { needsEmailConfirmation }, set: { if !$0 {
+            onContinueToLogin()
+        } })) {
+            EmailConfirmationSheet(onContinue: onContinueToLogin)
+                .presentationDetents([.height(300)])
+                .presentationDragIndicator(.visible)
+        }
     }
 }
 
@@ -75,4 +92,8 @@ struct RegisterView: View {
 #Preview("Dark Mode") {
     RegisterView()
         .preferredColorScheme(.dark)
+}
+
+#Preview("Confirm email") {
+    RegisterView(needsEmailConfirmation: true)
 }

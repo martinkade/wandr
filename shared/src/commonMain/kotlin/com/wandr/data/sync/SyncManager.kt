@@ -5,6 +5,7 @@ import com.wandr.data.local.dao.ChallengeDao
 import com.wandr.data.local.dao.ProfileDao
 import com.wandr.data.local.dao.TeamDao
 import com.wandr.data.remote.ActivityRouteDto
+import com.wandr.data.remote.SupabaseErrorMapper
 import com.wandr.data.remote.toDto
 import com.wandr.data.remote.toUpdatePayload
 import io.github.jan.supabase.SupabaseClient
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class SyncManager(
     private val profileDao: ProfileDao,
@@ -93,8 +95,10 @@ class SyncManager(
                 }
 
                 _syncState.value = SyncState.Success(syncedCount = totalSynced)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                _syncState.value = SyncState.Error(message = e.message ?: "Sync failed")
+                _syncState.value = SyncState.Error(SupabaseErrorMapper.map(e))
             }
             if (resyncRequested) {
                 resyncRequested = false

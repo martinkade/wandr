@@ -5,10 +5,10 @@ import com.wandr.data.local.dao.ProfileDao
 import com.wandr.data.remote.ActivityDto
 import com.wandr.data.remote.ActivityRouteDto
 import com.wandr.data.remote.ProfileDto
+import com.wandr.data.remote.supabaseResult
 import com.wandr.data.remote.toEntity
 import com.wandr.domain.repository.ActivityFeedRepository
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
@@ -19,7 +19,8 @@ class ActivityFeedRepositoryImpl(
     private val profileDao: ProfileDao
 ) : ActivityFeedRepository {
 
-    override suspend fun refreshTeam(teamId: String, userId: String): Result<Unit> = runCatching {
+    override suspend fun refreshTeam(teamId: String, userId: String): Result<Unit> =
+        supabaseResult {
         store(supabase.postgrest.from("activities").select {
             filter { eq("team_id", teamId) }
             order("start_time", Order.DESCENDING)
@@ -27,7 +28,7 @@ class ActivityFeedRepositoryImpl(
         }.decodeList<ActivityDto>(), userId)
     }
 
-    override suspend fun refreshUser(userId: String): Result<Unit> = runCatching {
+    override suspend fun refreshUser(userId: String): Result<Unit> = supabaseResult {
         store(supabase.postgrest.from("activities").select {
             filter { eq("user_id", userId) }
             order("start_time", Order.DESCENDING)
@@ -39,7 +40,7 @@ class ActivityFeedRepositoryImpl(
         if (remote.isEmpty()) return
 
         // The server only returns routes the owner shares (or our own). If this call fails the cached routes stay.
-        val routes: Map<String, String>? = runCatching {
+        val routes: Map<String, String>? = supabaseResult {
             supabase.postgrest.from("activity_routes").select(Columns.list("activity_id", "user_id", "polyline")) {
                 filter { isIn("activity_id", remote.map { it.id }) }
             }.decodeList<ActivityRouteDto>().associate { it.activityId to it.polyline }
@@ -61,7 +62,7 @@ class ActivityFeedRepositoryImpl(
         // The authors of the other activities, for the name and avatar on the feed cards.
         val authorIds = remote.map { it.userId }.distinct().filter { it != currentUserId }
         if (authorIds.isNotEmpty()) {
-            runCatching {
+            supabaseResult {
                 supabase.postgrest.from("profiles").select { filter { isIn("id", authorIds) } }
                     .decodeList<ProfileDto>()
                     .forEach { dto ->

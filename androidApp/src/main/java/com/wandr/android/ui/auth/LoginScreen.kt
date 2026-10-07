@@ -1,6 +1,7 @@
 package com.wandr.android.ui.auth
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,11 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,10 +25,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.AppLogo
+import com.wandr.android.ui.common.ContourBackground
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.presentation.auth.LoginIntent
 import com.wandr.presentation.auth.LoginState
@@ -56,21 +66,44 @@ private fun LoginScreenContent(
     onNavigateToRegister: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    ContourBackground(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
+                .widthIn(max = 420.dp)
+                .background(
+                    color = CardDefaults.cardColors().containerColor,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .padding(top = 32.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            AppLogo()
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = stringResource(R.string.app_name),
+                text = buildAnnotatedString {
+                    append(stringResource(R.string.app_name))
+                    withStyle(
+                        SpanStyle(
+                            fontWeight = FontWeight.Light
+                        )
+                    ) {
+                        append(" | ")
+                    }
+                    withStyle(
+                        SpanStyle(
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
+                        append(stringResource(R.string.login_title))
+                    }
+                },
                 style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.tertiary
+                color = MaterialTheme.colorScheme.tertiary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = stringResource(R.string.app_tagline),
@@ -84,6 +117,7 @@ private fun LoginScreenContent(
                 value = state.emailInput,
                 onValueChange = { onIntent(LoginIntent.EmailChanged(it)) },
                 label = { Text(stringResource(R.string.email_label)) },
+                isError = state.error.concernsEmail(),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -94,18 +128,15 @@ private fun LoginScreenContent(
                 value = state.passwordInput,
                 onValueChange = { onIntent(LoginIntent.PasswordChanged(it)) },
                 label = { Text(stringResource(R.string.password_label)) },
+                isError = state.error.concernsPassword(),
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            state.errorMessage?.let { error ->
+            state.error?.let { error ->
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                AuthErrorText(error)
             }
 
             Spacer(modifier = Modifier.height(24.dp))

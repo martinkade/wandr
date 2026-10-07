@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.social.SocialSectionHost
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.android.util.AppDateFormatter
@@ -124,14 +125,15 @@ private fun ActivityDetailsScreenContent(
     val mergedText = stringResource(R.string.activity_merged_message)
     val trimmedText = stringResource(R.string.activity_trimmed_message)
     val discardedText = stringResource(R.string.activity_discarded_message)
-    LaunchedEffect(state.success, state.errorMessage) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.success, errorText) {
         if (state.success == ActivitySuccess.DELETED) {
             onIntent(ActivityIntent.ClearMessages)
             onBack() // the activity is gone
             return@LaunchedEffect
         }
         val message = when {
-            state.errorMessage != null -> state.errorMessage
+            errorText != null -> errorText
             state.success == ActivitySuccess.UPDATED -> updatedText
             state.success == ActivitySuccess.MERGED -> mergedText
             state.success == ActivitySuccess.TRIMMED -> trimmedText
@@ -164,18 +166,25 @@ private fun ActivityDetailsScreenContent(
         // While the sheet is open, its own host shows the messages.
         snackbarHost = { if (!isEditing) SnackbarHost(snackbarHostState) }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Box(Modifier
+            .fillMaxSize()
+            .padding(padding)) {
             if (activity == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else {
                 val locale = LocalConfiguration.current.locales[0]
-                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
+                Column(Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp)) {
                     // The full track from this device's FIT file, otherwise the simplified route from the server.
                     val route = remember(state.selectedTrack, activity.polyline) {
                         state.selectedTrack.ifEmpty { activity.polyline?.let(PolylineCodec::decode).orEmpty() }
                     }
                     if (route.size >= 2) {
-                        TrackMapView(trackpoints = route, modifier = Modifier.fillMaxWidth().height(200.dp))
+                        TrackMapView(trackpoints = route, modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp))
                         if (activity.userId == userId && !activity.showMap) {
                             Text(
                                 text = stringResource(R.string.activity_map_hidden_hint),

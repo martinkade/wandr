@@ -10,8 +10,11 @@ import com.wandr.data.remote.ChallengeParticipantInsertDto
 import com.wandr.data.remote.ChallengeTeamInsertDto
 import com.wandr.data.remote.MemberRankingDto
 import com.wandr.data.remote.TeamStandingDto
+import com.wandr.data.remote.supabaseResult
 import com.wandr.data.remote.toDto
 import com.wandr.data.remote.toUpdatePayload
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.InputProblem
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeParticipant
 import com.wandr.domain.model.ChallengeParticipation
@@ -24,13 +27,12 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 
 class ChallengeRepositoryImpl(
     private val challengeDao: ChallengeDao,
@@ -61,7 +63,8 @@ class ChallengeRepositoryImpl(
         }
     }
 
-    override suspend fun getMemberRanking(challengeId: String): Result<List<LeaderboardEntry>> = runCatching {
+    override suspend fun getMemberRanking(challengeId: String): Result<List<LeaderboardEntry>> =
+        supabaseResult {
         val target = challengeDao.getChallengeOnce(challengeId)?.targetValue?.takeIf { it > 0.0 }
         val rows = supabase.postgrest.rpc("challenge_member_ranking", buildJsonObject { put("p_challenge_id", challengeId) })
             .decodeList<MemberRankingDto>()
@@ -80,7 +83,8 @@ class ChallengeRepositoryImpl(
         }
     }
 
-    override suspend fun getTeamStandings(challengeId: String): Result<List<TeamStanding>> = runCatching {
+    override suspend fun getTeamStandings(challengeId: String): Result<List<TeamStanding>> =
+        supabaseResult {
         val challenge = challengeDao.getChallengeOnce(challengeId)
         val target = challenge?.targetValue?.takeIf { it > 0.0 }
         val requireAll = challenge?.requireAllMembersCompletion ?: false
@@ -103,7 +107,7 @@ class ChallengeRepositoryImpl(
             }
     }
 
-    override suspend fun refreshChallenges(userId: String): Result<Unit> = runCatching {
+    override suspend fun refreshChallenges(userId: String): Result<Unit> = supabaseResult {
         // RLS only returns what the user may see. Unsynced local edits are never overwritten.
         supabase.postgrest.from("challenges").select().decodeList<ChallengeDto>().forEach { dto ->
             val local = challengeDao.getChallengeOnce(dto.id)
@@ -131,19 +135,25 @@ class ChallengeRepositoryImpl(
      * Only managers may create challenges (RLS), so the remote insert happens first; the local cache is only
      * written after it succeeded. [Challenge.id] must already be a UUID.
      */
-    override suspend fun createChallenge(challenge: Challenge): Result<Challenge> = runCatching {
+    override suspend fun createChallenge(challenge: Challenge): Result<Challenge> = supabaseResult {
         val entity = challenge.toEntity()
         supabase.postgrest.from("challenges").insert(entity.toDto())
         challengeDao.insertChallenge(entity)
         challenge
     }
 
-    override suspend fun updateChallenge(challenge: Challenge): Result<Challenge> = runCatching {
+    override suspend fun updateChallenge(challenge: Challenge): Result<Challenge> = supabaseResult {
         requireNotNull(challengeDao.getChallengeOnce(challenge.id)) { "Challenge is not loaded yet" }
         val entity = challenge.toEntity(syncStatus = DIRTY)
             .copy(updatedAt = Clock.System.now().toEpochMilliseconds())
         challengeDao.insertChallenge(entity) // local first
-        runCatching { pushChallenge(entity) }.onSuccess { challengeDao.insertChallenge(entity.copy(syncStatus = SYNCED)) }
+        supabaseResult { pushChallenge(entity) }.onSuccess {
+            challengeDao.insertChallenge(
+                entity.copy(
+                    syncStatus = SYNCED
+                )
+            )
+        }
         entity.toDomain()
     }
 
@@ -168,21 +178,25 @@ class ChallengeRepositoryImpl(
         updatedAt = updatedAt, isActive = status == ChallengeStatus.ACTIVE.value
     )
 
-    override suspend fun setChallengeCover(challengeId: String, jpegBytes: ByteArray): Result<Challenge> = runCatching {
+    override suspend fun setChallengeCover(
+        challengeId: String,
+        jpegBytes: ByteArray
+    ): Result<Challenge> = supabaseResult {
         val current = requireNotNull(challengeDao.getChallengeOnce(challengeId)) { "Challenge is not loaded yet" }.toDomain()
         val fileName = "cover_${Clock.System.now().toEpochMilliseconds()}.jpg"
         val bucket = supabase.storage.from(COVER_BUCKET)
         bucket.upload("$challengeId/$fileName", jpegBytes) { contentType = ContentType.Image.JPEG }
         val updated = updateChallenge(current.copy(coverUrl = bucket.publicUrl("$challengeId/$fileName"))).getOrThrow()
         // Best effort: stale files are harmless, a failed cleanup must not fail the update.
-        runCatching { deleteCovers(challengeId, keepFileName = fileName) }
+        supabaseResult { deleteCovers(challengeId, keepFileName = fileName) }
         updated
     }
 
-    override suspend fun removeChallengeCover(challengeId: String): Result<Challenge> = runCatching {
+    override suspend fun removeChallengeCover(challengeId: String): Result<Challenge> =
+        supabaseResult {
         val current = requireNotNull(challengeDao.getChallengeOnce(challengeId)) { "Challenge is not loaded yet" }.toDomain()
         val updated = updateChallenge(current.copy(coverUrl = null)).getOrThrow()
-        runCatching { deleteCovers(challengeId, keepFileName = null) }
+            supabaseResult { deleteCovers(challengeId, keepFileName = null) }
         updated
     }
 
@@ -193,9 +207,10 @@ class ChallengeRepositoryImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun joinChallenge(challengeId: String, userId: String): Result<Unit> = runCatching {
+    override suspend fun joinChallenge(challengeId: String, userId: String): Result<Unit> =
+        supabaseResult {
         val challenge = challengeDao.getChallengeOnce(challengeId)
-        require(challenge?.scope != "group") { "Group challenges are joined by enrolling a team" }
+            if (challenge?.scope == "group") throw AppError.InvalidInput(InputProblem.WRONG_CHALLENGE_SCOPE)
         val now = Clock.System.now().toEpochMilliseconds()
         val participant = ChallengeParticipantEntity(
             id = Uuid.random().toString(),
@@ -211,7 +226,8 @@ class ChallengeRepositoryImpl(
         participantDao.insertParticipant(participant)
     }
 
-    override suspend fun leaveChallenge(challengeId: String, userId: String): Result<Unit> = runCatching {
+    override suspend fun leaveChallenge(challengeId: String, userId: String): Result<Unit> =
+        supabaseResult {
         // RLS: users may only quit individual challenges themselves.
         supabase.postgrest.from("challenge_participants").delete {
             filter {
@@ -222,7 +238,8 @@ class ChallengeRepositoryImpl(
         participantDao.deleteParticipant(challengeId, userId)
     }
 
-    override suspend fun withdrawTeam(challengeId: String, teamId: String): Result<Unit> = runCatching {
+    override suspend fun withdrawTeam(challengeId: String, teamId: String): Result<Unit> =
+        supabaseResult {
         // Server-side (RLS): only the team owner or an admin may do this. A trigger removes the members.
         supabase.postgrest.from("challenge_teams").delete {
             filter {
@@ -234,9 +251,13 @@ class ChallengeRepositoryImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun enrollTeam(challengeId: String, teamId: String, enrolledBy: String): Result<Unit> = runCatching {
+    override suspend fun enrollTeam(
+        challengeId: String,
+        teamId: String,
+        enrolledBy: String
+    ): Result<Unit> = supabaseResult {
         val challenge = challengeDao.getChallengeOnce(challengeId)
-        require(challenge?.scope == "group") { "Only group challenges can be joined by a team" }
+        if (challenge?.scope != "group") throw AppError.InvalidInput(InputProblem.WRONG_CHALLENGE_SCOPE)
         // Server-side (RLS): only the team owner or an admin may do this. A trigger adds all members as participants.
         supabase.postgrest.from("challenge_teams")
             .insert(ChallengeTeamInsertDto(Uuid.random().toString(), challengeId, teamId, enrolledBy))

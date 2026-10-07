@@ -1,5 +1,7 @@
 package com.wandr.presentation.watch
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.model.ActivityConflictException
 import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.usecase.ImportWatchWorkoutUseCase
@@ -23,7 +25,7 @@ data class WatchImportState(
     val isSaving: Boolean = false,
     /** How many workouts were imported since the last [WatchImportIntent.ClearMessages]. */
     val importedCount: Int = 0,
-    val errorMessage: String? = null
+    val error: AppError? = null
 )
 
 sealed interface WatchImportIntent {
@@ -57,7 +59,12 @@ class WatchImportViewModel(
         when (intent) {
             is WatchImportIntent.Start -> start(intent.userId, intent.teamId)
             is WatchImportIntent.ResolveConflict -> resolve(intent.resolution)
-            is WatchImportIntent.ClearMessages -> _state.update { it.copy(importedCount = 0, errorMessage = null) }
+            is WatchImportIntent.ClearMessages -> _state.update {
+                it.copy(
+                    importedCount = 0,
+                    error = null
+                )
+            }
         }
     }
 
@@ -99,7 +106,12 @@ class WatchImportViewModel(
                 } else {
                     failed += workout.id
                     _state.update {
-                        it.copy(isSaving = false, conflict = null, conflictWorkout = null, errorMessage = error.message ?: "Import failed")
+                        it.copy(
+                            isSaving = false,
+                            conflict = null,
+                            conflictWorkout = null,
+                            error = error.asAppError()
+                        )
                     }
                 }
             }

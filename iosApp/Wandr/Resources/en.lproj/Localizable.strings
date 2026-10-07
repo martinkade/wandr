@@ -169,3 +169,50 @@
 "health_stats_title" = "Today";
 "health_stats_steps" = "Steps";
 "health_stats_floors" = "Floors climbed";
+
+/* Errors (see AppError) */
+"error_invalid_email" = "Please enter a valid email address.";
+"error_password_too_short %lld" = "The password needs at least %lld characters.";
+"error_username_required" = "Please enter a username.";
+"error_invalid_credentials" = "Email or password is wrong.";
+"error_email_not_confirmed" = "Please confirm your email address first. Check your inbox.";
+"error_email_confirmation_required" = "Almost done! We sent you an email. Confirm your address, then sign in.";
+"error_user_already_exists" = "An account with this email already exists. Try signing in instead.";
+"error_weak_password" = "This password is too weak. Use a longer one with different kinds of characters.";
+"error_signup_disabled" = "Signing up is currently not possible.";
+"error_user_banned" = "This account is blocked.";
+"error_session_expired" = "Your session has expired. Please sign in again.";
+"error_network" = "No connection. Check your internet connection and try again.";
+"error_timeout" = "The server took too long to answer. Please try again.";
+"error_rate_limited" = "Too many attempts. Please wait a moment and try again.";
+"error_permission_denied" = "You are not allowed to do that.";
+"error_not_found" = "This could not be found. It may have been deleted.";
+"error_conflict" = "This conflicts with data that already exists.";
+"error_validation" = "Some of the data is not valid.";
+"error_server" = "The server has a problem. Please try again later.";
+"error_unknown" = "Something went wrong. Please try again.";
+"login_title" = "Sign in";
+"register_title" = "Create account";
+
+/* Input problems (AppError.InvalidInput) */
+"error_input_title_required" = "Please enter a title.";
+"error_input_name_required" = "Please enter a name.";
+"error_input_display_name_required" = "Please enter a display name.";
+"error_input_target_not_positive" = "The target must be greater than 0.";
+"error_input_end_before_start" = "The end must be after the start.";
+"error_input_negative_values" = "Distance, duration and elevation cannot be negative.";
+"error_input_comment_empty" = "The comment is empty.";
+"error_input_comment_too_long %lld" = "Comments can have up to %lld characters.";
+"error_input_image_empty" = "The image is empty. Please choose another one.";
+"error_input_image_too_large %lld" = "The image is too large (maximum %lld MB).";
+"error_input_invite_code_required" = "Please enter an invite code.";
+"error_input_invite_code_invalid" = "This is not a valid invite code.";
+"error_input_unsupported_reaction" = "This reaction is not available.";
+"error_input_nothing_to_order" = "There is nothing to reorder.";
+"error_input_nothing_left_to_trim" = "Nothing is left after trimming: existing activities cover the whole time.";
+"error_input_wrong_challenge_scope" = "This is not possible for this kind of challenge.";
+"error_local_storage" = "WANDR could not open its data on this device. Free up some storage space and try again.";
+"error_input_generic" = "Please check your input.";
+"registration_success_title" = "Account created";
+"registration_success_confirm_email" = "We sent a confirmation link to your email address. Confirm it, then sign in.";
+"registration_sign_in_now" = "Sign in now";

@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 private class FakeNotificationRepository(val items: List<AppNotification>, var unread: Int = items.count { !it.isRead }) : NotificationRepository {
@@ -62,6 +63,6 @@ class NotificationsViewModelTest {
         viewModel.processIntent(NotificationsIntent.MarkRead("1"))
         assertEquals(false, viewModel.state.value.notifications.single().isRead)
         assertEquals(1, viewModel.state.value.unreadCount)
-        assertEquals("offline", viewModel.state.value.errorMessage)
+        assertIs<com.wandr.domain.error.AppError.Unknown>(viewModel.state.value.error)
     }
 }

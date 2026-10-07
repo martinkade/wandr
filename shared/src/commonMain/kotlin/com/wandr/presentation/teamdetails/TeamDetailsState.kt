@@ -1,5 +1,6 @@
 package com.wandr.presentation.teamdetails
 
+import com.wandr.domain.error.AppError
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
 
@@ -15,6 +16,6 @@ data class TeamDetailsState(
     val isImageUpdating: Boolean = false,
     /** True while name/description were edited without saving; protects the draft from cache emissions. */
     val hasUnsavedChanges: Boolean = false,
-    val errorMessage: String? = null,
+    val error: AppError? = null,
     val success: TeamDetailsSuccess? = null
 )

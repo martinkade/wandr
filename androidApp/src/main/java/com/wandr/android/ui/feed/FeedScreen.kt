@@ -5,9 +5,9 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -44,6 +44,7 @@ import com.wandr.android.ui.activity.ActivityConflictSheet
 import com.wandr.android.ui.activity.ActivityEditScreen
 import com.wandr.android.ui.activity.ActivityFabMenu
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.SocialCounts
@@ -132,9 +133,10 @@ private fun FeedScreenContent(
     val mergedText = stringResource(R.string.activity_merged_message)
     val trimmedText = stringResource(R.string.activity_trimmed_message)
     val discardedText = stringResource(R.string.activity_discarded_message)
-    LaunchedEffect(state.success, state.errorMessage) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.success, errorText) {
         val message = when {
-            state.errorMessage != null -> state.errorMessage
+            errorText != null -> errorText
             state.success == ActivitySuccess.CREATED -> createdText
             state.success == ActivitySuccess.DELETED -> deletedText
             state.success == ActivitySuccess.MERGED -> mergedText

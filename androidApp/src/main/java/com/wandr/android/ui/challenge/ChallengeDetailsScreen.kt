@@ -1,10 +1,8 @@
 package com.wandr.android.ui.challenge
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -43,6 +40,7 @@ import com.wandr.android.ui.activity.activityTypeText
 import com.wandr.android.ui.common.CoverEditor
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.social.SocialSectionHost
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
@@ -50,9 +48,9 @@ import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.ChallengeType
 import com.wandr.domain.model.SocialEntityType
-import com.wandr.domain.model.availableChallengeAction
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamStanding
+import com.wandr.domain.model.availableChallengeAction
 import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeState
 import com.wandr.presentation.challenge.ChallengeSuccess
@@ -134,9 +132,10 @@ private fun ChallengeDetailsScreenContent(
     val leftText = stringResource(R.string.challenge_left_message)
     val withdrawnText = stringResource(R.string.challenge_team_withdrawn_message)
     val imageText = stringResource(R.string.challenge_image_updated_message)
-    LaunchedEffect(state.success, state.errorMessage) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.success, state.error) {
         val message = when {
-            state.errorMessage != null -> state.errorMessage
+            errorText != null -> errorText
             state.success == ChallengeSuccess.UPDATED -> updatedText
             state.success == ChallengeSuccess.JOINED -> joinedText
             state.success == ChallengeSuccess.TEAM_ENROLLED -> enrolledText
@@ -171,14 +170,19 @@ private fun ChallengeDetailsScreenContent(
         // While the sheet is open, its own host shows the messages.
         snackbarHost = { if (!isEditing) SnackbarHost(snackbarHostState) }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Box(Modifier
+            .fillMaxSize()
+            .padding(padding)) {
             if (challenge == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else {
                 val type = ChallengeType.fromValue(challenge.type)
                 val isGroup = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.GROUP
                 Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CoverEditor(

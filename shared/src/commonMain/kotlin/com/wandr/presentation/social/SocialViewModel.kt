@@ -1,6 +1,7 @@
 package com.wandr.presentation.social
 
-import com.wandr.domain.model.Comment
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.model.ReactionSummary
 import com.wandr.domain.model.SocialSummary
 import com.wandr.domain.usecase.AddCommentUseCase
@@ -52,7 +53,7 @@ class SocialViewModel(
             is SocialIntent.UpdateComment -> edit(intent.commentId, intent.content)
             is SocialIntent.DeleteComment -> remove(intent.commentId)
             is SocialIntent.ToggleReaction -> toggleReaction(intent.commentId, intent.emoji)
-            is SocialIntent.ClearMessages -> _state.update { it.copy(errorMessage = null) }
+            is SocialIntent.ClearMessages -> _state.update { it.copy(error = null) }
         }
     }
 
@@ -69,7 +70,8 @@ class SocialViewModel(
                     isLoading = false,
                     summary = summary.getOrDefault(it.summary),
                     comments = comments.getOrDefault(it.comments),
-                    errorMessage = (summary.exceptionOrNull() ?: comments.exceptionOrNull())?.let(::message)
+                    error = (summary.exceptionOrNull()
+                        ?: comments.exceptionOrNull())?.let(::message)
                 )
             }
         }
@@ -83,7 +85,12 @@ class SocialViewModel(
         _state.update { it.copy(summary = it.summary.withLike(liked)) }
         scope.launch {
             setLike(s.entityType, entityId, userId, liked).onFailure { error ->
-                _state.update { it.copy(summary = it.summary.withLike(!liked), errorMessage = message(error)) }
+                _state.update {
+                    it.copy(
+                        summary = it.summary.withLike(!liked),
+                        error = message(error)
+                    )
+                }
             }
         }
     }
@@ -97,18 +104,25 @@ class SocialViewModel(
         val s = _state.value
         val entityId = s.entityId ?: return
         val userId = s.currentUserId ?: return
-        _state.update { it.copy(isPosting = true, errorMessage = null) }
+        _state.update { it.copy(isPosting = true, error = null) }
         scope.launch {
             addComment(s.entityType, entityId, userId, content)
                 .onSuccess { comment -> _state.update { it.copy(isPosting = false, comments = it.comments + comment) } }
-                .onFailure { error -> _state.update { it.copy(isPosting = false, errorMessage = message(error)) } }
+                .onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            isPosting = false,
+                            error = message(error)
+                        )
+                    }
+                }
         }
     }
 
     private fun edit(commentId: String, content: String) {
         val existing = _state.value.comments.firstOrNull { it.id == commentId } ?: return
         if (!_state.value.canEdit(existing)) return
-        _state.update { it.copy(isPosting = true, errorMessage = null) }
+        _state.update { it.copy(isPosting = true, error = null) }
         scope.launch {
             updateComment(commentId, content)
                 .onSuccess { updated ->
@@ -117,7 +131,14 @@ class SocialViewModel(
                         s.copy(isPosting = false, comments = s.comments.map { if (it.id == commentId) updated.copy(reactions = it.reactions) else it })
                     }
                 }
-                .onFailure { error -> _state.update { it.copy(isPosting = false, errorMessage = message(error)) } }
+                .onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            isPosting = false,
+                            error = message(error)
+                        )
+                    }
+                }
         }
     }
 
@@ -127,7 +148,7 @@ class SocialViewModel(
         scope.launch {
             deleteComment(commentId)
                 .onSuccess { _state.update { s -> s.copy(comments = s.comments.filterNot { it.id == commentId }) } }
-                .onFailure { error -> _state.update { it.copy(errorMessage = message(error)) } }
+                .onFailure { error -> _state.update { it.copy(error = message(error)) } }
         }
     }
 
@@ -138,7 +159,9 @@ class SocialViewModel(
         _state.update { it.withReaction(commentId, emoji, reacted) }
         scope.launch {
             setReaction(commentId, userId, emoji, reacted).onFailure { error ->
-                _state.update { it.withReaction(commentId, emoji, !reacted).copy(errorMessage = message(error)) }
+                _state.update {
+                    it.withReaction(commentId, emoji, !reacted).copy(error = message(error))
+                }
             }
         }
     }
@@ -157,5 +180,5 @@ class SocialViewModel(
             .sortedBy { com.wandr.domain.model.Reactions.allowed.indexOf(it.emoji).let { i -> if (i < 0) Int.MAX_VALUE else i } }
     }
 
-    private fun message(error: Throwable) = error.message ?: "Something went wrong"
+    private fun message(error: Throwable): AppError = error.asAppError()
 }

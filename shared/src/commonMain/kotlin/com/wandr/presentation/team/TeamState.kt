@@ -1,5 +1,6 @@
 package com.wandr.presentation.team
 
+import com.wandr.domain.error.AppError
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
 
@@ -12,6 +13,6 @@ data class TeamState(
     val joinInviteCode: String = "",
     val qrInviteUrl: String? = null,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null,
+    val error: AppError? = null,
     val successMessage: String? = null
 )

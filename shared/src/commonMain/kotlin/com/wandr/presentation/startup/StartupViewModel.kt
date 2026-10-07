@@ -1,5 +1,6 @@
 package com.wandr.presentation.startup
 
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.usecase.InitializeAppUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +36,7 @@ class StartupViewModel(
                     _uiState.value = if (hasSession) StartupState.Authenticated else StartupState.Unauthenticated
                 }
                 .onFailure { error ->
-                    _uiState.value = StartupState.Failed(error.message ?: "Initialization failed")
+                    _uiState.value = StartupState.Failed(error.asAppError())
                 }
         }
     }

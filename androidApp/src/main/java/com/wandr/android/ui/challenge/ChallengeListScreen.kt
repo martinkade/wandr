@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeParticipation
@@ -105,9 +106,10 @@ private fun ChallengeListScreenContent(
     val enrolledText = stringResource(R.string.challenge_team_enrolled_message)
     val leftText = stringResource(R.string.challenge_left_message)
     val withdrawnText = stringResource(R.string.challenge_team_withdrawn_message)
-    LaunchedEffect(state.success, state.errorMessage) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.success, state.error) {
         val message = when {
-            state.errorMessage != null -> state.errorMessage
+            errorText != null -> errorText
             state.success == ChallengeSuccess.CREATED -> createdText
             state.success == ChallengeSuccess.UPDATED -> updatedText
             state.success == ChallengeSuccess.JOINED -> joinedText
@@ -142,14 +144,18 @@ private fun ChallengeListScreenContent(
             }
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Box(Modifier
+            .fillMaxSize()
+            .padding(padding)) {
             if (state.challenges.isEmpty() && !state.isLoading) {
                 Text(
                     text = stringResource(R.string.challenges_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.Center).padding(32.dp)
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(32.dp)
                 )
             } else {
                 LazyColumn(

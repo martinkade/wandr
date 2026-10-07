@@ -38,11 +38,12 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.LabeledLoading
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.profile.components.HealthImportCard
 import com.wandr.android.ui.profile.components.HealthStatsCard
 import com.wandr.android.ui.profile.components.ProfileHeaderRow
-import com.wandr.android.ui.profile.components.TeamMembershipsSection
 import com.wandr.android.ui.profile.components.ProfileStatsRow
+import com.wandr.android.ui.profile.components.TeamMembershipsSection
 import com.wandr.android.util.AppDateFormatter
 import com.wandr.presentation.profile.ProfileIntent
 import com.wandr.presentation.profile.ProfileState
@@ -97,9 +98,10 @@ private fun ProfileScreenContent(
 
     val savedText = stringResource(R.string.profile_saved_message)
     val avatarText = stringResource(R.string.profile_avatar_updated_message)
-    LaunchedEffect(state.success, state.errorMessage) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.success, state.error) {
         val message = when {
-            state.errorMessage != null -> state.errorMessage
+            errorText != null -> errorText
             state.success == ProfileSuccess.PROFILE_SAVED -> savedText
             state.success == ProfileSuccess.AVATAR_UPDATED -> avatarText
             else -> null

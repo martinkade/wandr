@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.AppNotification
 import com.wandr.domain.model.NotificationType
@@ -70,8 +71,9 @@ private fun NotificationsScreenContent(
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(state.errorMessage) {
-        state.errorMessage?.let {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(errorText) {
+        errorText?.let {
             snackbarHostState.showSnackbar(it)
             onIntent(NotificationsIntent.ClearMessages)
         }
@@ -90,7 +92,9 @@ private fun NotificationsScreenContent(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Box(Modifier
+            .fillMaxSize()
+            .padding(padding)) {
             when {
                 state.isLoading && state.notifications.isEmpty() ->
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -99,7 +103,9 @@ private fun NotificationsScreenContent(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.Center).padding(32.dp)
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(32.dp)
                 )
                 else -> LazyColumn(Modifier.fillMaxSize()) {
                     items(state.notifications, key = { it.id }) { notification ->

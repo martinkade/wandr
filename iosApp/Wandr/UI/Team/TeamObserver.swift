@@ -44,13 +44,13 @@ final class TeamObserver: ObservableObject {
     private func apply(_ state: TeamState) {
         teams = state.teams
         isLoading = state.isLoading
-        errorMessage = state.errorMessage
+        errorMessage = state.error?.userMessage
         if awaitingCreate, !state.isLoading {
             if state.successMessage != nil {
                 awaitingCreate = false
                 createdCount += 1
                 viewModel.processIntent(intent: TeamIntentClearMessages.shared)
-            } else if state.errorMessage != nil {
+            } else if state.error != nil {
                 awaitingCreate = false
             }
         }

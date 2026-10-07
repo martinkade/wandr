@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.wandr.android.R
+import com.wandr.android.ui.common.userMessage
 import com.wandr.presentation.team.TeamIntent
 import com.wandr.presentation.team.TeamViewModel
 import org.koin.compose.koinInject
@@ -33,7 +34,8 @@ fun TeamMembershipsSection(
     val scanFailedText = stringResource(R.string.join_team_scan_failed)
     LaunchedEffect(userId) { viewModel.processIntent(TeamIntent.LoadUserTeams(userId)) }
 
-    LaunchedEffect(state.successMessage, state.errorMessage) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.successMessage, state.error) {
         when {
             state.successMessage != null -> {
                 showJoin = false
@@ -41,8 +43,8 @@ fun TeamMembershipsSection(
                 viewModel.processIntent(TeamIntent.ClearMessages)
             }
             // While the dialog is open it shows the error itself; a rejected reorder is reported here.
-            state.errorMessage != null && !showJoin -> {
-                Toast.makeText(context, state.errorMessage, Toast.LENGTH_LONG).show()
+            errorText != null && !showJoin -> {
+                Toast.makeText(context, errorText, Toast.LENGTH_LONG).show()
                 viewModel.processIntent(TeamIntent.ClearMessages)
             }
         }
@@ -63,7 +65,7 @@ fun TeamMembershipsSection(
             code = state.joinInviteCode,
             onCodeChange = { viewModel.processIntent(TeamIntent.JoinInviteCodeChanged(it)) },
             isJoining = state.isLoading,
-            errorMessage = state.errorMessage,
+            errorMessage = errorText,
             onScan = {
                 scanInviteQr(
                     context = context,

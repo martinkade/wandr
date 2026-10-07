@@ -53,3 +53,25 @@ Use this skill when creating or refactoring domain models, UseCases, repositorie
 - [ ] Is media/workout caching routed through `LruFileCache`?
 - [ ] Does the ViewModel communicate exclusively via UseCases?
 - [ ] Are all dependencies registered in Koin modules?
+
+---
+
+## ⚠️ Error handling for Supabase calls
+
+- **Wrap every Supabase call** (`auth`, `postgrest`, `storage`, RPC) in `supabaseResult { ... }`
+  (`data/remote/SupabaseErrorMapper.kt`), not `runCatching`: it maps what the SDK throws to a typed
+  `AppError` (`domain/error/AppError.kt`) and never swallows a coroutine cancellation.
+- **Failures are `Result.failure(AppError)`.** Use cases validate input with
+  `AppError.InvalidEmail`, `PasswordTooShort`, ... instead of
+  `IllegalArgumentException("English text")`. `Throwable.asAppError()` wraps anything else as
+  `Unknown`.
+- **State holds the `AppError`, not a message string** (`LoginState.error`). The UI picks a
+  localized text from the type (Android: `AppError.userMessage()`, iOS: `AppError.userMessage`), so
+  raw server texts (URLs, headers, error codes such as `invalid_credentials`) never reach the user.
+  Every new `AppError` type needs a string in both platforms and both languages.
+- **New server error codes** go into `AppError.fromAuthCode` / `fromStatus` with a test;
+  `isRetryable` tells the UI whether a "try again" makes sense.
+- Status: converted everywhere (all repositories, use case validations, ViewModel states, both UIs).
+  Local database/file operations use `localResult`; the start-up reports a broken local storage as
+  `AppError.LocalStorage`. New code must follow the same pattern; do not add `errorMessage: String?`
+  to a state.

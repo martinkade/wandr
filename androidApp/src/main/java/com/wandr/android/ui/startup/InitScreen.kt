@@ -12,7 +12,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.wandr.android.R
 import com.wandr.android.ui.common.LabeledLoading
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
+import com.wandr.domain.error.AppError
 import com.wandr.presentation.startup.StartupIntent
 import com.wandr.presentation.startup.StartupState
 import com.wandr.presentation.startup.StartupViewModel
@@ -57,7 +59,7 @@ private fun InitScreenContent(
                 isLoading = true,
                 title = stringResource(R.string.init_failed_title),
                 modifier = Modifier.fillMaxSize(),
-                message = state.message,
+                message = state.error.userMessage(),
                 action = stringResource(R.string.retry_button),
                 onAction = onRetry
             )
@@ -98,7 +100,7 @@ private fun InitScreenLoadingPreview() {
 private fun InitScreenFailedPreview() {
     WandrTheme {
         InitScreenContent(
-            state = StartupState.Failed("Database could not be opened"),
+            state = StartupState.Failed(AppError.LocalStorage()),
             onRetry = {})
     }
 }

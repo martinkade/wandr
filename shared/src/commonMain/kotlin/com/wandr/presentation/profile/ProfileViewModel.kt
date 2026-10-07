@@ -1,5 +1,6 @@
 package com.wandr.presentation.profile
 
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.model.Profile
 import com.wandr.domain.usecase.GetProfileUseCase
 import com.wandr.domain.usecase.GetUserActivityCountUseCase
@@ -47,7 +48,12 @@ class ProfileViewModel(
             is ProfileIntent.DiscardChanges -> _uiState.update {
                 it.copy(profile = cachedProfile ?: it.profile, hasUnsavedChanges = false)
             }
-            is ProfileIntent.ClearMessages -> _uiState.update { it.copy(errorMessage = null, success = null) }
+            is ProfileIntent.ClearMessages -> _uiState.update {
+                it.copy(
+                    error = null,
+                    success = null
+                )
+            }
         }
     }
 
@@ -77,7 +83,7 @@ class ProfileViewModel(
 
     private fun saveProfile() {
         val currentProfile = _uiState.value.profile ?: return
-        _uiState.update { it.copy(isSaving = true, errorMessage = null, success = null) }
+        _uiState.update { it.copy(isSaving = true, error = null, success = null) }
         scope.launch {
             updateProfileUseCase(currentProfile)
                 .onSuccess { updated ->
@@ -86,13 +92,13 @@ class ProfileViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isSaving = false, errorMessage = error.message ?: "Save failed") }
+                    _uiState.update { it.copy(isSaving = false, error = error.asAppError()) }
                 }
         }
     }
 
     private fun updateAvatar(action: suspend () -> Result<com.wandr.domain.model.Profile>) {
-        _uiState.update { it.copy(isAvatarUpdating = true, errorMessage = null, success = null) }
+        _uiState.update { it.copy(isAvatarUpdating = true, error = null, success = null) }
         scope.launch {
             action()
                 .onSuccess { updated ->
@@ -107,7 +113,7 @@ class ProfileViewModel(
                 }
                 .onFailure { error ->
                     _uiState.update {
-                        it.copy(isAvatarUpdating = false, errorMessage = error.message ?: "Avatar update failed")
+                        it.copy(isAvatarUpdating = false, error = error.asAppError())
                     }
                 }
         }

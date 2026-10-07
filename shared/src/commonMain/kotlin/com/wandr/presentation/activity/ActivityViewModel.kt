@@ -1,5 +1,7 @@
 package com.wandr.presentation.activity
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.geo.ElevationGainTracker
 import com.wandr.domain.geo.GeoMath
 import com.wandr.domain.geo.RecordingMetrics
@@ -7,20 +9,20 @@ import com.wandr.domain.geo.RecordingPolicy
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ActivityConflictException
 import com.wandr.domain.model.ConflictResolution
+import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.model.SocialCounts
 import com.wandr.domain.model.SocialEntityType
-import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.usecase.CreateManualActivityUseCase
 import com.wandr.domain.usecase.DeleteActivityUseCase
 import com.wandr.domain.usecase.GetActivityTrackUseCase
+import com.wandr.domain.usecase.GetActivityUseCase
 import com.wandr.domain.usecase.GetProfilesUseCase
 import com.wandr.domain.usecase.GetSocialCountsUseCase
-import com.wandr.domain.usecase.SetLikeUseCase
-import com.wandr.domain.usecase.GetActivityUseCase
 import com.wandr.domain.usecase.GetTeamActivitiesUseCase
 import com.wandr.domain.usecase.GetUserActivitiesUseCase
 import com.wandr.domain.usecase.RecordGpsActivityUseCase
 import com.wandr.domain.usecase.RefreshActivitiesUseCase
+import com.wandr.domain.usecase.SetLikeUseCase
 import com.wandr.domain.usecase.UpdateActivityUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -110,7 +112,12 @@ class ActivityViewModel(
             is ActivityIntent.ResolveConflict -> resolveConflict(intent.resolution)
             is ActivityIntent.DismissConflict -> dismissConflict()
             is ActivityIntent.DeleteActivity -> deleteActivity(intent.activityId)
-            is ActivityIntent.ClearMessages -> _state.update { it.copy(errorMessage = null, success = null) }
+            is ActivityIntent.ClearMessages -> _state.update {
+                it.copy(
+                    error = null,
+                    success = null
+                )
+            }
         }
     }
 
@@ -172,7 +179,12 @@ class ActivityViewModel(
         _state.update { it.copy(socialCounts = it.socialCounts + (activityId to after)) }
         scope.launch {
             setLikeUseCase(SocialEntityType.ACTIVITY, activityId, userId, liked).onFailure { error ->
-                _state.update { it.copy(socialCounts = it.socialCounts + (activityId to before), errorMessage = error.message ?: "Could not save the like") }
+                _state.update {
+                    it.copy(
+                        socialCounts = it.socialCounts + (activityId to before),
+                        error = error.asAppError()
+                    )
+                }
             }
         }
     }
@@ -201,7 +213,7 @@ class ActivityViewModel(
         _state.update {
             it.copy(
                 form = form.copy(startTime = now - (form.durationMinutes * MINUTE_MILLIS).toLong()),
-                errorMessage = null
+                error = null
             )
         }
     }
@@ -212,12 +224,12 @@ class ActivityViewModel(
             ?: state.selectedActivity?.takeIf { it.id == activityId }
             ?: return
         if (activity.userId != currentUserId) {
-            _state.update { it.copy(errorMessage = NOT_OWNER_MESSAGE) }
+            _state.update { it.copy(error = AppError.PermissionDenied()) }
             return
         }
         _state.update {
             it.copy(
-                errorMessage = null,
+                error = null,
                 form = ActivityForm(
                     activityId = activity.id,
                     title = activity.title,
@@ -247,7 +259,7 @@ class ActivityViewModel(
         }
         if (form.isEditing && existing == null) return
         if (existing != null && existing.userId != currentUserId) {
-            _state.update { it.copy(errorMessage = NOT_OWNER_MESSAGE) }
+            _state.update { it.copy(error = AppError.PermissionDenied()) }
             return
         }
 
@@ -294,7 +306,7 @@ class ActivityViewModel(
 
     /** Runs [pending]; a time conflict opens the wizard instead of saving. */
     private fun runSave(pending: PendingSave, resolution: ConflictResolution?) {
-        _state.update { it.copy(isSaving = true, errorMessage = null, success = null) }
+        _state.update { it.copy(isSaving = true, error = null, success = null) }
         scope.launch {
             pending.save(resolution).fold(
                 onSuccess = {
@@ -322,7 +334,13 @@ class ActivityViewModel(
                         }
                     } else {
                         pendingSave = null
-                        _state.update { it.copy(isSaving = false, conflict = null, errorMessage = error.message ?: "Saving failed") }
+                        _state.update {
+                            it.copy(
+                                isSaving = false,
+                                conflict = null,
+                                error = error.asAppError()
+                            )
+                        }
                     }
                 }
             )
@@ -463,7 +481,7 @@ class ActivityViewModel(
         val activity = _state.value.activities.firstOrNull { it.id == activityId }
             ?: _state.value.selectedActivity?.takeIf { it.id == activityId }
         if (activity != null && activity.userId != currentUserId) {
-            _state.update { it.copy(errorMessage = NOT_OWNER_MESSAGE) }
+            _state.update { it.copy(error = AppError.PermissionDenied()) }
             return
         }
         scope.launch {
@@ -471,7 +489,7 @@ class ActivityViewModel(
             deleteActivityUseCase(activityId).fold(
                 onSuccess = { _state.update { s -> s.copy(isSaving = false, success = ActivitySuccess.DELETED) } },
                 onFailure = { error ->
-                    _state.update { s -> s.copy(isSaving = false, errorMessage = error.message ?: "Failed to delete activity") }
+                    _state.update { s -> s.copy(isSaving = false, error = error.asAppError()) }
                 }
             )
         }
@@ -482,6 +500,5 @@ class ActivityViewModel(
         const val METERS_PER_KM = 1_000.0
         /** The feed page size; counts are requested for at most this many cards. */
         const val MAX_FEED_ITEMS = 100
-        const val NOT_OWNER_MESSAGE = "Only the owner can change this activity"
     }
 }

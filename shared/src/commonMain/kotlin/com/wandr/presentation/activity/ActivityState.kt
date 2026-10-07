@@ -1,5 +1,6 @@
 package com.wandr.presentation.activity
 
+import com.wandr.domain.error.AppError
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.model.Profile
@@ -96,7 +97,7 @@ data class ActivityState(
 
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
-    val errorMessage: String? = null,
+    val error: AppError? = null,
     /** What succeeded last; the UI maps it to a localized message. Cleared via [ActivityIntent.ClearMessages]. */
     val success: ActivitySuccess? = null
 ) {

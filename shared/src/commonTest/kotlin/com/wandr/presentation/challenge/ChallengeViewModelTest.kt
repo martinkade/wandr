@@ -1,5 +1,7 @@
 package com.wandr.presentation.challenge
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.InputProblem
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeParticipant
 import com.wandr.domain.model.ChallengeParticipation
@@ -8,27 +10,27 @@ import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.ChallengeType
 import com.wandr.domain.model.LeaderboardEntry
 import com.wandr.domain.model.Team
-import com.wandr.domain.model.TeamStanding
 import com.wandr.domain.model.TeamImageKind
 import com.wandr.domain.model.TeamMember
+import com.wandr.domain.model.TeamStanding
 import com.wandr.domain.repository.ChallengeRepository
 import com.wandr.domain.repository.TeamRepository
 import com.wandr.domain.usecase.CreateChallengeUseCase
-import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
 import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
 import com.wandr.domain.usecase.GetChallengeUseCase
-import com.wandr.domain.usecase.LeaveChallengeUseCase
-import com.wandr.domain.usecase.WithdrawTeamFromChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
-import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
-import com.wandr.domain.usecase.SetChallengeCoverUseCase
+import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
+import com.wandr.domain.usecase.LeaveChallengeUseCase
 import com.wandr.domain.usecase.RefreshChallengesUseCase
+import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
+import com.wandr.domain.usecase.SetChallengeCoverUseCase
 import com.wandr.domain.usecase.UpdateChallengeUseCase
+import com.wandr.domain.usecase.WithdrawTeamFromChallengeUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -40,6 +42,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -67,7 +70,7 @@ private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : 
     }
     override fun getParticipations(userId: String): Flow<List<ChallengeParticipation>> = participations
     override suspend fun leaveChallenge(challengeId: String, userId: String): Result<Unit> {
-        if (failLeave) return Result.failure(IllegalStateException("not allowed"))
+        if (failLeave) return Result.failure(AppError.PermissionDenied())
         left = challengeId to userId
         participations.value = participations.value.filterNot { it.challengeId == challengeId }
         return Result.success(Unit)
@@ -103,7 +106,7 @@ private class FakeChallengeRepository(initial: List<Challenge> = emptyList()) : 
     }
     override suspend fun joinChallenge(challengeId: String, userId: String): Result<Unit> = Result.success(Unit)
     override suspend fun enrollTeam(challengeId: String, teamId: String, enrolledBy: String): Result<Unit> {
-        if (failEnroll) return Result.failure(IllegalStateException("not allowed"))
+        if (failEnroll) return Result.failure(AppError.PermissionDenied())
         enrolled = Triple(challengeId, teamId, enrolledBy)
         return Result.success(Unit)
     }
@@ -285,7 +288,10 @@ class ChallengeViewModelTest {
         vm.processIntent(ChallengeIntent.EndDateChanged(start - day))
         vm.processIntent(ChallengeIntent.SubmitForm("u1"))
 
-        assertEquals("End date must be after start date", vm.uiState.value.errorMessage)
+        assertEquals(
+            InputProblem.END_BEFORE_START,
+            assertIs<AppError.InvalidInput>(vm.uiState.value.error).problem
+        )
         assertNull(repo.created)
     }
 
@@ -333,7 +339,7 @@ class ChallengeViewModelTest {
         val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         vm.processIntent(ChallengeIntent.EnrollTeam("c2", "t1", "u3"))
 
-        assertEquals("not allowed", vm.uiState.value.errorMessage)
+        assertIs<AppError.PermissionDenied>(vm.uiState.value.error)
         assertNull(vm.uiState.value.success)
     }
 
@@ -361,7 +367,7 @@ class ChallengeViewModelTest {
         vm.processIntent(ChallengeIntent.SelectChallenge("c2"))
 
         assertTrue(vm.uiState.value.leaderboard.isEmpty())
-        assertNull(vm.uiState.value.errorMessage)
+        assertNull(vm.uiState.value.error)
     }
 
     @Test
@@ -370,12 +376,18 @@ class ChallengeViewModelTest {
         val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         vm.processIntent(ChallengeIntent.StartCreate)
         vm.processIntent(ChallengeIntent.SubmitForm("u1"))
-        assertEquals("Challenge title cannot be blank", vm.uiState.value.errorMessage)
+        assertEquals(
+            InputProblem.TITLE_REQUIRED,
+            assertIs<AppError.InvalidInput>(vm.uiState.value.error).problem
+        )
 
         vm.processIntent(ChallengeIntent.TitleChanged("Ok"))
         vm.processIntent(ChallengeIntent.TargetValueChanged(0.0))
         vm.processIntent(ChallengeIntent.SubmitForm("u1"))
-        assertEquals("Target value must be greater than 0", vm.uiState.value.errorMessage)
+        assertEquals(
+            InputProblem.TARGET_NOT_POSITIVE,
+            assertIs<AppError.InvalidInput>(vm.uiState.value.error).problem
+        )
         assertNull(repo.created)
     }
 
@@ -487,7 +499,7 @@ class ChallengeViewModelTest {
         val vm = viewModel(repo, emptyList(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         vm.processIntent(ChallengeIntent.LeaveChallenge("c1", "u1"))
 
-        assertEquals("not allowed", vm.uiState.value.errorMessage)
+        assertIs<AppError.PermissionDenied>(vm.uiState.value.error)
         assertNull(vm.uiState.value.success)
     }
 
@@ -533,7 +545,7 @@ class ChallengeViewModelTest {
         vm.processIntent(ChallengeIntent.StartEdit("c1"))
 
         assertNull(vm.uiState.value.form)
-        assertEquals("Only the creator can edit this challenge", vm.uiState.value.errorMessage)
+        assertIs<AppError.PermissionDenied>(vm.uiState.value.error)
     }
 
     @Test
@@ -547,6 +559,6 @@ class ChallengeViewModelTest {
 
         assertNull(repo.coverBytes)
         assertFalse(repo.coverRemoved)
-        assertEquals("Only the creator can edit this challenge", vm.uiState.value.errorMessage)
+        assertIs<AppError.PermissionDenied>(vm.uiState.value.error)
     }
 }

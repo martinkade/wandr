@@ -13,7 +13,7 @@ enum RootDestination {
 @MainActor
 final class RootViewModel: ObservableObject {
     @Published var destination: RootDestination = .initializing
-    @Published var loginState = LoginState(emailInput: "", passwordInput: "", isLoading: false, errorMessage: nil, isAuthenticated: false)
+    @Published var loginState = LoginState(emailInput: "", passwordInput: "", isLoading: false, error: nil, isAuthenticated: false, needsEmailConfirmation: false)
 
     private let startup = IosDependencies.shared.startupViewModel()
     private let login = IosDependencies.shared.loginViewModel()
@@ -49,11 +49,17 @@ final class RootViewModel: ObservableObject {
         login.processIntent(intent: LoginIntentSubmitRegister.shared)
     }
 
+    /// After the "account created" dialog: on to the sign-in screen.
+    func continueToLogin() {
+        login.processIntent(intent: LoginIntentContinueToLogin.shared)
+        destination = .login
+    }
+
     private func handle(_ state: StartupState) {
         switch state {
         case is StartupStateAuthenticated: destination = .main
         case is StartupStateUnauthenticated: destination = .login
-        case let failed as StartupStateFailed: destination = .failed(failed.message)
+        case let failed as StartupStateFailed: destination = .failed(failed.error.userMessage)
         default: destination = .initializing
         }
     }

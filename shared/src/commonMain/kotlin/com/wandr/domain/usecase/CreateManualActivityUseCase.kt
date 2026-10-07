@@ -1,5 +1,7 @@
 package com.wandr.domain.usecase
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.InputProblem
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.repository.ActivityRepository
@@ -26,9 +28,9 @@ class CreateManualActivityUseCase(
         startTime: Long,
         resolution: ConflictResolution? = null
     ): Result<Activity> {
-        if (title.isBlank()) return Result.failure(IllegalArgumentException("Title cannot be empty"))
+        if (title.isBlank()) return Result.failure(AppError.InvalidInput(InputProblem.TITLE_REQUIRED))
         if (distanceMeters < 0 || durationSeconds < 0 || elevationGainMeters < 0) {
-            return Result.failure(IllegalArgumentException("Distance, duration and elevation cannot be negative"))
+            return Result.failure(AppError.InvalidInput(InputProblem.NEGATIVE_VALUES))
         }
         val now = Clock.System.now().toEpochMilliseconds()
         val uniqueId = Uuid.random().toString() // the server uses UUID primary keys

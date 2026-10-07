@@ -1,24 +1,26 @@
 package com.wandr.presentation.challenge
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeType
 import com.wandr.domain.usecase.CreateChallengeUseCase
-import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
 import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
 import com.wandr.domain.usecase.GetChallengeUseCase
-import com.wandr.domain.usecase.LeaveChallengeUseCase
-import com.wandr.domain.usecase.WithdrawTeamFromChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
-import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
-import com.wandr.domain.usecase.SetChallengeCoverUseCase
+import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
+import com.wandr.domain.usecase.LeaveChallengeUseCase
 import com.wandr.domain.usecase.RefreshChallengesUseCase
+import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
+import com.wandr.domain.usecase.SetChallengeCoverUseCase
 import com.wandr.domain.usecase.UpdateChallengeUseCase
+import com.wandr.domain.usecase.WithdrawTeamFromChallengeUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -98,7 +100,12 @@ class ChallengeViewModel(
             is ChallengeIntent.EnrollTeam -> enrollTeam(intent.challengeId, intent.teamId, intent.userId)
             is ChallengeIntent.LeaveChallenge -> leaveChallenge(intent.challengeId, intent.userId)
             is ChallengeIntent.WithdrawTeam -> withdrawTeam(intent.challengeId, intent.teamId)
-            is ChallengeIntent.ClearMessages -> _uiState.update { it.copy(errorMessage = null, success = null) }
+            is ChallengeIntent.ClearMessages -> _uiState.update {
+                it.copy(
+                    error = null,
+                    success = null
+                )
+            }
         }
     }
 
@@ -140,7 +147,14 @@ class ChallengeViewModel(
                 // Team vs. team ranking (aggregates, from the server); may fail while offline.
                 getTeamStandingsUseCase(challengeId)
                     .onSuccess { standings -> _uiState.update { it.copy(standings = standings, isLoading = false) } }
-                    .onFailure { error -> _uiState.update { it.copy(isLoading = false, errorMessage = error.message) } }
+                    .onFailure { error ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = error.asAppError()
+                            )
+                        }
+                    }
             }
             launch {
                 // The members the server lets this user see; fails quietly while offline (the list just stays empty).
@@ -153,7 +167,10 @@ class ChallengeViewModel(
         // Whole minutes are enough for a start time; the end defaults to 30 days later.
         val now = Clock.System.now().toEpochMilliseconds().let { it - it % MINUTE_MILLIS }
         _uiState.update {
-            it.copy(form = ChallengeForm(startDate = now, endDate = now + 30 * DAY_MILLIS), errorMessage = null)
+            it.copy(
+                form = ChallengeForm(startDate = now, endDate = now + 30 * DAY_MILLIS),
+                error = null
+            )
         }
     }
 
@@ -163,12 +180,12 @@ class ChallengeViewModel(
             ?: state.selectedChallenge?.takeIf { it.id == challengeId }
             ?: return
         if (challenge.createdBy != currentUserId) {
-            _uiState.update { it.copy(errorMessage = NOT_OWNER_MESSAGE) }
+            _uiState.update { it.copy(error = AppError.PermissionDenied()) }
             return
         }
         _uiState.update {
             it.copy(
-                errorMessage = null,
+                error = null,
                 form = ChallengeForm(
                     challengeId = challenge.id,
                     title = challenge.title,
@@ -218,7 +235,7 @@ class ChallengeViewModel(
             isActive = form.isActive
         )
 
-        _uiState.update { it.copy(isSaving = true, errorMessage = null, success = null) }
+        _uiState.update { it.copy(isSaving = true, error = null, success = null) }
         scope.launch {
             val result = if (existing == null) createChallengeUseCase(challenge) else updateChallengeUseCase(challenge)
             result
@@ -231,7 +248,7 @@ class ChallengeViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isSaving = false, errorMessage = error.message ?: "Saving failed") }
+                    _uiState.update { it.copy(isSaving = false, error = error.asAppError()) }
                 }
         }
     }
@@ -239,15 +256,15 @@ class ChallengeViewModel(
     private fun updateCover(action: suspend (challengeId: String) -> Result<Challenge>) {
         val challengeId = _uiState.value.selectedChallenge?.id ?: return
         if (!_uiState.value.canEdit) {
-            _uiState.update { it.copy(errorMessage = NOT_OWNER_MESSAGE) }
+            _uiState.update { it.copy(error = AppError.PermissionDenied()) }
             return
         }
-        _uiState.update { it.copy(isImageUpdating = true, errorMessage = null, success = null) }
+        _uiState.update { it.copy(isImageUpdating = true, error = null, success = null) }
         scope.launch {
             action(challengeId)
                 .onSuccess { _uiState.update { it.copy(isImageUpdating = false, success = ChallengeSuccess.IMAGE_UPDATED) } }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isImageUpdating = false, errorMessage = error.message ?: "Image update failed") }
+                    _uiState.update { it.copy(isImageUpdating = false, error = error.asAppError()) }
                 }
         }
     }
@@ -266,7 +283,7 @@ class ChallengeViewModel(
                     // The server adds the team's members as participants; pull them so the state reflects it.
                     refreshChallengesUseCase(userId)
                 }
-                .onFailure { error -> _uiState.update { it.copy(errorMessage = error.message ?: "Could not enroll the team") } }
+                .onFailure { error -> _uiState.update { it.copy(error = error.asAppError()) } }
         }
     }
 
@@ -274,7 +291,7 @@ class ChallengeViewModel(
         scope.launch {
             leaveChallengeUseCase(challengeId, userId)
                 .onSuccess { _uiState.update { it.copy(success = ChallengeSuccess.LEFT) } }
-                .onFailure { error -> _uiState.update { it.copy(errorMessage = error.message ?: "Failed to leave") } }
+                .onFailure { error -> _uiState.update { it.copy(error = error.asAppError()) } }
         }
     }
 
@@ -282,7 +299,7 @@ class ChallengeViewModel(
         scope.launch {
             withdrawTeamFromChallengeUseCase(challengeId, teamId)
                 .onSuccess { _uiState.update { it.copy(success = ChallengeSuccess.TEAM_WITHDRAWN) } }
-                .onFailure { error -> _uiState.update { it.copy(errorMessage = error.message ?: "Could not withdraw the team") } }
+                .onFailure { error -> _uiState.update { it.copy(error = error.asAppError()) } }
         }
     }
 
@@ -290,13 +307,12 @@ class ChallengeViewModel(
         scope.launch {
             joinChallengeUseCase(challengeId, userId)
                 .onSuccess { _uiState.update { it.copy(success = ChallengeSuccess.JOINED) } }
-                .onFailure { error -> _uiState.update { it.copy(errorMessage = error.message ?: "Failed to join") } }
+                .onFailure { error -> _uiState.update { it.copy(error = error.asAppError()) } }
         }
     }
 
     private companion object {
         const val MINUTE_MILLIS = 60_000L
         const val DAY_MILLIS = 24 * 60 * 60 * 1000L
-        const val NOT_OWNER_MESSAGE = "Only the creator can edit this challenge"
     }
 }

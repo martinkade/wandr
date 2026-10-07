@@ -1,5 +1,6 @@
 package com.wandr.presentation.challenge
 
+import com.wandr.domain.error.AppError
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.ChallengeScope
@@ -53,6 +54,6 @@ data class ChallengeState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isImageUpdating: Boolean = false,
-    val errorMessage: String? = null,
+    val error: AppError? = null,
     val success: ChallengeSuccess? = null
 )

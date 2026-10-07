@@ -1,5 +1,6 @@
 package com.wandr.presentation.team
 
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.repository.TeamRepository
 import com.wandr.domain.usecase.CreateTeamUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
@@ -38,7 +39,12 @@ class TeamViewModel(
             is TeamIntent.SubmitJoinTeam -> joinTeam(intent.userId)
             is TeamIntent.ReorderTeams -> reorderTeams(intent.userId, intent.teamIds)
             is TeamIntent.GenerateQRCode -> generateQRCodeUrl(intent.inviteCode)
-            is TeamIntent.ClearMessages -> _uiState.update { it.copy(errorMessage = null, successMessage = null) }
+            is TeamIntent.ClearMessages -> _uiState.update {
+                it.copy(
+                    error = null,
+                    successMessage = null
+                )
+            }
         }
     }
 
@@ -65,7 +71,7 @@ class TeamViewModel(
     private fun createTeam(creatorId: String) {
         val name = _uiState.value.createTeamName
         val description = _uiState.value.createTeamDescription
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, error = null) }
         
         scope.launch {
             createTeamUseCase(name, description, creatorId)
@@ -80,14 +86,14 @@ class TeamViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Failed to create team") }
+                    _uiState.update { it.copy(isLoading = false, error = error.asAppError()) }
                 }
         }
     }
 
     private fun joinTeam(userId: String) {
         val code = _uiState.value.joinInviteCode
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, error = null) }
         
         scope.launch {
             joinTeamViaInviteUseCase(code, userId)
@@ -101,7 +107,7 @@ class TeamViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Failed to join team") }
+                    _uiState.update { it.copy(isLoading = false, error = error.asAppError()) }
                 }
         }
     }
@@ -112,10 +118,10 @@ class TeamViewModel(
         val byId = previous.associateBy { it.id }
         val reordered = teamIds.mapNotNull { byId[it] } + previous.filter { it.id !in teamIds }
         if (reordered.map { it.id } == previous.map { it.id }) return
-        _uiState.update { it.copy(teams = reordered, errorMessage = null) }
+        _uiState.update { it.copy(teams = reordered, error = null) }
         scope.launch {
             reorderTeamsUseCase(userId, teamIds).onFailure { error ->
-                _uiState.update { it.copy(teams = previous, errorMessage = error.message ?: "Failed to save the order") }
+                _uiState.update { it.copy(teams = previous, error = error.asAppError()) }
             }
         }
     }

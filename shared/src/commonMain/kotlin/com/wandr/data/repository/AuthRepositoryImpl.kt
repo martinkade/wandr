@@ -1,5 +1,7 @@
 package com.wandr.data.repository
 
+import com.wandr.data.remote.supabaseResult
+import com.wandr.domain.error.AppError
 import com.wandr.domain.model.AuthSession
 import com.wandr.domain.model.User
 import com.wandr.domain.repository.AuthRepository
@@ -34,13 +36,18 @@ class AuthRepositoryImpl(
         return supabase.auth.currentSessionOrNull() != null
     }
 
-    override suspend fun login(email: String, password: String): Result<AuthSession> = runCatching {
+    override suspend fun login(email: String, password: String): Result<AuthSession> =
+        supabaseResult {
         supabase.auth.signInWith(Email) {
             this.email = email
             this.password = password
         }
-        val session = supabase.auth.currentSessionOrNull() ?: throw IllegalStateException("No active session")
-        val user = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("No authenticated user")
+            val session = supabase.auth.currentSessionOrNull() ?: throw AppError.Unknown(
+                IllegalStateException("Signed in, but there is no session")
+            )
+            val user = supabase.auth.currentUserOrNull() ?: throw AppError.Unknown(
+                IllegalStateException("Signed in, but there is no user")
+            )
         AuthSession(
             accessToken = session.accessToken,
             refreshToken = session.refreshToken,
@@ -48,7 +55,11 @@ class AuthRepositoryImpl(
         )
     }
 
-    override suspend fun register(email: String, password: String, username: String): Result<AuthSession> = runCatching {
+    override suspend fun register(
+        email: String,
+        password: String,
+        username: String
+    ): Result<AuthSession> = supabaseResult {
         supabase.auth.signUpWith(Email) {
             this.email = email
             this.password = password
@@ -57,8 +68,11 @@ class AuthRepositoryImpl(
                 put("display_name", username)
             }
         }
-        val session = supabase.auth.currentSessionOrNull() ?: throw IllegalStateException("Registration successful. Please verify email or log in.")
-        val user = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("No authenticated user")
+        // With "confirm email" enabled the sign-up creates the account but no session yet.
+        val session =
+            supabase.auth.currentSessionOrNull() ?: throw AppError.EmailConfirmationRequired()
+        val user = supabase.auth.currentUserOrNull()
+            ?: throw AppError.Unknown(IllegalStateException("Signed up, but there is no user"))
         AuthSession(
             accessToken = session.accessToken,
             refreshToken = session.refreshToken,
@@ -66,7 +80,7 @@ class AuthRepositoryImpl(
         )
     }
 
-    override suspend fun logout(): Result<Unit> = runCatching {
+    override suspend fun logout(): Result<Unit> = supabaseResult {
         supabase.auth.signOut()
     }
 }

@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.presentation.team.TeamIntent
@@ -77,11 +78,12 @@ fun GroupsScreen(
     }
 
     // A created group closes the sheet; errors show in the sheet.
-    LaunchedEffect(state.successMessage, state.errorMessage) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.successMessage, state.error) {
         if (showCreate && state.successMessage != null) {
             closeSheet()
-        } else if (state.errorMessage != null) {
-            val message = state.errorMessage ?: return@LaunchedEffect
+        } else if (errorText != null) {
+            val message = errorText
             scope.launch {
                 snackbarHostState.currentSnackbarData?.dismiss()
                 snackbarHostState.showSnackbar(message)
@@ -138,14 +140,18 @@ private fun GroupList(
             }
         }
     ) { padding ->
-    Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .padding(padding)) {
         if (teams.isEmpty()) {
             Text(
                 text = stringResource(R.string.groups_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.Center).padding(32.dp)
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(32.dp)
             )
         } else {
             LazyColumn(

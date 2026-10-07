@@ -24,7 +24,7 @@ final class SocialObserver: ObservableObject {
                 self?.likedByMe = state.summary.likedByMe
                 self?.comments = state.comments
                 self?.isPosting = state.isPosting
-                self?.errorMessage = state.errorMessage
+                self?.errorMessage = state.error?.userMessage
             }
         }
         viewModel.processIntent(intent: SocialIntentLoad(type: .activity, entityId: entityId, userId: userId, entityOwnerId: ownerId))

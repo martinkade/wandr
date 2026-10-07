@@ -223,3 +223,24 @@ Notes:
 - [ ] Are colors taken from theme tokens (gold for fills, `tertiary` / `wandrAccentText` for coloured text)?
 - [ ] Are state changes handled cleanly via lambdas / intents?
 - [ ] Is every system permission request preceded by a localized disclosure dialog (unless already granted), with an "Open Settings" fallback when permanently denied?
+
+---
+
+## 🏔️ Design language: elevation lines
+
+WANDR's signature is a quiet backdrop of **elevation lines (contours)** like on a topographic map.
+Use it behind screens that are not dominated by content: sign in / sign up, empty states,
+splash-like screens. Do not put it behind dense lists or forms with many fields.
+
+- **Component:** Android `ContourBackground { ... }` (`ui/common`), iOS `ContourBackground { ... }`
+  (`UI/Common`). Both draw the lines of the shared
+  `ContourLines.generate(aspect, seed, columns, levels)` (marching squares over a seeded terrain),
+  so the pattern is identical on both platforms.
+- **Look:** thin lines in a faint tone of the text color (alpha 0.10; every 5th "index" line 0.22
+  and thicker), so it works in light and dark mode without extra colors. Never use bright colors for
+  the lines.
+- **Logo:** auth screens show the launcher logo above the title (`AppLogo` on Android, `AppLogoView`
+  on iOS), then the app name and tagline, then the screen title ("Sign in" / "Create account").
+- **Cards on top:** content that has to be read (forms, cards) keeps its normal surface; the lines
+  are only visible around it.
+- Provide previews in light and dark mode like for every component.

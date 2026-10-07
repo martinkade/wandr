@@ -1,7 +1,9 @@
 package com.wandr.presentation.auth
 
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.usecase.LoginUseCase
 import com.wandr.domain.usecase.RegisterUseCase
+import com.wandr.domain.usecase.RegistrationOutcome
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -22,28 +24,32 @@ class LoginViewModel(
     fun processIntent(intent: LoginIntent) {
         when (intent) {
             is LoginIntent.EmailChanged -> {
-                _uiState.update { it.copy(emailInput = intent.email, errorMessage = null) }
+                _uiState.update { it.copy(emailInput = intent.email, error = null) }
             }
             is LoginIntent.PasswordChanged -> {
-                _uiState.update { it.copy(passwordInput = intent.password, errorMessage = null) }
+                _uiState.update { it.copy(passwordInput = intent.password, error = null) }
             }
             is LoginIntent.SubmitLogin -> performLogin()
             is LoginIntent.SubmitRegister -> performRegister()
-            is LoginIntent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
+            is LoginIntent.ContinueToLogin -> _uiState.update {
+                it.copy(needsEmailConfirmation = false, passwordInput = "")
+            }
+
+            is LoginIntent.ClearError -> _uiState.update { it.copy(error = null) }
         }
     }
 
     private fun performLogin() {
         val email = _uiState.value.emailInput
         val password = _uiState.value.passwordInput
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, error = null) }
         
         scope.launch {
             val result = loginUseCase(email, password)
             result.onSuccess {
                 _uiState.update { it.copy(isLoading = false, isAuthenticated = true) }
             }.onFailure { error ->
-                _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Login failed") }
+                _uiState.update { it.copy(isLoading = false, error = error.asAppError()) }
             }
         }
     }
@@ -52,14 +58,27 @@ class LoginViewModel(
         val email = _uiState.value.emailInput
         val password = _uiState.value.passwordInput
         val username = email.substringBefore("@")
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, error = null) }
         
         scope.launch {
             val result = registerUseCase(email, password, username)
-            result.onSuccess {
-                _uiState.update { it.copy(isLoading = false, isAuthenticated = true) }
+            result.onSuccess { outcome ->
+                _uiState.update {
+                    when (outcome) {
+                        // The server signed the user in: straight into the app.
+                        RegistrationOutcome.SIGNED_IN -> it.copy(
+                            isLoading = false,
+                            isAuthenticated = true
+                        )
+
+                        RegistrationOutcome.EMAIL_CONFIRMATION_REQUIRED -> it.copy(
+                            isLoading = false,
+                            needsEmailConfirmation = true
+                        )
+                    }
+                }
             }.onFailure { error ->
-                _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Registration failed") }
+                _uiState.update { it.copy(isLoading = false, error = error.asAppError()) }
             }
         }
     }

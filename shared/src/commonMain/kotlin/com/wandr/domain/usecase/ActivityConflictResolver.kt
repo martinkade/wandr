@@ -1,10 +1,13 @@
 package com.wandr.domain.usecase
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.InputProblem
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ActivityConflictException
 import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.repository.ActivityRepository
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 
 /**
@@ -28,15 +31,26 @@ class ActivityConflictResolver(private val repository: ActivityRepository) {
         candidate: Activity,
         trackpoints: List<GpsTrackpoint>?,
         resolution: ConflictResolution?
-    ): Result<Activity> = runCatching {
+    ): Result<Activity> = try {
         val conflicts = findConflicts(candidate)
-        when {
-            conflicts.isEmpty() -> repository.saveActivity(candidate, trackpoints).getOrThrow()
-            resolution == null -> throw ActivityConflictException(conflicts, canTrim = freeRange(candidate, conflicts) != null)
-            resolution == ConflictResolution.MERGE -> merge(candidate, trackpoints, conflicts)
-            resolution == ConflictResolution.TRIM -> trim(candidate, trackpoints, conflicts)
-            else -> throw IllegalArgumentException("Discarding does not save anything")
-        }
+        Result.success(
+            when {
+                conflicts.isEmpty() -> repository.saveActivity(candidate, trackpoints).getOrThrow()
+                resolution == null -> throw ActivityConflictException(
+                    conflicts,
+                    canTrim = freeRange(candidate, conflicts) != null
+                )
+
+                resolution == ConflictResolution.MERGE -> merge(candidate, trackpoints, conflicts)
+                resolution == ConflictResolution.TRIM -> trim(candidate, trackpoints, conflicts)
+                else -> throw IllegalArgumentException("Discarding does not save anything")
+            }
+        )
+    } catch (cancelled: CancellationException) {
+        throw cancelled // a cancelled coroutine has to stop, not become an error
+    } catch (error: Throwable) {
+        // The conflict exception is a signal for the caller (it opens the wizard) and must stay what it is.
+        Result.failure(error)
     }
 
     private suspend fun merge(candidate: Activity, trackpoints: List<GpsTrackpoint>?, conflicts: List<Activity>): Activity {
@@ -66,7 +80,7 @@ class ActivityConflictResolver(private val repository: ActivityRepository) {
 
     private suspend fun trim(candidate: Activity, trackpoints: List<GpsTrackpoint>?, conflicts: List<Activity>): Activity {
         val (start, end) = freeRange(candidate, conflicts)
-            ?: throw IllegalStateException("The activity is completely covered by existing activities")
+            ?: throw AppError.InvalidInput(InputProblem.NOTHING_LEFT_TO_TRIM)
         val total = candidate.endTime - candidate.startTime
         // Measured values are shared out in proportion to the remaining time.
         val ratio = if (total > 0) (end - start).toDouble() / total else 1.0

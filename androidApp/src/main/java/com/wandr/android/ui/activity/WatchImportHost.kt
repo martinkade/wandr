@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import com.wandr.android.R
+import com.wandr.android.ui.common.userMessage
 import com.wandr.presentation.watch.WatchImportIntent
 import com.wandr.presentation.watch.WatchImportViewModel
 import org.koin.compose.koinInject
@@ -25,8 +26,9 @@ fun WatchImportHost(userId: String, teamId: String?, viewModel: WatchImportViewM
     val importedMessage = if (state.importedCount > 0) {
         pluralStringResource(R.plurals.watch_workouts_imported, state.importedCount, state.importedCount)
     } else null
-    LaunchedEffect(importedMessage, state.errorMessage) {
-        (importedMessage ?: state.errorMessage)?.let {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(importedMessage, errorText) {
+        (importedMessage ?: errorText)?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             viewModel.processIntent(WatchImportIntent.ClearMessages)
         }

@@ -1,5 +1,7 @@
 package com.wandr.presentation.notifications
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.asAppError
 import com.wandr.domain.model.AppNotification
 import com.wandr.domain.usecase.GetNotificationsUseCase
 import com.wandr.domain.usecase.GetUnreadNotificationCountUseCase
@@ -17,7 +19,7 @@ data class NotificationsState(
     val notifications: List<AppNotification> = emptyList(),
     val unreadCount: Int = 0,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val error: AppError? = null
 )
 
 sealed interface NotificationsIntent {
@@ -47,7 +49,7 @@ class NotificationsViewModel(
             }
             is NotificationsIntent.MarkRead -> markAsRead(listOf(intent.id))
             is NotificationsIntent.MarkAllRead -> markAsRead(_state.value.notifications.filterNot { it.isRead }.map { it.id })
-            is NotificationsIntent.ClearMessages -> _state.update { it.copy(errorMessage = null) }
+            is NotificationsIntent.ClearMessages -> _state.update { it.copy(error = null) }
         }
     }
 
@@ -57,10 +59,15 @@ class NotificationsViewModel(
             val list = getNotifications(userId)
             list.onSuccess { notifications ->
                 _state.update {
-                    it.copy(isLoading = false, notifications = notifications, unreadCount = notifications.count { n -> !n.isRead }, errorMessage = null)
+                    it.copy(
+                        isLoading = false,
+                        notifications = notifications,
+                        unreadCount = notifications.count { n -> !n.isRead },
+                        error = null
+                    )
                 }
             }.onFailure { error ->
-                _state.update { it.copy(isLoading = false, errorMessage = error.message ?: "Notifications could not be loaded") }
+                _state.update { it.copy(isLoading = false, error = error.asAppError()) }
             }
             // The badge counts beyond the loaded page.
             getUnreadCount(userId).onSuccess { count -> _state.update { it.copy(unreadCount = count) } }
@@ -82,7 +89,7 @@ class NotificationsViewModel(
                     s.copy(
                         notifications = s.notifications.map { if (it.id in unread) it.copy(isRead = false) else it },
                         unreadCount = s.unreadCount + unread.size,
-                        errorMessage = error.message ?: "Could not mark as read"
+                        error = error.asAppError()
                     )
                 }
             }

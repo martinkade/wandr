@@ -1,5 +1,7 @@
 package com.wandr.presentation.team
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.InputProblem
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamImageKind
 import com.wandr.domain.model.TeamMember
@@ -18,6 +20,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -66,7 +69,7 @@ class TeamViewModelReorderTest {
 
         assertEquals(listOf("c", "a", "b"), repo.savedOrder)
         assertEquals(listOf("c", "a", "b"), viewModel.uiState.value.teams.map { it.id })
-        assertNull(viewModel.uiState.value.errorMessage)
+        assertNull(viewModel.uiState.value.error)
     }
 
     @Test
@@ -76,7 +79,7 @@ class TeamViewModelReorderTest {
         viewModel.processIntent(TeamIntent.ReorderTeams("me", listOf("b", "a")))
 
         assertEquals(listOf("a", "b"), viewModel.uiState.value.teams.map { it.id })
-        assertEquals("offline", viewModel.uiState.value.errorMessage)
+        assertEquals("offline", viewModel.uiState.value.error?.cause?.message)
     }
 
     @Test
@@ -104,6 +107,10 @@ class TeamViewModelReorderTest {
         viewModel.processIntent(TeamIntent.JoinInviteCodeChanged("no code!"))
         viewModel.processIntent(TeamIntent.SubmitJoinTeam("me"))
         assertNull(repo.joinedWith)
-        assertEquals("Invalid invite code", viewModel.uiState.value.errorMessage)
+        assertIs<AppError.InvalidInput>(viewModel.uiState.value.error)
+        assertEquals(
+            InputProblem.INVITE_CODE_INVALID,
+            (viewModel.uiState.value.error as AppError.InvalidInput).problem
+        )
     }
 }

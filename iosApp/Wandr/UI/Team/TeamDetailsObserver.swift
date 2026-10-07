@@ -73,8 +73,8 @@ final class TeamDetailsObserver: ObservableObject {
             name = team.name
             teamDescription = team.description_ ?? ""
         }
-        if let error = state.errorMessage {
-            snackbar = SnackbarMessage(text: error, isError: true)
+        if let error = state.error {
+            snackbar = SnackbarMessage(text: error.userMessage, isError: true)
             viewModel.processIntent(intent: TeamDetailsIntentClearMessages.shared)
         } else if let success = state.success {
             switch success {

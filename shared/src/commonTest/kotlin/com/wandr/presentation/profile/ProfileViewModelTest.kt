@@ -1,13 +1,13 @@
 package com.wandr.presentation.profile
 
+import com.wandr.domain.error.AppError
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.model.Profile
 import com.wandr.domain.repository.ActivityRepository
-import com.wandr.domain.usecase.GetUserActivityCountUseCase
-import kotlinx.coroutines.flow.emptyFlow
 import com.wandr.domain.repository.ProfileRepository
 import com.wandr.domain.usecase.GetProfileUseCase
+import com.wandr.domain.usecase.GetUserActivityCountUseCase
 import com.wandr.domain.usecase.RefreshProfileUseCase
 import com.wandr.domain.usecase.RemoveAvatarUseCase
 import com.wandr.domain.usecase.UpdateProfileUseCase
@@ -16,12 +16,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -135,7 +136,7 @@ class ProfileViewModelTest {
         vm.processIntent(ProfileIntent.LoadProfile("u1"))
         vm.processIntent(ProfileIntent.UploadAvatar("u1", byteArrayOf(1)))
 
-        assertEquals("offline", vm.uiState.value.errorMessage)
+        assertEquals("offline", vm.uiState.value.error?.cause?.message)
         assertNull(vm.uiState.value.profile?.avatarUrl)
         assertFalse(vm.uiState.value.isAvatarUpdating)
     }
@@ -147,7 +148,7 @@ class ProfileViewModelTest {
         vm.processIntent(ProfileIntent.LoadProfile("u1"))
         vm.processIntent(ProfileIntent.UploadAvatar("u1", ByteArray(0)))
 
-        assertNotNull(vm.uiState.value.errorMessage)
+        assertIs<AppError.InvalidInput>(vm.uiState.value.error)
         assertNull(repo.uploaded)
     }
 

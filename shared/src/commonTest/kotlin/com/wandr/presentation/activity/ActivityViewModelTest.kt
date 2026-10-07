@@ -3,6 +3,7 @@ package com.wandr.presentation.activity
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.model.GpsTrackpoint
+import com.wandr.domain.repository.ActivityFeedRepository
 import com.wandr.domain.repository.ActivityRepository
 import com.wandr.domain.usecase.CreateManualActivityUseCase
 import com.wandr.domain.usecase.DeleteActivityUseCase
@@ -12,7 +13,6 @@ import com.wandr.domain.usecase.GetTeamActivitiesUseCase
 import com.wandr.domain.usecase.GetUserActivitiesUseCase
 import com.wandr.domain.usecase.RecordGpsActivityUseCase
 import com.wandr.domain.usecase.RefreshActivitiesUseCase
-import com.wandr.domain.repository.ActivityFeedRepository
 import com.wandr.domain.usecase.UpdateActivityUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +24,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -153,7 +154,10 @@ class ActivityViewModelTest {
         vm.processIntent(ActivityIntent.StartCreate)
         vm.processIntent(ActivityIntent.SubmitForm("u1", null))
 
-        assertEquals("Title cannot be empty", vm.uiState().errorMessage)
+        assertEquals(
+            com.wandr.domain.error.InputProblem.TITLE_REQUIRED,
+            assertIs<com.wandr.domain.error.AppError.InvalidInput>(vm.uiState().error).problem
+        )
         assertNull(repo.saved)
     }
 
@@ -224,7 +228,7 @@ class ActivityViewModelTest {
         vm.processIntent(ActivityIntent.StartEdit("a1"))
 
         assertNull(vm.uiState().form)
-        assertEquals("Only the owner can change this activity", vm.uiState().errorMessage)
+        assertIs<com.wandr.domain.error.AppError.PermissionDenied>(vm.uiState().error)
         assertNull(repo.saved)
     }
 
@@ -313,7 +317,7 @@ class ActivityViewModelTest {
         assertEquals(listOf("a1"), conflict.conflicting.map { it.id })
         assertTrue(conflict.dismissible)
         assertNull(repo.saved)
-        assertNull(vm.uiState().errorMessage)
+        assertNull(vm.uiState().error)
         assertFalse(vm.uiState().isSaving)
     }
 
@@ -458,7 +462,7 @@ class ActivityViewModelTest {
         social.failLike = true
         vm.processIntent(ActivityIntent.ToggleActivityLike("a1")) // un-like fails
         assertEquals(com.wandr.domain.model.SocialCounts(3, 0, true), vm.uiState().socialCounts["a1"])
-        assertEquals("offline", vm.uiState().errorMessage)
+        assertIs<com.wandr.domain.error.AppError.Unknown>(vm.uiState().error)
     }
 
     @Test

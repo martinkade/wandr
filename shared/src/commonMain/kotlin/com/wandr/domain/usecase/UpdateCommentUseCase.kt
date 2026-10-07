@@ -7,7 +7,7 @@ import com.wandr.domain.repository.SocialRepository
 class UpdateCommentUseCase(private val repository: SocialRepository) {
     suspend operator fun invoke(commentId: String, content: String): Result<Comment> {
         val text = content.trim()
-        CommentValidation.error(text)?.let { return Result.failure(IllegalArgumentException(it)) }
+        CommentValidation.error(text)?.let { return Result.failure(it) }
         return repository.updateComment(commentId, text)
     }
 }

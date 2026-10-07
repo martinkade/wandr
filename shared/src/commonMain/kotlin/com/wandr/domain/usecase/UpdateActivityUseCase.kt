@@ -1,5 +1,7 @@
 package com.wandr.domain.usecase
 
+import com.wandr.domain.error.AppError
+import com.wandr.domain.error.InputProblem
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ConflictResolution
 import com.wandr.domain.repository.ActivityRepository
@@ -21,9 +23,9 @@ class UpdateActivityUseCase(private val activityRepository: ActivityRepository) 
         checkConflicts: Boolean = true,
         resolution: ConflictResolution? = null
     ): Result<Activity> {
-        if (activity.title.isBlank()) return Result.failure(IllegalArgumentException("Title cannot be empty"))
+        if (activity.title.isBlank()) return Result.failure(AppError.InvalidInput(InputProblem.TITLE_REQUIRED))
         if (activity.distanceMeters < 0 || activity.durationSeconds < 0 || activity.elevationGainMeters < 0) {
-            return Result.failure(IllegalArgumentException("Distance, duration and elevation cannot be negative"))
+            return Result.failure(AppError.InvalidInput(InputProblem.NEGATIVE_VALUES))
         }
         val cleaned = activity.copy(title = activity.title.trim(), description = activity.description?.trim()?.ifEmpty { null })
         return if (checkConflicts) {

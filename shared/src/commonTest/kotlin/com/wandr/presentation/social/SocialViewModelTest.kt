@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 private class FakeSocialRepository(var comments: MutableList<Comment> = mutableListOf()) : SocialRepository {
@@ -91,7 +92,7 @@ class SocialViewModelTest {
         repo.failNext = true
         viewModel.processIntent(SocialIntent.ToggleLike)
         assertEquals(SocialSummary(3, true), viewModel.state.value.summary) // un-like failed -> reverted
-        assertEquals("offline", viewModel.state.value.errorMessage)
+        assertIs<com.wandr.domain.error.AppError.Unknown>(viewModel.state.value.error)
     }
 
     @Test
@@ -103,9 +104,15 @@ class SocialViewModelTest {
         assertEquals(1, viewModel.state.value.comments.size)
 
         viewModel.processIntent(SocialIntent.PostComment("   "))
-        assertEquals("Comment cannot be empty", viewModel.state.value.errorMessage)
+        assertEquals(
+            com.wandr.domain.error.InputProblem.COMMENT_EMPTY,
+            assertIs<com.wandr.domain.error.AppError.InvalidInput>(viewModel.state.value.error).problem
+        )
         viewModel.processIntent(SocialIntent.PostComment("x".repeat(1001)))
-        assertTrue(viewModel.state.value.errorMessage!!.contains("too long"))
+        assertEquals(
+            com.wandr.domain.error.InputProblem.COMMENT_TOO_LONG,
+            assertIs<com.wandr.domain.error.AppError.InvalidInput>(viewModel.state.value.error).problem
+        )
         assertEquals(1, repo.calls.size)
     }
 
@@ -145,7 +152,7 @@ class SocialViewModelTest {
         repo.failNext = true
         viewModel.processIntent(SocialIntent.ToggleReaction("c1", "🔥"))
         assertTrue(viewModel.state.value.comments.single().reactions.isEmpty())
-        assertEquals("offline", viewModel.state.value.errorMessage)
+        assertIs<com.wandr.domain.error.AppError.Unknown>(viewModel.state.value.error)
     }
 
     @Test

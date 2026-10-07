@@ -5,13 +5,13 @@ import com.wandr.data.remote.CommentDto
 import com.wandr.data.remote.LikeDto
 import com.wandr.data.remote.ReactionDto
 import com.wandr.data.remote.SocialCountsDto
+import com.wandr.data.remote.supabaseResult
 import com.wandr.domain.model.Comment
 import com.wandr.domain.model.SocialCounts
 import com.wandr.domain.model.SocialEntityType
 import com.wandr.domain.model.SocialSummary
 import com.wandr.domain.repository.SocialRepository
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
@@ -23,7 +23,11 @@ import kotlin.time.Clock
 
 class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialRepository {
 
-    override suspend fun getSummary(type: SocialEntityType, entityId: String, userId: String): Result<SocialSummary> = runCatching {
+    override suspend fun getSummary(
+        type: SocialEntityType,
+        entityId: String,
+        userId: String
+    ): Result<SocialSummary> = supabaseResult {
         val likes = supabase.postgrest.from("likes").select(Columns.list("user_id")) {
             filter {
                 eq("entity_type", type.wire)
@@ -33,7 +37,10 @@ class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialReposit
         SocialSummary(likeCount = likes.size, likedByMe = likes.any { it.userId == userId })
     }
 
-    override suspend fun getCounts(type: SocialEntityType, entityIds: List<String>): Result<Map<String, SocialCounts>> = runCatching {
+    override suspend fun getCounts(
+        type: SocialEntityType,
+        entityIds: List<String>
+    ): Result<Map<String, SocialCounts>> = supabaseResult {
         val counts = entityIds.distinct().chunked(COUNTS_BATCH).flatMap { ids ->
             supabase.postgrest.rpc("social_counts", buildJsonObject {
                 put("p_type", type.wire)
@@ -43,7 +50,12 @@ class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialReposit
         entityIds.associateWith { counts[it] ?: SocialCounts() }
     }
 
-    override suspend fun setLike(type: SocialEntityType, entityId: String, userId: String, liked: Boolean): Result<Unit> = runCatching {
+    override suspend fun setLike(
+        type: SocialEntityType,
+        entityId: String,
+        userId: String,
+        liked: Boolean
+    ): Result<Unit> = supabaseResult {
         if (liked) {
             supabase.postgrest.from("likes").insert(buildJsonObject {
                 put("entity_type", type.wire)
@@ -61,7 +73,11 @@ class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialReposit
         }
     }
 
-    override suspend fun getComments(type: SocialEntityType, entityId: String, userId: String): Result<List<Comment>> = runCatching {
+    override suspend fun getComments(
+        type: SocialEntityType,
+        entityId: String,
+        userId: String
+    ): Result<List<Comment>> = supabaseResult {
         val comments = supabase.postgrest.from("comments").select(Columns.raw(COMMENT_COLUMNS)) {
             filter {
                 eq("entity_type", type.wire)
@@ -79,7 +95,12 @@ class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialReposit
         comments.map { it.toDomain(reactions[it.id].orEmpty(), userId) }
     }
 
-    override suspend fun addComment(type: SocialEntityType, entityId: String, userId: String, content: String): Result<Comment> = runCatching {
+    override suspend fun addComment(
+        type: SocialEntityType,
+        entityId: String,
+        userId: String,
+        content: String
+    ): Result<Comment> = supabaseResult {
         supabase.postgrest.from("comments").insert(buildJsonObject {
             put("entity_type", type.wire)
             put("entity_id", entityId)
@@ -88,7 +109,8 @@ class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialReposit
         }) { select(Columns.raw(COMMENT_COLUMNS)) }.decodeSingle<CommentDto>().toDomain(currentUserId = userId)
     }
 
-    override suspend fun updateComment(commentId: String, content: String): Result<Comment> = runCatching {
+    override suspend fun updateComment(commentId: String, content: String): Result<Comment> =
+        supabaseResult {
         supabase.postgrest.from("comments").update(buildJsonObject {
             put("content", content)
             put("updated_at", Clock.System.now().toString())
@@ -98,11 +120,16 @@ class SocialRepositoryImpl(private val supabase: SupabaseClient) : SocialReposit
         }.decodeSingle<CommentDto>().toDomain()
     }
 
-    override suspend fun deleteComment(commentId: String): Result<Unit> = runCatching {
+    override suspend fun deleteComment(commentId: String): Result<Unit> = supabaseResult {
         supabase.postgrest.from("comments").delete { filter { eq("id", commentId) } }
     }
 
-    override suspend fun setReaction(commentId: String, userId: String, emoji: String, reacted: Boolean): Result<Unit> = runCatching {
+    override suspend fun setReaction(
+        commentId: String,
+        userId: String,
+        emoji: String,
+        reacted: Boolean
+    ): Result<Unit> = supabaseResult {
         if (reacted) {
             supabase.postgrest.from("comment_reactions").insert(buildJsonObject {
                 put("comment_id", commentId)

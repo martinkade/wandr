@@ -36,10 +36,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.AvatarEditor
+import com.wandr.android.ui.common.CoverEditor
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
-import com.wandr.android.ui.common.CoverEditor
-import com.wandr.android.ui.common.AvatarEditor
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
@@ -95,9 +96,10 @@ private fun TeamDetailsScreenContent(
 
     val savedText = stringResource(R.string.team_saved_message)
     val imageText = stringResource(R.string.team_image_updated_message)
-    LaunchedEffect(state.success, state.errorMessage) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.success, state.error) {
         val message = when {
-            state.errorMessage != null -> state.errorMessage
+            errorText != null -> errorText
             state.success == TeamDetailsSuccess.TEAM_SAVED -> savedText
             state.success == TeamDetailsSuccess.IMAGE_UPDATED -> imageText
             else -> null
@@ -127,12 +129,17 @@ private fun TeamDetailsScreenContent(
         // While the sheet is open, its own host shows the messages.
         snackbarHost = { if (!isEditing) SnackbarHost(snackbarHostState) }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Box(Modifier
+            .fillMaxSize()
+            .padding(padding)) {
             if (state.isLoading || team == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else {
                 Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Owners and admins change cover and avatar right here (tap), no edit mode needed.
@@ -165,7 +172,9 @@ private fun TeamDetailsScreenContent(
                         text = stringResource(R.string.group_invite_code, team.inviteCode),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
                     )
 
                     Spacer(Modifier.height(24.dp))

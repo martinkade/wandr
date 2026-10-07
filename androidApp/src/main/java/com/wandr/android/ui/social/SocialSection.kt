@@ -23,7 +23,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
+import com.wandr.domain.error.AppError
 import com.wandr.domain.model.Comment
 import com.wandr.domain.model.SocialEntityType
 import com.wandr.domain.model.SocialSummary
@@ -39,8 +41,9 @@ fun SocialSection(
     modifier: Modifier = Modifier
 ) {
     // Errors are shown inline for a moment.
-    LaunchedEffect(state.errorMessage) {
-        if (state.errorMessage != null) {
+    val errorText = state.error?.userMessage()
+    LaunchedEffect(state.error) {
+        if (state.error != null) {
             delay(ERROR_VISIBLE_MILLIS)
             onIntent(SocialIntent.ClearMessages)
         }
@@ -86,7 +89,7 @@ fun SocialSection(
             )
         }
 
-        state.errorMessage?.let {
+        errorText?.let {
             Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         }
         CommentComposer(isPosting = state.isPosting, onSend = { onIntent(SocialIntent.PostComment(it)) })
@@ -121,6 +124,10 @@ private fun SocialSectionPreview() {
 @Composable
 private fun SocialSectionEmptyPreview() {
     WandrTheme {
-        SocialSection(state = SocialState(errorMessage = "offline"), onIntent = {}, modifier = Modifier.padding(16.dp))
+        SocialSection(
+            state = SocialState(error = AppError.Network()),
+            onIntent = {},
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
