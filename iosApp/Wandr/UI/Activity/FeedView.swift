@@ -23,6 +23,7 @@ struct FeedView: View {
                                 durationSeconds: activity.durationSeconds,
                                 elevationGainMeters: activity.elevationGainMeters,
                                 isManualEntry: activity.isManualEntry,
+                                route: activity.route,
                                 onClick: { onSelectActivity(activity) }
                             )
                         }

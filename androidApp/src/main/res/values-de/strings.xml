@@ -303,6 +303,7 @@
     <string name="activity_stat_time">Zeit</string>
     <string name="activity_stat_elevation">Höhenmeter</string>
     <string name="activity_map_hidden_hint">Nur du siehst diese Route.</string>
+    <string name="map_attribution">© OpenStreetMap-Mitwirkende</string>
     <string name="activity_show_map_label">Route für andere anzeigen</string>
     <string name="activity_show_map_hint">Andere Nutzer sehen die Route dieser Aktivität auf der Karte. Du siehst sie immer selbst.</string>
     <string name="recording_notification_title">Aktivität wird aufgezeichnet</string>

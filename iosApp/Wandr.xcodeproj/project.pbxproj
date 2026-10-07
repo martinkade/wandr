@@ -15,6 +15,7 @@
 		128F916F371D4894C543A0F6 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2361883567F0ADB94F46528A /* FeedView.swift */; };
 		144EBCCA19CBC96B4643523F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A9D260237F6CBF2BA089595F /* Localizable.strings */; };
 		14FD2E1610EC716E4BBD95A9 /* GroupsContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 207844348B3B1C21DABF7C63 /* GroupsContainerView.swift */; };
+		17B6A0AD2F745B6BFF3377AB /* OsmTileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1677174E725ACC2C452EF7A6 /* OsmTileCache.swift */; };
 		1A20FD80F9BE691D4AFF6681 /* WorkoutMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C506924DA47F20EE14FFC8C /* WorkoutMetrics.swift */; };
 		1C645D40B7090B847F0F175B /* TrackMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */; };
 		1C6B97ADCEB421C75224C991 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008681D41D040CAF4C5B6C1E /* LoginView.swift */; };
@@ -144,6 +145,7 @@
 		12A03E91276A96FD5CFDD53C /* PushNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNavigation.swift; sourceTree = "<group>"; };
 		160BDCA3B8C2B858ABCC0BA6 /* TeamCoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCoverView.swift; sourceTree = "<group>"; };
 		1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualActivityEntryView.swift; sourceTree = "<group>"; };
+		1677174E725ACC2C452EF7A6 /* OsmTileCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OsmTileCache.swift; sourceTree = "<group>"; };
 		1AB83B9D146EE3F83E601807 /* LiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutView.swift; sourceTree = "<group>"; };
 		207844348B3B1C21DABF7C63 /* GroupsContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsContainerView.swift; sourceTree = "<group>"; };
 		20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WandrWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -326,6 +328,7 @@
 				2361883567F0ADB94F46528A /* FeedView.swift */,
 				A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */,
 				1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */,
+				1677174E725ACC2C452EF7A6 /* OsmTileCache.swift */,
 				B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */,
 				8395BB0E436E0ABA2D07CE76 /* WatchImportObserver.swift */,
 			);
@@ -729,6 +732,7 @@
 				37A3B54173DF1C9A5BB1DBF6 /* NotificationRowView.swift in Sources */,
 				C188AC200B14FF2124C853BD /* NotificationsObserver.swift in Sources */,
 				9ACD6E9D85E895A6085391A2 /* NotificationsView.swift in Sources */,
+				17B6A0AD2F745B6BFF3377AB /* OsmTileCache.swift in Sources */,
 				932EEDB086286F47A67BFDDB /* PermissionDeniedAlert.swift in Sources */,
 				9B1BE991623B66EA359F4157 /* PermissionDisclosureAlert.swift in Sources */,
 				E3797D0914B92781A032273B /* ProfileEditView.swift in Sources */,

@@ -216,3 +216,5 @@
 "registration_success_title" = "Account created";
 "registration_success_confirm_email" = "We sent a confirmation link to your email address. Confirm it, then sign in.";
 "registration_sign_in_now" = "Sign in now";
+
+"map_attribution" = "© OpenStreetMap contributors";

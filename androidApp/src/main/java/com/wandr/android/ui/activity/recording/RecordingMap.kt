@@ -12,12 +12,12 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.wandr.android.R
-import com.wandr.android.ui.activity.TrackMapView
+import com.wandr.android.ui.activity.OsmTrackMap
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.GpsTrackpoint
 
 /**
- * The full-screen backdrop of the recording: the route so far (no map tiles). It is shown once the GPS is connected
+ * The full-screen backdrop of the recording: the route so far on an OpenStreetMap background. It is shown once the GPS is connected
  * ([isGpsConnected]); until then only a hint is shown.
  */
 @Composable
@@ -28,13 +28,13 @@ fun RecordingMap(
 ) {
     Box(modifier.fillMaxSize()) {
         if (isGpsConnected) {
-            TrackMapView(
+            OsmTrackMap(
                 trackpoints = route,
                 modifier = Modifier.fillMaxSize(),
                 shape = RectangleShape
             )
         }
-        if (!isGpsConnected || route.size < 2) {
+        if (!isGpsConnected || route.isEmpty()) {
             Text(
                 text = stringResource(R.string.recording_waiting_for_gps),
                 style = MaterialTheme.typography.bodyMedium,

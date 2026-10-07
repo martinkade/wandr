@@ -182,9 +182,10 @@ private fun ActivityDetailsScreenContent(
                         state.selectedTrack.ifEmpty { activity.polyline?.let(PolylineCodec::decode).orEmpty() }
                     }
                     if (route.size >= 2) {
-                        TrackMapView(trackpoints = route, modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp))
+                        OsmTrackMap(
+                            trackpoints = route, modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp))
                         if (activity.userId == userId && !activity.showMap) {
                             Text(
                                 text = stringResource(R.string.activity_map_hidden_hint),

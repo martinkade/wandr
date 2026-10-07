@@ -4,17 +4,14 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -70,13 +67,16 @@ fun ActivityCard(
                 color = CardDefaults.cardColors().containerColor,
                 shape = RoundedCornerShape(16.dp)
             )
-            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .padding(vertical = 16.dp)
             .clickable(onClick = onClick),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
         ) {
             AvatarImage(avatarUrl = authorAvatarUrl, displayName = author, size = 40.dp)
             Column(Modifier.weight(1f)) {
@@ -103,16 +103,24 @@ fun ActivityCard(
 
         Text(
             text = activity.title,
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
         )
 
-        ActivityStats(activity)
+        ActivityStats(
+            activity, modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
 
         if (route.size >= 2) {
-            TrackMapView(
-                trackpoints = route, modifier = Modifier
+            OsmTrackMap(
+                trackpoints = route,
+                modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(192.dp)
             )
             if (isOwn && !activity.showMap) {
                 Text(
@@ -125,7 +133,10 @@ fun ActivityCard(
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -167,13 +178,13 @@ fun ActivityCard(
 
 /** Distance, pace (or speed on a bike), time and elevation gain. */
 @Composable
-private fun ActivityStats(activity: Activity) {
+private fun ActivityStats(activity: Activity, modifier: Modifier = Modifier) {
     val isCycling = activity.activityType == "cycling"
     val pace =
         if (isCycling) ActivityFormat.speedKmh(activity.distanceMeters, activity.durationSeconds)
         else ActivityFormat.pace(activity.distanceMeters, activity.durationSeconds)
 
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         Stat(
             stringResource(R.string.activity_stat_distance),
             "${ActivityFormat.distanceKm(activity.distanceMeters)} km",

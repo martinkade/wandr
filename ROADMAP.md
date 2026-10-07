@@ -142,6 +142,19 @@ This document serves as the master implementation plan and roadmap for **WANDR**
     (`on_participant_init`); enrolling a team recalculates all participants. After joining,
     enrolling, leaving or withdrawing, the ranking and standings are reloaded. SUPABASE.md has a
     migration block for existing projects (includes a one-time backfill).
+  - Activity routes (feed card, activity details; Android) are drawn on an OpenStreetMap background
+    (`OsmTrackMap`): a static map without gestures. `StaticMapLayout` (shared, tested) fits the
+    route and lists the 256 px tiles; Coil loads and caches them (`tile.openstreetmap.org`,
+    identifying User-Agent, attribution shown as the OSM license requires). Without network the
+    route shows on a plain background. The live recording screen uses the same map (position and
+    route so far). iOS: `TrackMapView` uses the same shared layout, loads the tiles with
+    `URLSession` (identifying User-Agent, `URLCache`) and shows the route in the feed card, the
+    activity details and the recording (replaces MapKit). Tile caching: own 100 MB disk cache per
+    platform (`OsmTiles` / Coil on Android, `OsmTileCache` / URLCache on iOS); tiles stay valid 30
+    days (Android) or until evicted (iOS) instead of the server's week, and the tiles of a route are
+    prefetched when a recording is saved, so the map also shows offline. The tile URL lives in
+    `StaticMapLayout.TILE_URL_TEMPLATE`. An interactive map is not planned yet. Note: the public OSM
+    tile server is for light use only; switch to a tile provider before a wide release.
 - [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
   - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).

@@ -77,6 +77,8 @@ struct LiveGpsTrackingView: View {
                     Button(action: {
                         isTracking = false
                         locationTracker.stopTracking()
+                        // The route's map tiles are loaded now, so the saved activity shows its map without network later.
+                        OsmTileCache.prefetch(route: trackpoints)
                         onStopAndSave(distanceMeters, durationSeconds, trackpoints)
                     }) {
                         Text(LocalizedStringKey("stop_save_button"))

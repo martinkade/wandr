@@ -31,6 +31,10 @@ struct ActivityDetailView: View {
                 .padding(16)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
 
+                if activity.route.count >= 2 {
+                    TrackMapView(trackpoints: activity.route, height: 200)
+                }
+
                 SocialSectionView(
                     likeCount: social.likeCount, likedByMe: social.likedByMe, comments: social.comments,
                     isPosting: social.isPosting, errorMessage: social.errorMessage,

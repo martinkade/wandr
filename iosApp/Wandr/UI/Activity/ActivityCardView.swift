@@ -1,4 +1,5 @@
 import SwiftUI
+@preconcurrency import shared
 
 struct ActivityCardView: View {
     let title: String
@@ -7,6 +8,8 @@ struct ActivityCardView: View {
     let durationSeconds: Double
     let elevationGainMeters: Double
     let isManualEntry: Bool
+    /// The route of the activity; the map is only shown with at least two points.
+    var route: [GpsTrackpoint] = []
     var onClick: () -> Void = {}
 
     var body: some View {
@@ -40,6 +43,10 @@ struct ActivityCardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Label("\(Int(elevationGainMeters)) m", systemImage: "mountain.2")
                     .font(.subheadline)
+            }
+
+            if route.count >= 2 {
+                TrackMapView(trackpoints: route, height: 192)
             }
         }
         .padding(16)

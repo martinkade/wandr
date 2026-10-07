@@ -215,7 +215,7 @@ private val previewChallenge = Challenge(
 @Composable
 private fun ChallengeCardPreview() {
     WandrTheme {
-        Box(Modifier.padding(16.dp)) {
+        Surface {
             ChallengeCard(
                 previewChallenge,
                 ChallengeStatus.ACTIVE,

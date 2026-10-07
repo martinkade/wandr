@@ -122,7 +122,8 @@ private fun ChallengeListScreenContent(
             else -> null
         } ?: return@LaunchedEffect
 
-        val saved = state.success == ChallengeSuccess.CREATED || state.success == ChallengeSuccess.UPDATED
+        val saved =
+            state.success == ChallengeSuccess.CREATED || state.success == ChallengeSuccess.UPDATED
         if (saved && saveRequested) closeSheet()
         saveRequested = false
         // Own scope: clearing the message changes the effect keys, which would cancel (and hide) the snackbar.
@@ -147,9 +148,11 @@ private fun ChallengeListScreenContent(
             }
         }
     ) { padding ->
-        Box(Modifier
-            .fillMaxSize()
-            .padding(padding)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             if (visibleChallenges.isEmpty() && !state.isLoading) {
                 Text(
                     text = stringResource(R.string.challenges_empty),
@@ -165,8 +168,8 @@ private fun ChallengeListScreenContent(
                     modifier = Modifier.fillMaxSize(),
                     // Bottom padding keeps the last card clear of the floating button.
                     contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
+                        start = 8.dp,
+                        end = 8.dp,
                         top = 16.dp,
                         bottom = 96.dp
                     ),
@@ -212,8 +215,36 @@ private fun ChallengeListScreenContent(
 }
 
 private val previewChallenges = listOf(
-    Challenge("c1", "30-Day 100 km Hike", "Open to everyone.", null, "individual", "distance", 100000.0, false, 1_768_435_200_000L, 1_771_027_200_000L, "u1", 0L, 0L),
-    Challenge("c2", "5000 m Altitude Climb", "Teams compete.", null, "group", "elevation", 5000.0, true, 1_768_435_200_000L, 1_769_039_940_000L, "u2", 0L, 0L)
+    Challenge(
+        "c1",
+        "30-Day 100 km Hike",
+        "Open to everyone.",
+        null,
+        "individual",
+        "distance",
+        100000.0,
+        false,
+        1_768_435_200_000L,
+        1_771_027_200_000L,
+        "u1",
+        0L,
+        0L
+    ),
+    Challenge(
+        "c2",
+        "5000 m Altitude Climb",
+        "Teams compete.",
+        null,
+        "group",
+        "elevation",
+        5000.0,
+        true,
+        1_768_435_200_000L,
+        1_769_039_940_000L,
+        "u2",
+        0L,
+        0L
+    )
 )
 
 @Preview(name = "Manager", showBackground = true)
@@ -264,7 +295,11 @@ private fun ChallengeListScreenJoinedPreview() {
 private fun ChallengeListScreenMemberPreview() {
     WandrTheme {
         ChallengeListScreenContent(
-            state = ChallengeState(challenges = previewChallenges), userId = "u3", isManager = false, onIntent = {}, onOpenChallenge = {}
+            state = ChallengeState(challenges = previewChallenges),
+            userId = "u3",
+            isManager = false,
+            onIntent = {},
+            onOpenChallenge = {}
         )
     }
 }
@@ -274,6 +309,11 @@ private fun ChallengeListScreenMemberPreview() {
 @Composable
 private fun ChallengeListScreenEmptyPreview() {
     WandrTheme {
-        ChallengeListScreenContent(state = ChallengeState(), userId = "u1", isManager = true, onIntent = {}, onOpenChallenge = {})
+        ChallengeListScreenContent(
+            state = ChallengeState(),
+            userId = "u1",
+            isManager = true,
+            onIntent = {},
+            onOpenChallenge = {})
     }
 }

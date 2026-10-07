@@ -248,6 +248,8 @@ private fun LiveGpsTrackingScreenContent(
         RecordingFinishDialog(
             onSave = {
                 finishing = false
+                // The route's map tiles are loaded now, so the saved activity shows its map without network later.
+                if (!isPreview) OsmTiles.prefetch(context, state.liveTrackpoints)
                 onIntent(ActivityIntent.StopAndSaveGpsTracking(userId, teamId, recordingTitle))
             },
             onDiscard = {
