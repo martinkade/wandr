@@ -137,6 +137,11 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - Add cover photo upload to Supabase Storage (`challenge-covers` bucket).
 - [x] **Step 5.1 addition: Counting activity types & server-side progress**
   - A challenge can define which activity types count (`activity_types`; none selected = every type counts), chosen in the challenge form (Android) and shown on the details. The participants' progress is calculated by the server from their activities (distance, elevation gain or duration of the activities that started within the challenge period and match the types; recalculated when activities or the challenge change, retroactively for new participants). Clients can no longer write progress. Activities count once synced.
+  - Earlier activities count: a new participant (individual join, every member of an enrolled team,
+    a team change) starts with the matching activities recorded before within the challenge period
+    (`on_participant_init`); enrolling a team recalculates all participants. After joining,
+    enrolling, leaving or withdrawing, the ranking and standings are reloaded. SUPABASE.md has a
+    migration block for existing projects (includes a one-time backfill).
 - [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
   - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).

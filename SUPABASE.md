@@ -756,6 +756,9 @@ BEGIN
     FROM public.team_members tm
     WHERE tm.team_id = NEW.team_id AND public.primary_team_id(tm.user_id) = NEW.team_id
     ON CONFLICT (challenge_id, user_id) DO NOTHING;
+    -- The new participants start with the matching activities they recorded before (on_participant_init); this makes
+    -- sure of it for everyone, also for rows that already existed.
+    PERFORM public.refresh_challenge_progress(NEW.challenge_id, NULL);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;

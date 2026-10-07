@@ -159,24 +159,50 @@ class ChallengeViewModel(
                     }
                 }
             }
-            launch {
-                // Team vs. team ranking (aggregates, from the server); may fail while offline.
-                getTeamStandingsUseCase(challengeId)
-                    .onSuccess { standings -> _uiState.update { it.copy(standings = standings, isLoading = false) } }
-                    .onFailure { error ->
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = error.asAppError()
-                            )
-                        }
+            loadRankings(challengeId)
+        }
+    }
+
+    /**
+     * Loads the standings and the member ranking from the server. The server calculates the progress, including the
+     * activities from before joining / enrolling that lie within the challenge period.
+     */
+    private fun CoroutineScope.loadRankings(challengeId: String) {
+        launch {
+            // Team vs. team ranking (aggregates, from the server); may fail while offline.
+            getTeamStandingsUseCase(challengeId)
+                .onSuccess { standings ->
+                    _uiState.update {
+                        it.copy(
+                            standings = standings,
+                            isLoading = false
+                        )
                     }
-            }
-            launch {
-                // The members the server lets this user see; fails quietly while offline (the list just stays empty).
-                getMemberRankingUseCase(challengeId).onSuccess { ranking -> _uiState.update { it.copy(leaderboard = ranking) } }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = error.asAppError()
+                        )
+                    }
+                }
+        }
+        launch {
+            // The members the server lets this user see; fails quietly while offline (the list just stays empty).
+            getMemberRankingUseCase(challengeId).onSuccess { ranking ->
+                _uiState.update {
+                    it.copy(
+                        leaderboard = ranking
+                    )
+                }
             }
         }
+    }
+
+    /** Reloads the rankings after a participation changed, so the progress of past activities shows right away. */
+    private fun reloadRankings(challengeId: String) {
+        if (_uiState.value.selectedChallenge?.id == challengeId) scope.loadRankings(challengeId)
     }
 
     private fun startCreate() {
@@ -303,6 +329,7 @@ class ChallengeViewModel(
                     _uiState.update { it.copy(success = ChallengeSuccess.TEAM_ENROLLED) }
                     // The server adds the team's members as participants; pull them so the state reflects it.
                     refreshChallengesUseCase(userId)
+                    reloadRankings(challengeId)
                 }
                 .onFailure { error -> _uiState.update { it.copy(error = error.asAppError()) } }
         }
@@ -311,7 +338,10 @@ class ChallengeViewModel(
     private fun leaveChallenge(challengeId: String, userId: String) {
         scope.launch {
             leaveChallengeUseCase(challengeId, userId)
-                .onSuccess { _uiState.update { it.copy(success = ChallengeSuccess.LEFT) } }
+                .onSuccess {
+                    _uiState.update { it.copy(success = ChallengeSuccess.LEFT) }
+                    reloadRankings(challengeId)
+                }
                 .onFailure { error -> _uiState.update { it.copy(error = error.asAppError()) } }
         }
     }
@@ -323,7 +353,10 @@ class ChallengeViewModel(
         }
         scope.launch {
             withdrawTeamFromChallengeUseCase(challengeId, teamId)
-                .onSuccess { _uiState.update { it.copy(success = ChallengeSuccess.TEAM_WITHDRAWN) } }
+                .onSuccess {
+                    _uiState.update { it.copy(success = ChallengeSuccess.TEAM_WITHDRAWN) }
+                    reloadRankings(challengeId)
+                }
                 .onFailure { error -> _uiState.update { it.copy(error = error.asAppError()) } }
         }
     }
@@ -331,7 +364,10 @@ class ChallengeViewModel(
     private fun joinChallenge(challengeId: String, userId: String) {
         scope.launch {
             joinChallengeUseCase(challengeId, userId)
-                .onSuccess { _uiState.update { it.copy(success = ChallengeSuccess.JOINED) } }
+                .onSuccess {
+                    _uiState.update { it.copy(success = ChallengeSuccess.JOINED) }
+                    reloadRankings(challengeId)
+                }
                 .onFailure { error -> _uiState.update { it.copy(error = error.asAppError()) } }
         }
     }
