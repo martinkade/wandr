@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
@@ -47,11 +48,21 @@ fun ScreenScaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text(title, color = MaterialTheme.colorScheme.onBackground) },
+                title = {
+                    Text(
+                        text = title,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(onClick = onBack) {
-                            Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.back_button))
+                            Icon(
+                                painterResource(R.drawable.ic_arrow_back),
+                                contentDescription = stringResource(R.string.back_button)
+                            )
                         }
                     }
                 },
@@ -76,7 +87,11 @@ private fun ScreenScaffoldPreview() {
             onBack = {},
             actions = { TextButton(onClick = {}) { Text("Edit") } }
         ) { padding ->
-            Text("Content", modifier = Modifier.padding(padding).padding(16.dp))
+            Text(
+                "Content", modifier = Modifier
+                    .padding(padding)
+                    .padding(16.dp)
+            )
         }
     }
 }

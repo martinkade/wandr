@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,8 +29,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -46,6 +50,9 @@ import com.wandr.android.ui.theme.WandrTheme
 /** How fast the header moves compared to the content while scrolling: 0.5 = half as fast (parallax). */
 private const val PARALLAX_FACTOR = 0.5f
 private val TopBarHeight = 64.dp
+
+/** Opacity of the dark discs behind the top bar's icons while the header is fully shown. */
+private const val HEADER_DISC_ALPHA = 0.4f
 
 /**
  * Page with a top bar and a header (a cover image) that scrolls away with a parallax effect. The top bar is transparent
@@ -102,7 +109,7 @@ fun CollapsingHeaderScaffold(
                         onClick = onBack,
                         colors = IconButtonDefaults.iconButtonColors(
                             // A dark disc keeps the arrow readable on any photo; it fades with the header.
-                            containerColor = Color.Black.copy(alpha = 0.4f * (1f - collapse)),
+                            containerColor = Color.Black.copy(alpha = HEADER_DISC_ALPHA * (1f - collapse)),
                             contentColor = onBar
                         )
                     ) {
@@ -112,7 +119,16 @@ fun CollapsingHeaderScaffold(
                         )
                     }
                 },
-                actions = { actions(onBar) },
+                actions = {
+                    // The same dark disc as behind the back arrow (a pill for several or wide actions), fading with the header.
+                    Row(
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = HEADER_DISC_ALPHA * (1f - collapse))),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) { actions(onBar) }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = collapse),
                     titleContentColor = MaterialTheme.colorScheme.onSurface

@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -66,77 +69,87 @@ private fun RegisterScreenContent(
     modifier: Modifier = Modifier
 ) {
     ContourBackground(modifier = modifier.fillMaxSize()) {
+        // The card is centered; when it is taller than the free space (soft keyboard, small screen, large font) the page scrolls.
         Column(
             modifier = Modifier
-                .widthIn(max = 420.dp)
-                .background(
-                    color = CardDefaults.cardColors().containerColor,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .padding(top = 32.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            AppLogo()
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(R.string.join_wandr_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.tertiary
-            )
-            Text(
-                text = stringResource(R.string.join_wandr_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 420.dp)
+                    .background(
+                        color = CardDefaults.cardColors().containerColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .padding(top = 32.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                AppLogo()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.join_wandr_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+                Text(
+                    text = stringResource(R.string.join_wandr_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            OutlinedTextField(
-                value = state.emailInput,
-                onValueChange = { onIntent(LoginIntent.EmailChanged(it)) },
-                label = { Text(stringResource(R.string.email_address_label)) },
-                isError = state.error.concernsEmail(),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+                OutlinedTextField(
+                    value = state.emailInput,
+                    onValueChange = { onIntent(LoginIntent.EmailChanged(it)) },
+                    label = { Text(stringResource(R.string.email_address_label)) },
+                    isError = state.error.concernsEmail(),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = state.passwordInput,
-                onValueChange = { onIntent(LoginIntent.PasswordChanged(it)) },
-                label = { Text(stringResource(R.string.password_hint)) },
-                isError = state.error.concernsPassword(),
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+                OutlinedTextField(
+                    value = state.passwordInput,
+                    onValueChange = { onIntent(LoginIntent.PasswordChanged(it)) },
+                    label = { Text(stringResource(R.string.password_hint)) },
+                    isError = state.error.concernsPassword(),
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            state.error?.let { error ->
-                Spacer(modifier = Modifier.height(12.dp))
-                AuthErrorText(error)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            if (state.isLoading) {
-                CircularProgressIndicator()
-            } else {
-                Button(
-                    onClick = { onIntent(LoginIntent.SubmitRegister) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text(stringResource(R.string.create_account_button))
+                state.error?.let { error ->
+                    Spacer(modifier = Modifier.height(12.dp))
+                    AuthErrorText(error)
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            TextButton(onClick = onNavigateToLogin) {
-                Text(stringResource(R.string.already_have_account))
+                if (state.isLoading) {
+                    CircularProgressIndicator()
+                } else {
+                    Button(
+                        onClick = { onIntent(LoginIntent.SubmitRegister) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                    ) {
+                        Text(stringResource(R.string.create_account_button))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextButton(onClick = onNavigateToLogin) {
+                    Text(stringResource(R.string.already_have_account))
+                }
             }
         }
     }

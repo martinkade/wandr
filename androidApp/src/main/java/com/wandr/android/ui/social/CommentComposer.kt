@@ -2,7 +2,6 @@ package com.wandr.android.ui.social
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +29,7 @@ fun CommentComposer(
     modifier: Modifier = Modifier
 ) {
     var text by rememberSaveable { mutableStateOf("") }
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         OutlinedTextField(
             value = text,
             onValueChange = { text = it },

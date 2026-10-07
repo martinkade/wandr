@@ -13,12 +13,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
@@ -38,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,12 +44,15 @@ import com.wandr.android.ui.activity.activityTypeText
 import com.wandr.android.ui.common.CollapsingHeaderScaffold
 import com.wandr.android.ui.common.CoverHero
 import com.wandr.android.ui.common.CoverHeroHeight
+import com.wandr.android.ui.common.OverflowMenu
+import com.wandr.android.ui.common.OverflowMenuItem
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.common.SheetOverlap
 import com.wandr.android.ui.common.heroTarget
 import com.wandr.android.ui.common.rememberImagePickerFlow
 import com.wandr.android.ui.common.userMessage
-import com.wandr.android.ui.social.SocialSectionHost
+import com.wandr.android.ui.social.CommentsSheet
+import com.wandr.android.ui.social.SocialBar
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
@@ -69,6 +67,9 @@ import com.wandr.presentation.challenge.ChallengeState
 import com.wandr.presentation.challenge.ChallengeSuccess
 import com.wandr.presentation.challenge.ChallengeViewModel
 import com.wandr.presentation.imagecrop.CoverImageSpec
+import com.wandr.presentation.social.SocialIntent
+import com.wandr.presentation.social.SocialState
+import com.wandr.presentation.social.SocialViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -83,27 +84,35 @@ fun ChallengeDetailsScreen(
     userId: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ChallengeViewModel = koinInject()
+    viewModel: ChallengeViewModel = koinInject(),
+    socialViewModel: SocialViewModel = koinInject()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val socialState by socialViewModel.state.collectAsState()
     LaunchedEffect(challengeId, userId) {
         viewModel.processIntent(ChallengeIntent.LoadChallenges(userId)) // teams for enrolling, runtime statuses
         viewModel.processIntent(ChallengeIntent.SelectChallenge(challengeId))
     }
+    // Likes and comments; the creator of the challenge may also delete other users' comments.
+    val creatorId = state.selectedChallenge?.createdBy
+    LaunchedEffect(challengeId, userId, creatorId) {
+        socialViewModel.processIntent(
+            SocialIntent.Load(
+                SocialEntityType.CHALLENGE,
+                challengeId,
+                userId,
+                creatorId
+            )
+        )
+    }
     ChallengeDetailsScreenContent(
         state = state,
+        socialState = socialState,
         userId = userId,
         onBack = onBack,
         onIntent = viewModel::processIntent,
-        modifier = modifier,
-        socialSection = { challenge ->
-            SocialSectionHost(
-                type = SocialEntityType.CHALLENGE,
-                entityId = challenge.id,
-                userId = userId,
-                entityOwnerId = challenge.createdBy
-            )
-        }
+        onSocialIntent = socialViewModel::processIntent,
+        modifier = modifier
     )
 }
 
@@ -115,9 +124,11 @@ private fun ChallengeDetailsScreenContent(
     onBack: () -> Unit,
     onIntent: (ChallengeIntent) -> Unit,
     modifier: Modifier = Modifier,
-    socialSection: @Composable (Challenge) -> Unit = {}
+    socialState: SocialState = SocialState(),
+    onSocialIntent: (SocialIntent) -> Unit = {}
 ) {
     val challenge = state.selectedChallenge
+    var showComments by rememberSaveable { mutableStateOf(false) }
     // Only the creator (owner) may edit the challenge or change its cover; the server enforces the same rule.
     val canEdit = state.canEdit
 
@@ -214,37 +225,28 @@ private fun ChallengeDetailsScreenContent(
                     coverUrl = challenge.coverUrl,
                     seed = challenge.id.hashCode(),
                     isBusy = state.isImageUpdating,
-                    onPickCover = if (canEdit) coverFlow::open else null
                 )
             },
             actions = { contentColor ->
-                // The overflow menu (creator only).
                 if (canEdit) {
-                    Box {
-                        IconButton(onClick = { menuOpen = true }) {
-                            Icon(
-                                painterResource(R.drawable.ic_more_horiz),
-                                contentDescription = stringResource(R.string.challenge_more_options),
-                                tint = contentColor
-                            )
-                        }
-                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.challenge_edit_button)) },
-                                leadingIcon = {
-                                    Icon(
-                                        painterResource(R.drawable.ic_edit),
-                                        contentDescription = null
-                                    )
-                                },
+                    OverflowMenu(
+                        contentColor = contentColor,
+                        items = listOf(
+                            OverflowMenuItem(
+                                label = stringResource(R.string.profile_edit_button),
+                                icon = R.drawable.ic_edit,
                                 onClick = {
-                                    menuOpen = false
                                     onIntent(ChallengeIntent.StartEdit(challenge.id))
                                     isEditing = true
                                 }
-                            )
-                        }
-                    }
+                            ),
+                            OverflowMenuItem(
+                                label = stringResource(R.string.challenge_change_cover),
+                                icon = R.drawable.ic_image,
+                                onClick = coverFlow::open
+                            ),
+                        )
+                    )
                 }
             },
             snackbarHost = snackbarHost
@@ -407,7 +409,13 @@ private fun ChallengeDetailsScreenContent(
                     Spacer(Modifier.height(24.dp))
                     HorizontalDivider()
                     Spacer(Modifier.height(12.dp))
-                    socialSection(challenge)
+                    SocialBar(
+                        likeCount = socialState.summary.likeCount,
+                        likedByMe = socialState.summary.likedByMe,
+                        commentCount = socialState.comments.size,
+                        onToggleLike = { onSocialIntent(SocialIntent.ToggleLike) },
+                        onOpenComments = { showComments = true }
+                    )
                 }
 
                 // The emblem sits on the edge between cover and sheet.
@@ -421,6 +429,13 @@ private fun ChallengeDetailsScreenContent(
                 )
             }
         }
+    }
+
+    if (showComments) {
+        CommentsSheet(
+            state = socialState,
+            onIntent = onSocialIntent,
+            onDismiss = { showComments = false })
     }
 
     if (enrolling) {

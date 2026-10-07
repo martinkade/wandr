@@ -5,32 +5,25 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.activity.components.ActivityOwner
 import com.wandr.android.ui.activity.components.ActivityStats
 import com.wandr.android.ui.activity.components.ActivityTitle
+import com.wandr.android.ui.social.SocialBar
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.geo.PolylineCodec
 import com.wandr.domain.model.Activity
@@ -51,7 +44,8 @@ fun ActivityCard(
     onClick: () -> Unit,
     onLikeClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isOwn: Boolean = false
+    isOwn: Boolean = false,
+    onCommentsClick: () -> Unit = onClick
 ) {
     // Decoding a polyline of a few hundred points is cheap, but not worth repeating on every recomposition.
     val route = remember(activity.polyline) {
@@ -105,48 +99,16 @@ fun ActivityCard(
             }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        SocialBar(
+            likeCount = counts.likeCount,
+            likedByMe = counts.likedByMe,
+            commentCount = counts.commentCount,
+            onToggleLike = onLikeClick,
+            onOpenComments = onCommentsClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(onClick = onLikeClick)
-                    .padding(vertical = 6.dp, horizontal = 4.dp)
-            ) {
-                Icon(
-                    painter = painterResource(if (counts.likedByMe) R.drawable.ic_favorite else R.drawable.ic_favorite_border),
-                    contentDescription = stringResource(if (counts.likedByMe) R.string.social_unlike else R.string.social_like),
-                    tint = if (counts.likedByMe) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(22.dp)
-                )
-                Text(
-                    text = counts.likeCount.toString(),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_comment),
-                    contentDescription = stringResource(R.string.social_comments_title),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(22.dp)
-                )
-                Text(
-                    text = counts.commentCount.toString(),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
-            }
-        }
+                .padding(horizontal = 8.dp, vertical = 8.dp)
+        )
     }
 }
 

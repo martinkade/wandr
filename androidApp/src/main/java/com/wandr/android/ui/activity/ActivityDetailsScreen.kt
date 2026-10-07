@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -38,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,10 +47,13 @@ import com.wandr.android.ui.common.CollapsingHeaderScaffold
 import com.wandr.android.ui.common.CoverHero
 import com.wandr.android.ui.common.CoverHeroHeight
 import com.wandr.android.ui.common.LabeledValue
+import com.wandr.android.ui.common.OverflowMenu
+import com.wandr.android.ui.common.OverflowMenuItem
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.common.SheetOverlap
 import com.wandr.android.ui.common.userMessage
-import com.wandr.android.ui.social.SocialSectionHost
+import com.wandr.android.ui.social.CommentsSheet
+import com.wandr.android.ui.social.SocialBar
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.geo.PolylineCodec
 import com.wandr.domain.model.Activity
@@ -63,6 +63,9 @@ import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
 import com.wandr.presentation.activity.ActivitySuccess
 import com.wandr.presentation.activity.ActivityViewModel
+import com.wandr.presentation.social.SocialIntent
+import com.wandr.presentation.social.SocialState
+import com.wandr.presentation.social.SocialViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -76,27 +79,35 @@ fun ActivityDetailsScreen(
     userId: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ActivityViewModel = koinInject()
+    viewModel: ActivityViewModel = koinInject(),
+    socialViewModel: SocialViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
+    val socialState by socialViewModel.state.collectAsState()
     LaunchedEffect(activityId, userId) {
         viewModel.processIntent(ActivityIntent.LoadUserActivities(userId)) // establishes the signed-in user
         viewModel.processIntent(ActivityIntent.SelectActivity(activityId))
     }
+    // Likes and comments; the owner of the activity may also delete other users' comments.
+    val ownerId = state.selectedActivity?.userId
+    LaunchedEffect(activityId, userId, ownerId) {
+        socialViewModel.processIntent(
+            SocialIntent.Load(
+                SocialEntityType.ACTIVITY,
+                activityId,
+                userId,
+                ownerId
+            )
+        )
+    }
     ActivityDetailsScreenContent(
         state = state,
+        socialState = socialState,
         userId = userId,
         onBack = onBack,
         onIntent = viewModel::processIntent,
-        modifier = modifier,
-        socialSection = { activity ->
-            SocialSectionHost(
-                type = SocialEntityType.ACTIVITY,
-                entityId = activity.id,
-                userId = userId,
-                entityOwnerId = activity.userId
-            )
-        }
+        onSocialIntent = socialViewModel::processIntent,
+        modifier = modifier
     )
 }
 
@@ -108,9 +119,11 @@ private fun ActivityDetailsScreenContent(
     onBack: () -> Unit,
     onIntent: (ActivityIntent) -> Unit,
     modifier: Modifier = Modifier,
-    socialSection: @Composable (Activity) -> Unit = {}
+    socialState: SocialState = SocialState(),
+    onSocialIntent: (SocialIntent) -> Unit = {}
 ) {
     val activity = state.selectedActivity
+    var showComments by rememberSaveable { mutableStateOf(false) }
     var isEditing by rememberSaveable { mutableStateOf(false) }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     // Only a save started from the sheet may close it.
@@ -178,7 +191,6 @@ private fun ActivityDetailsScreenContent(
             ) { CircularProgressIndicator() }
         }
     } else {
-        val locale = LocalConfiguration.current.locales[0]
         // The full track from this device's FIT file, otherwise the simplified route from the server.
         val route = remember(state.selectedTrack, activity.polyline) {
             state.selectedTrack.ifEmpty { activity.polyline?.let(PolylineCodec::decode).orEmpty() }
@@ -219,15 +231,26 @@ private fun ActivityDetailsScreenContent(
                 }
             },
             actions = { contentColor ->
-                if (state.canEdit) {
-                    TextButton(
-                        onClick = {
-                            onIntent(ActivityIntent.StartEdit(activity.id))
-                            isEditing = true
-                        },
-                        colors = ButtonDefaults.textButtonColors(contentColor = contentColor)
-                    ) { Text(stringResource(R.string.profile_edit_button)) }
-                }
+                // The owner edits or deletes the activity here.
+                OverflowMenu(
+                    contentColor = contentColor,
+                    items = if (!state.canEdit) emptyList() else listOf(
+                        OverflowMenuItem(
+                            label = stringResource(R.string.profile_edit_button),
+                            icon = R.drawable.ic_edit,
+                            onClick = {
+                                onIntent(ActivityIntent.StartEdit(activity.id))
+                                isEditing = true
+                            }
+                        ),
+                        OverflowMenuItem(
+                            label = stringResource(R.string.activity_delete_button),
+                            icon = R.drawable.ic_delete,
+                            isDestructive = true,
+                            onClick = { confirmDelete = true }
+                        )
+                    )
+                )
             },
             snackbarHost = snackbarHost
         ) {
@@ -288,18 +311,17 @@ private fun ActivityDetailsScreenContent(
                     modifier = Modifier
                         .fillMaxWidth()
                 )
-                if (state.canEdit) {
-                    Spacer(Modifier.height(16.dp))
-                    OutlinedButton(
-                        onClick = { confirmDelete = true },
-                        enabled = !state.isSaving,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text(stringResource(R.string.activity_delete_button)) }
-                }
 
                 Spacer(Modifier.height(16.dp))
-                socialSection(activity)
+                SocialBar(
+                    likeCount = socialState.summary.likeCount,
+                    likedByMe = socialState.summary.likedByMe,
+                    commentCount = socialState.comments.size,
+                    onToggleLike = { onSocialIntent(SocialIntent.ToggleLike) },
+                    onOpenComments = { showComments = true },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
             }
         }
     }
@@ -330,6 +352,13 @@ private fun ActivityDetailsScreenContent(
                 }
             }
         )
+    }
+
+    if (showComments) {
+        CommentsSheet(
+            state = socialState,
+            onIntent = onSocialIntent,
+            onDismiss = { showComments = false })
     }
 
     val form = state.form

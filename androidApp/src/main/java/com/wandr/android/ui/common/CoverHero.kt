@@ -2,13 +2,11 @@ package com.wandr.android.ui.common
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,11 +41,12 @@ fun CoverHero(
     height: Dp = CoverHeroHeight,
     isBusy: Boolean = false,
     onBack: (() -> Unit)? = null,
-    onPickCover: (() -> Unit)? = null
 ) {
-    Box(modifier
-        .fillMaxWidth()
-        .height(height)) {
+    Box(
+        modifier
+            .fillMaxWidth()
+            .height(height)
+    ) {
         if (coverUrl != null) {
             AsyncImage(
                 model = coverUrl,
@@ -83,9 +82,6 @@ fun CoverHero(
                 )
         )
 
-        if (onPickCover != null) Box(Modifier
-            .fillMaxSize()
-            .clickable(onClick = onPickCover))
         if (isBusy) {
             Box(
                 Modifier
@@ -93,20 +89,6 @@ fun CoverHero(
                     .background(Color.Black.copy(alpha = 0.4f)),
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
-        }
-        if (onPickCover != null) {
-            Icon(
-                painter = painterResource(R.drawable.ic_edit),
-                contentDescription = stringResource(R.string.challenge_change_cover),
-                tint = Color.White,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 12.dp, bottom = 12.dp + SheetOverlap)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.4f))
-                    .padding(8.dp)
-            )
         }
         if (onBack != null) {
             IconButton(
@@ -141,7 +123,7 @@ val SheetOverlap = 28.dp
 )
 @Composable
 private fun CoverHeroPreview() {
-    WandrTheme { CoverHero(coverUrl = null, seed = 42, onBack = {}, onPickCover = {}) }
+    WandrTheme { CoverHero(coverUrl = null, seed = 42, onBack = {}) }
 }
 
 @Preview(name = "Busy", showBackground = true)

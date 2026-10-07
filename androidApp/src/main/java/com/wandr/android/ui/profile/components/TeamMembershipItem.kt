@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.AvatarImage
+import com.wandr.android.ui.common.sectionItemShape
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 
@@ -43,12 +43,7 @@ fun TeamMembershipItem(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
-    val itemShape = RoundedCornerShape(
-        topStart = if (isFirstItemInSection) 16.dp else 4.dp,
-        topEnd = if (isFirstItemInSection) 16.dp else 4.dp,
-        bottomStart = if (isLastItemInSection) 16.dp else 4.dp,
-        bottomEnd = if (isLastItemInSection) 16.dp else 4.dp
-    )
+    val itemShape = sectionItemShape(isFirstItemInSection, isLastItemInSection)
     Row(
         modifier
             .fillMaxWidth()
@@ -58,7 +53,7 @@ fun TeamMembershipItem(
                 color = CardDefaults.cardColors().containerColor,
                 shape = itemShape
             )
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

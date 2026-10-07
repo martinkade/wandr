@@ -254,12 +254,19 @@
         <item quantity="other">%d likes</item>
     </plurals>
     <string name="social_comments_title">Comments</string>
+    <plurals name="social_comments_count">
+        <item quantity="one">%d comment</item>
+        <item quantity="other">%d comments</item>
+    </plurals>
     <string name="social_comments_empty">No comments yet. Be the first!</string>
     <string name="social_comment_hint">Write a comment…</string>
     <string name="social_send">Send</string>
     <string name="social_edited">edited</string>
     <string name="social_edit">Edit</string>
     <string name="social_delete">Delete</string>
+    <string name="social_more_options">More options</string>
+    <string name="more_options">More options</string>
+    <string name="team_change_photo">Change group photo</string>
     <string name="social_save">Save</string>
     <string name="social_add_reaction">Add reaction</string>
     <string name="social_unknown_author">Someone</string>

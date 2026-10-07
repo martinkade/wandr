@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -20,7 +19,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,10 +39,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
-import com.wandr.android.ui.common.AvatarEditor
+import com.wandr.android.ui.common.AvatarImagePicker
 import com.wandr.android.ui.common.CollapsingHeaderScaffold
 import com.wandr.android.ui.common.CoverHero
 import com.wandr.android.ui.common.CoverHeroHeight
+import com.wandr.android.ui.common.OverflowMenu
+import com.wandr.android.ui.common.OverflowMenuItem
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.common.SheetOverlap
 import com.wandr.android.ui.common.rememberImagePickerFlow
@@ -53,6 +53,7 @@ import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
 import com.wandr.domain.model.TeamRole
+import com.wandr.presentation.imagecrop.AvatarImageSpec
 import com.wandr.presentation.imagecrop.CoverImageSpec
 import com.wandr.presentation.teamdetails.TeamDetailsIntent
 import com.wandr.presentation.teamdetails.TeamDetailsState
@@ -167,6 +168,16 @@ private fun TeamDetailsScreenContent(
             onRemove = { onIntent(TeamDetailsIntent.RemoveCover) }
         )
 
+        val avatarFlow = rememberImagePickerFlow(
+            title = stringResource(R.string.team_photo_title),
+            aspectRatio = AvatarImageSpec.ASPECT_RATIO,
+            outputMaxEdgePx = AvatarImageSpec.MAX_EDGE_PX,
+            jpegQuality = AvatarImageSpec.JPEG_QUALITY,
+            canRemove = team.avatarUrl != null,
+            onImageReady = { onIntent(TeamDetailsIntent.UploadAvatar(it)) },
+            onRemove = { onIntent(TeamDetailsIntent.RemoveAvatar) }
+        )
+
         // The cover scrolls away with a parallax effect; the top bar turns solid and shows the group's name.
         CollapsingHeaderScaffold(
             title = team.name,
@@ -178,15 +189,30 @@ private fun TeamDetailsScreenContent(
                     coverUrl = team.coverUrl,
                     seed = team.id.hashCode(),
                     isBusy = state.isImageUpdating,
-                    onPickCover = if (state.canEdit) coverFlow::open else null
                 )
             },
             actions = { contentColor ->
                 if (state.canEdit) {
-                    TextButton(
-                        onClick = { isEditing = true },
-                        colors = ButtonDefaults.textButtonColors(contentColor = contentColor)
-                    ) { Text(stringResource(R.string.profile_edit_button)) }
+                    OverflowMenu(
+                        contentColor = contentColor,
+                        items = listOf(
+                            OverflowMenuItem(
+                                label = stringResource(R.string.profile_edit_button),
+                                icon = R.drawable.ic_edit,
+                                onClick = { isEditing = true }
+                            ),
+                            OverflowMenuItem(
+                                label = stringResource(R.string.challenge_change_cover),
+                                icon = R.drawable.ic_image,
+                                onClick = coverFlow::open
+                            ),
+                            OverflowMenuItem(
+                                label = stringResource(R.string.team_change_photo),
+                                icon = R.drawable.ic_image,
+                                onClick = avatarFlow::open
+                            )
+                        )
+                    )
                 }
             },
             snackbarHost = snackbarHost
@@ -254,15 +280,13 @@ private fun TeamDetailsScreenContent(
                 }
 
                 // The avatar sits on the edge between cover and sheet.
-                AvatarEditor(
+                AvatarImagePicker(
                     avatarUrl = team.avatarUrl,
                     displayName = team.name,
+                    onPickAvatar = avatarFlow::open,
                     isBusy = state.isImageUpdating,
                     enabled = state.canEdit,
                     size = AvatarSize,
-                    title = stringResource(R.string.team_photo_title),
-                    onAvatarReady = { onIntent(TeamDetailsIntent.UploadAvatar(it)) },
-                    onRemoveAvatar = { onIntent(TeamDetailsIntent.RemoveAvatar) },
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .offset(y = -SheetOverlap - AvatarSize / 2)
