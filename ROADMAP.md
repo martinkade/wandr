@@ -118,7 +118,9 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - Implement 8-character unique `invite_code` generation, QR Code invite system (`wandr://invite/{code}`), and member leaving capabilities.
   - Enforce ownership & admin controls: Only team owners can assign admin role to members or remove members.
 - [x] **Step 4.3: Team Management UI**
-  - Build `CreateTeamScreen`/`View`, `TeamDetailsScreen`/`View` (with Team Cover banner), `MemberListScreen`/`View`, `TeamInviteQRCodeScreen`/`View`.
+  - Build `CreateTeamScreen`/`View`, `TeamDetailsScreen`/`View` (with Team Cover banner),
+    `MemberListScreen`/`View`, `InviteSheet` (Android; replaced `TeamInviteQRCodeScreen`) /
+    `TeamInviteQRCodeView` (iOS).
   - Ensure 1 UI component per file with Dark Mode previews and localization (EN & DE).
 - [x] **Step 4.4: Team memberships, priority & joining by invite (profile)**
   - The profile lists the user's groups (`TeamMembershipList`), reorderable by drag and drop (`team_members.priority`, saved via `set_team_priorities`), with a trailing item to join a group by typing the invite code or scanning its QR code (Google code scanner, no camera permission). Joining goes through `join_team_by_invite` (a non-member cannot read a team, so the previous client-side lookup could not work). The highest-priority group is the user's primary group (also used as the team for new activities).
@@ -170,6 +172,11 @@ This document serves as the master implementation plan and roadmap for **WANDR**
     reactions and the composer, scrolls on its own). Comment edit / delete are in each comment's
     overflow menu. `SocialSection` and `SocialSectionHost` are gone: the details screens hold the
     social state and the open sheet themselves.
+  - Android: the group details have an "Invite" button that opens a full-screen bottom sheet
+    (`InviteSheet`) with a QR code of the invite code (`InviteQrCode`, ZXing core encoder; black on
+    white with quiet zone in both themes) and the written code, for others to scan with "join a
+    group". While the sheet is open the screen is a bit brighter (`BoostScreenBrightness`: the app
+    window only, restored on dismiss). iOS not yet.
 - [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
   - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).
@@ -281,17 +288,17 @@ This document serves as the master implementation plan and roadmap for **WANDR**
 
 ## 🛡️ Security & Feature Requirements Verification (`FEATURES.md` vs `SUPABASE.md` & Project Code)
 
-| Requirement (`FEATURES.md`) | `SUPABASE.md` DDL / RLS Policy | Project Implementation | Status |
-| :--- | :--- | :--- | :---: |
+| Requirement (`FEATURES.md`)                                                                                | `SUPABASE.md` DDL / RLS Policy                                                                                                                           | Project Implementation                                                                         |   Status    |
+|:-----------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------|:-----------:|
 | 1. Only `manager` role can create challenges; only the creator can edit/delete them (and change the cover) | `INSERT` on `challenges` checks `system_role = 'manager'`; `UPDATE`/`DELETE` and the `challenge-covers` storage policies check `created_by = auth.uid()` | `Profile.systemRole`; `ChallengeState.canEdit` (creator only) drives the detail screen buttons | ✅ Verified |
-| 2. Only `manager` role can create/delete groups/teams | `INSERT`, `DELETE` on `teams` check `system_role = 'manager'` | Supported in `TeamRepository` & KMP Profile | ✅ Verified |
-| 3. Only team owners can assign `admin` role | `UPDATE` on `team_members` checks `created_by = auth.uid()` | `UpdateTeamMemberRoleUseCase` checks owner | ✅ Verified |
-| 4. Only team owners can remove members | `DELETE` on `team_members` checks `created_by = auth.uid()` OR `user_id = auth.uid()` | `DeleteTeamMemberUseCase` | ✅ Verified |
-| 5. Team owners & admins can edit team details | `UPDATE` on `teams` checks `created_by = auth.uid()` OR `role = 'admin'` | `UpdateTeamUseCase` | ✅ Verified |
-| 6. All users can join/quit individual challenges | `INSERT`/`DELETE` on `challenge_participants` allows `user_id = auth.uid()` for `individual` | `JoinChallengeUseCase` / `QuitChallengeUseCase` | ✅ Verified |
-| 7. Owners & admins can enroll/withdraw their team in group challenges (teams compete against each other) | `INSERT`/`DELETE` on `challenge_teams` allow owners/admins via `is_team_admin`; triggers add/remove the members as participants | `EnrollTeamInChallengeUseCase` | ✅ Verified |
-| 8. Join groups via invite code / QR code | `invite_code` column + `INSERT` on `team_members` | `TeamInviteQRCodeScreen.kt` & `.swift` | ✅ Verified |
-| 9. Group members can leave group/team | `DELETE` on `team_members` allows `user_id = auth.uid()` | `LeaveTeamUseCase` | ✅ Verified |
-| 10. All users can update their profile | `UPDATE` on `profiles` allows `auth.uid() = id` | `UpdateProfileUseCase` | ✅ Verified |
-| 11. All users can create/update/delete activities | `INSERT`/`UPDATE`/`DELETE` on `activities` allows `auth.uid() = user_id` | Phase 6 Activity UseCases & Repositories | ✅ Verified |
+| 2. Only `manager` role can create/delete groups/teams                                                      | `INSERT`, `DELETE` on `teams` check `system_role = 'manager'`                                                                                            | Supported in `TeamRepository` & KMP Profile                                                    | ✅ Verified |
+| 3. Only team owners can assign `admin` role                                                                | `UPDATE` on `team_members` checks `created_by = auth.uid()`                                                                                              | `UpdateTeamMemberRoleUseCase` checks owner                                                     | ✅ Verified |
+| 4. Only team owners can remove members                                                                     | `DELETE` on `team_members` checks `created_by = auth.uid()` OR `user_id = auth.uid()`                                                                    | `DeleteTeamMemberUseCase`                                                                      | ✅ Verified |
+| 5. Team owners & admins can edit team details                                                              | `UPDATE` on `teams` checks `created_by = auth.uid()` OR `role = 'admin'`                                                                                 | `UpdateTeamUseCase`                                                                            | ✅ Verified |
+| 6. All users can join/quit individual challenges                                                           | `INSERT`/`DELETE` on `challenge_participants` allows `user_id = auth.uid()` for `individual`                                                             | `JoinChallengeUseCase` / `QuitChallengeUseCase`                                                | ✅ Verified |
+| 7. Owners & admins can enroll/withdraw their team in group challenges (teams compete against each other)   | `INSERT`/`DELETE` on `challenge_teams` allow owners/admins via `is_team_admin`; triggers add/remove the members as participants                          | `EnrollTeamInChallengeUseCase`                                                                 | ✅ Verified |
+| 8. Join groups via invite code / QR code                                                                   | `invite_code` column + `INSERT` on `team_members`                                                                                                        | `InviteSheet.kt` & `TeamInviteQRCodeView.swift`                                                | ✅ Verified |
+| 9. Group members can leave group/team                                                                      | `DELETE` on `team_members` allows `user_id = auth.uid()`                                                                                                 | `LeaveTeamUseCase`                                                                             | ✅ Verified |
+| 10. All users can update their profile                                                                     | `UPDATE` on `profiles` allows `auth.uid() = id`                                                                                                          | `UpdateProfileUseCase`                                                                         | ✅ Verified |
+| 11. All users can create/update/delete activities                                                          | `INSERT`/`UPDATE`/`DELETE` on `activities` allows `auth.uid() = user_id`                                                                                 | Phase 6 Activity UseCases & Repositories                                                       | ✅ Verified |
 

@@ -2,6 +2,7 @@ package com.wandr.android.ui.team
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -101,6 +103,7 @@ private fun TeamDetailsScreenContent(
     modifier: Modifier = Modifier
 ) {
     var isEditing by rememberSaveable { mutableStateOf(false) }
+    var showInvite by rememberSaveable { mutableStateOf(false) }
     // Only a save started from the sheet may close it (not, e.g., an image update).
     var saveRequested by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -225,8 +228,8 @@ private fun TeamDetailsScreenContent(
                         .clip(RoundedCornerShape(topStart = SheetOverlap, topEnd = SheetOverlap))
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(
-                            start = 24.dp,
-                            end = 24.dp,
+                            start = 8.dp,
+                            end = 8.dp,
                             top = AvatarSize / 2 + 12.dp,
                             bottom = 32.dp
                         ),
@@ -247,24 +250,24 @@ private fun TeamDetailsScreenContent(
                         )
                     }
 
-                    Text(
-                        text = stringResource(R.string.group_invite_code, team.inviteCode),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        textAlign = TextAlign.Center
-                    )
+                    // The invite sheet shows a QR code that others scan to join the group.
+                    Spacer(Modifier.height(16.dp))
+                    FilledTonalButton(onClick = { showInvite = true }) {
+                        Text(stringResource(R.string.team_invite_button))
+                    }
 
-                    HorizontalDivider()
                     Spacer(Modifier.height(12.dp))
 
                     Text(
-                        text = stringResource(R.string.team_members_count, state.members.size),
+                        text = pluralStringResource(
+                            R.plurals.team_members_count,
+                            state.members.size,
+                            state.members.size
+                        ),
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
                     )
                     if (state.members.isEmpty()) {
                         Spacer(Modifier.height(8.dp))
@@ -275,7 +278,16 @@ private fun TeamDetailsScreenContent(
                             modifier = Modifier.fillMaxWidth()
                         )
                     } else {
-                        state.members.forEach { member -> TeamMemberRow(member) }
+                        Spacer(Modifier.height(8.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            state.members.forEachIndexed { index, member ->
+                                TeamMemberRow(
+                                    member,
+                                    isFirstItemInSection = index == 0,
+                                    isLastItemInSection = index == state.members.lastIndex
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -293,6 +305,13 @@ private fun TeamDetailsScreenContent(
                 )
             }
         }
+    }
+
+    if (showInvite && team != null) {
+        InviteSheet(
+            teamName = team.name,
+            inviteCode = team.inviteCode,
+            onDismiss = { showInvite = false })
     }
 
     if (isEditing && team != null) {

@@ -28,6 +28,7 @@
     <string name="join_team_button">Join Team</string>
     <string name="qr_invite_title">Team QR Code Invite</string>
     <string name="scan_qr_to_join">Scan this QR Code with WANDR to join the team!</string>
+    <string name="team_invite_button">Invite</string>
     <string name="team_members_title">Team Members</string>
 
     <!-- Challenge & Leaderboard Localization -->
@@ -104,7 +105,10 @@
     <string name="team_cover_title">Cover Photo</string>
     <string name="team_cover_change">Change Cover</string>
     <string name="team_cover_content_description">Cover photo</string>
-    <string name="team_members_count">Members (%1$d)</string>
+    <plurals name="team_members_count">
+        <item quantity="one">%d Member</item>
+        <item quantity="other">%d Members</item>
+    </plurals>
     <string name="team_no_members">No members yet.</string>
     <string name="team_saved_message">Group saved</string>
     <string name="team_image_updated_message">Image updated</string>

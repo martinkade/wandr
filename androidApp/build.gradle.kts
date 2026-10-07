@@ -45,7 +45,7 @@ android {
         applicationId = "com.mediabeam.fitness"
         minSdk = 26
         targetSdk = 37
-        versionCode = 3
+        versionCode = 4
         versionName = "1.0.0"
     }
 
@@ -105,6 +105,7 @@ dependencies {
     implementation(libs.play.services.wearable)
     implementation(libs.play.services.location)
     implementation(libs.play.services.code.scanner)
+    implementation(libs.zxing.core)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
     implementation(libs.health.connect.client)

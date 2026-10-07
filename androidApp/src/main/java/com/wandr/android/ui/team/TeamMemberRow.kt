@@ -2,66 +2,72 @@ package com.wandr.android.ui.team
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.wandr.android.R
+import com.wandr.android.ui.common.AvatarImage
+import com.wandr.android.ui.common.sectionItemShape
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.TeamMember
 import com.wandr.domain.model.TeamRole
 
+/**
+ * A member as a card of a list of connected cards, like the groups in the profile: [isFirstItemInSection] /
+ * [isLastItemInSection] round the corners at the ends of the list.
+ */
 @Composable
-fun TeamMemberRow(member: TeamMember, modifier: Modifier = Modifier) {
+fun TeamMemberRow(
+    member: TeamMember,
+    isFirstItemInSection: Boolean,
+    isLastItemInSection: Boolean,
+    modifier: Modifier = Modifier
+) {
     val name = member.displayName.ifBlank { member.username }
     Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = CardDefaults.cardColors().containerColor,
+                shape = sectionItemShape(isFirstItemInSection, isLastItemInSection)
+            )
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            if (member.avatarUrl != null) {
-                AsyncImage(
-                    model = member.avatarUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(44.dp)
-                )
-            } else {
-                Text(
-                    text = name.take(2).uppercase().ifEmpty { "?" },
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-        }
-        Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
-            Text(text = name, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onBackground)
+        AvatarImage(
+            avatarUrl = member.avatarUrl,
+            displayName = name,
+            size = 40.dp
+        )
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
             if (member.username.isNotBlank()) {
                 Text(
                     text = "@${member.username}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -89,9 +95,15 @@ private fun RoleChip(role: TeamRole) {
 @Composable
 private fun TeamMemberRowPreview() {
     WandrTheme {
-        Column(Modifier.padding(16.dp)) {
-            TeamMemberRow(TeamMember("1", "t1", "u1", TeamRole.ADMIN, "martinkade", "Martin Kade", null, 0L))
-            TeamMemberRow(TeamMember("2", "t1", "u2", TeamRole.MEMBER, "runner99", "Alex Runner", null, 0L))
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            TeamMemberRow(
+                TeamMember("1", "t1", "u1", TeamRole.ADMIN, "martinkade", "Martin Kade", null, 0L),
+                isFirstItemInSection = true, isLastItemInSection = false
+            )
+            TeamMemberRow(
+                TeamMember("2", "t1", "u2", TeamRole.MEMBER, "runner99", "Alex Runner", null, 0L),
+                isFirstItemInSection = false, isLastItemInSection = true
+            )
         }
     }
 }

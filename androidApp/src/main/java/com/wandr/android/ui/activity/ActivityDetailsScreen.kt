@@ -260,7 +260,7 @@ private fun ActivityDetailsScreenContent(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(topStart = SheetOverlap, topEnd = SheetOverlap))
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
+                    .padding(start = 8.dp, end = 8.dp, bottom = 32.dp)
             ) {
                 if (hasMap) {
                     if (activity.userId == userId && !activity.showMap) {
@@ -289,20 +289,21 @@ private fun ActivityDetailsScreenContent(
                     activity = activity,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp)
+                        .padding(horizontal = 8.dp, vertical = 16.dp)
                 )
 
                 ActivityTitle(
                     activity = activity,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
                 )
 
                 ActivityStats(
                     activity = activity,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp)
+                        .padding(horizontal = 8.dp, vertical = 16.dp)
                 )
 
                 LabeledValue(
@@ -310,6 +311,7 @@ private fun ActivityDetailsScreenContent(
                     value = stringResource(if (activity.isManualEntry) R.string.manual_entry else R.string.gps_tracked),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
                 )
 
                 Spacer(Modifier.height(16.dp))

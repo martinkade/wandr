@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -47,7 +48,7 @@ fun OverflowMenu(
     if (items.isEmpty()) return
     var open by rememberSaveable { mutableStateOf(false) }
     Box(modifier) {
-        IconButton(onClick = { open = true }) {
+        IconButton(onClick = { open = true }, modifier = Modifier.size(40.dp)) {
             Icon(
                 painterResource(R.drawable.ic_more_vert),
                 contentDescription = stringResource(R.string.more_options),

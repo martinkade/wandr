@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -111,7 +112,8 @@ fun CollapsingHeaderScaffold(
                             // A dark disc keeps the arrow readable on any photo; it fades with the header.
                             containerColor = Color.Black.copy(alpha = HEADER_DISC_ALPHA * (1f - collapse)),
                             contentColor = onBar
-                        )
+                        ),
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             painterResource(R.drawable.ic_arrow_back),
@@ -123,7 +125,6 @@ fun CollapsingHeaderScaffold(
                     // The same dark disc as behind the back arrow (a pill for several or wide actions), fading with the header.
                     Row(
                         modifier = Modifier
-                            .padding(end = 4.dp)
                             .clip(CircleShape)
                             .background(Color.Black.copy(alpha = HEADER_DISC_ALPHA * (1f - collapse))),
                         verticalAlignment = Alignment.CenterVertically

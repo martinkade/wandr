@@ -1,6 +1,7 @@
 [versions]
 play-services-location = "21.4.0"
 play-services-code-scanner = "16.1.0"
+zxing = "3.5.4"
 health-connect = "1.1.0"
 play-services-wearable = "20.0.1"
 activity-compose = "1.13.0"
@@ -45,6 +46,8 @@ google-services = "4.5.0"
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 # QR scanning for invite codes (no camera permission needed)
 play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "play-services-code-scanner" }
+# QR code generation for team invites (encoder only, no camera)
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 # Firebase Cloud Messaging (Android push)
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }

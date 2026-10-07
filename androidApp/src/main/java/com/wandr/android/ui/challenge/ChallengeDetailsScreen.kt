@@ -264,8 +264,8 @@ private fun ChallengeDetailsScreenContent(
                         )
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(
-                            start = 24.dp,
-                            end = 24.dp,
+                            start = 8.dp,
+                            end = 8.dp,
                             top = BadgeSize / 2 + 12.dp,
                             bottom = 32.dp
                         ),
