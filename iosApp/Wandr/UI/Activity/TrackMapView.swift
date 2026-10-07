@@ -13,7 +13,7 @@ struct TrackMapView: View {
         GeometryReader { geo in
             let layout = trackpoints.isEmpty || geo.size.width < 1 || geo.size.height < 1 ? nil
                 : StaticMapLayout.companion.fit(
-                points: trackpoints, width: Double(geo.size.width), height: Double(geo.size.height), padding: 32)
+                points: trackpoints, width: Double(geo.size.width), height: Double(geo.size.height), padding: 32, topPadding: 32, bottomPadding: 32)
             ZStack(alignment: .bottomTrailing) {
                 Color(.secondarySystemBackground)
                 if let layout {

@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.CoverHero
 import com.wandr.android.ui.common.LocalHeroTransition
 import com.wandr.android.ui.common.heroSource
 import com.wandr.android.ui.theme.WandrTheme
@@ -71,7 +72,7 @@ fun ChallengeCard(
     ) {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.fillMaxWidth()) {
-                ChallengeHero(
+                CoverHero(
                     coverUrl = challenge.coverUrl,
                     seed = challenge.id.hashCode(),
                     height = 128.dp

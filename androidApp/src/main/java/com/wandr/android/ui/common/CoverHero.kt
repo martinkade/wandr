@@ -1,4 +1,4 @@
-package com.wandr.android.ui.challenge
+package com.wandr.android.ui.common
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -29,19 +29,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.wandr.android.R
-import com.wandr.android.ui.common.ContourBackground
 import com.wandr.android.ui.theme.WandrTheme
 
 /**
- * The image area at the top of a challenge: the cover photo, or without one a gradient with elevation lines (a different
+ * The image area at the top of a challenge or group: the cover photo, or without one a gradient with elevation lines (a different
  * pattern per [seed]). With [onBack] it carries the back button; with [onPickCover] (the creator) tapping it changes the photo.
  */
 @Composable
-fun ChallengeHero(
+fun CoverHero(
     coverUrl: String?,
     seed: Int,
     modifier: Modifier = Modifier,
-    height: Dp = ChallengeHeroHeight,
+    height: Dp = CoverHeroHeight,
     isBusy: Boolean = false,
     onBack: (() -> Unit)? = null,
     onPickCover: (() -> Unit)? = null
@@ -101,9 +100,8 @@ fun ChallengeHero(
                 contentDescription = stringResource(R.string.challenge_change_cover),
                 tint = Color.White,
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-                    .padding(12.dp)
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 12.dp, bottom = 12.dp + SheetOverlap)
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.4f))
@@ -130,7 +128,10 @@ fun ChallengeHero(
     }
 }
 
-val ChallengeHeroHeight = 260.dp
+val CoverHeroHeight = 260.dp
+
+/** How far the sheet below the hero slides over its lower edge (the picker icon stays above it). */
+val SheetOverlap = 28.dp
 
 @Preview(name = "Without cover", showBackground = true)
 @Preview(
@@ -139,12 +140,12 @@ val ChallengeHeroHeight = 260.dp
     showBackground = true
 )
 @Composable
-private fun ChallengeHeroPreview() {
-    WandrTheme { ChallengeHero(coverUrl = null, seed = 42, onBack = {}, onPickCover = {}) }
+private fun CoverHeroPreview() {
+    WandrTheme { CoverHero(coverUrl = null, seed = 42, onBack = {}, onPickCover = {}) }
 }
 
 @Preview(name = "Busy", showBackground = true)
 @Composable
-private fun ChallengeHeroBusyPreview() {
-    WandrTheme { ChallengeHero(coverUrl = null, seed = 7, height = 160.dp, isBusy = true) }
+private fun CoverHeroBusyPreview() {
+    WandrTheme { CoverHero(coverUrl = null, seed = 7, height = 160.dp, isBusy = true) }
 }

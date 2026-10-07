@@ -1,15 +1,17 @@
 package com.wandr.android.ui.team
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -32,19 +34,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.common.AvatarEditor
-import com.wandr.android.ui.common.CoverEditor
-import com.wandr.android.ui.common.LabeledValue
+import com.wandr.android.ui.common.CollapsingHeaderScaffold
+import com.wandr.android.ui.common.CoverHero
+import com.wandr.android.ui.common.CoverHeroHeight
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.SheetOverlap
+import com.wandr.android.ui.common.rememberImagePickerFlow
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamMember
 import com.wandr.domain.model.TeamRole
+import com.wandr.presentation.imagecrop.CoverImageSpec
 import com.wandr.presentation.teamdetails.TeamDetailsIntent
 import com.wandr.presentation.teamdetails.TeamDetailsState
 import com.wandr.presentation.teamdetails.TeamDetailsSuccess
@@ -61,8 +70,20 @@ fun TeamDetailsScreen(
     viewModel: TeamDetailsViewModel = koinInject()
 ) {
     val state by viewModel.uiState.collectAsState()
-    LaunchedEffect(teamId, userId) { viewModel.processIntent(TeamDetailsIntent.Load(teamId, userId)) }
-    TeamDetailsScreenContent(state = state, onIntent = viewModel::processIntent, onBack = onBack, modifier = modifier)
+    LaunchedEffect(teamId, userId) {
+        viewModel.processIntent(
+            TeamDetailsIntent.Load(
+                teamId,
+                userId
+            )
+        )
+    }
+    TeamDetailsScreenContent(
+        state = state,
+        onIntent = viewModel::processIntent,
+        onBack = onBack,
+        modifier = modifier
+    )
 }
 
 /**
@@ -117,56 +138,88 @@ private fun TeamDetailsScreenContent(
     // Losing edit rights (e.g. role changed remotely) leaves edit mode.
     LaunchedEffect(state.canEdit) { if (!state.canEdit) isEditing = false }
 
-    ScreenScaffold(
-        title = stringResource(R.string.team_details_title),
-        modifier = modifier,
-        onBack = onBack,
-        actions = {
-            if (state.canEdit && team != null) {
-                TextButton(onClick = { isEditing = true }) { Text(stringResource(R.string.profile_edit_button)) }
-            }
-        },
-        // While the sheet is open, its own host shows the messages.
-        snackbarHost = { if (!isEditing) SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Box(Modifier
-            .fillMaxSize()
-            .padding(padding)) {
-            if (state.isLoading || team == null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            } else {
+    // While the sheet is open, its own host shows the messages.
+    val snackbarHost: @Composable () -> Unit = { if (!isEditing) SnackbarHost(snackbarHostState) }
+
+    if (state.isLoading || team == null) {
+        ScreenScaffold(
+            title = stringResource(R.string.team_details_title),
+            modifier = modifier,
+            onBack = onBack,
+            snackbarHost = snackbarHost
+        ) { padding ->
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) { CircularProgressIndicator() }
+        }
+    } else {
+        // Owners and admins change cover and avatar right here (tap), no edit mode needed.
+        val coverFlow = rememberImagePickerFlow(
+            title = stringResource(R.string.team_cover_title),
+            aspectRatio = CoverImageSpec.ASPECT_RATIO,
+            outputMaxEdgePx = CoverImageSpec.MAX_EDGE_PX,
+            jpegQuality = CoverImageSpec.JPEG_QUALITY,
+            canRemove = team.coverUrl != null,
+            onImageReady = { onIntent(TeamDetailsIntent.UploadCover(it)) },
+            onRemove = { onIntent(TeamDetailsIntent.RemoveCover) }
+        )
+
+        // The cover scrolls away with a parallax effect; the top bar turns solid and shows the group's name.
+        CollapsingHeaderScaffold(
+            title = team.name,
+            onBack = onBack,
+            headerHeight = CoverHeroHeight,
+            modifier = modifier,
+            header = {
+                CoverHero(
+                    coverUrl = team.coverUrl,
+                    seed = team.id.hashCode(),
+                    isBusy = state.isImageUpdating,
+                    onPickCover = if (state.canEdit) coverFlow::open else null
+                )
+            },
+            actions = { contentColor ->
+                if (state.canEdit) {
+                    TextButton(
+                        onClick = { isEditing = true },
+                        colors = ButtonDefaults.textButtonColors(contentColor = contentColor)
+                    ) { Text(stringResource(R.string.profile_edit_button)) }
+                }
+            },
+            snackbarHost = snackbarHost
+        ) {
+            Box(Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(24.dp),
+                        .offset(y = -SheetOverlap)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(topStart = SheetOverlap, topEnd = SheetOverlap))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(
+                            start = 24.dp,
+                            end = 24.dp,
+                            top = AvatarSize / 2 + 12.dp,
+                            bottom = 32.dp
+                        ),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Owners and admins change cover and avatar right here (tap), no edit mode needed.
-                    CoverEditor(
-                        coverUrl = team.coverUrl,
-                        isBusy = state.isImageUpdating,
-                        enabled = state.canEdit,
-                        onCoverReady = { onIntent(TeamDetailsIntent.UploadCover(it)) },
-                        onRemoveCover = { onIntent(TeamDetailsIntent.RemoveCover) }
+                    Text(
+                        text = team.name,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        textAlign = TextAlign.Center
                     )
-
-                    Spacer(Modifier.height(16.dp))
-
-                    AvatarEditor(
-                        avatarUrl = team.avatarUrl,
-                        displayName = team.name,
-                        isBusy = state.isImageUpdating,
-                        enabled = state.canEdit,
-                        title = stringResource(R.string.team_photo_title),
-                        onAvatarReady = { onIntent(TeamDetailsIntent.UploadAvatar(it)) },
-                        onRemoveAvatar = { onIntent(TeamDetailsIntent.RemoveAvatar) }
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-
-                    LabeledValue(stringResource(R.string.team_name_label), team.name)
-                    LabeledValue(stringResource(R.string.team_description_label), team.description)
+                    team.description?.takeIf { it.isNotBlank() }?.let {
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
                     Text(
                         text = stringResource(R.string.group_invite_code, team.inviteCode),
@@ -174,10 +227,10 @@ private fun TeamDetailsScreenContent(
                         color = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 16.dp),
+                        textAlign = TextAlign.Center
                     )
 
-                    Spacer(Modifier.height(24.dp))
                     HorizontalDivider()
                     Spacer(Modifier.height(12.dp))
 
@@ -199,6 +252,21 @@ private fun TeamDetailsScreenContent(
                         state.members.forEach { member -> TeamMemberRow(member) }
                     }
                 }
+
+                // The avatar sits on the edge between cover and sheet.
+                AvatarEditor(
+                    avatarUrl = team.avatarUrl,
+                    displayName = team.name,
+                    isBusy = state.isImageUpdating,
+                    enabled = state.canEdit,
+                    size = AvatarSize,
+                    title = stringResource(R.string.team_photo_title),
+                    onAvatarReady = { onIntent(TeamDetailsIntent.UploadAvatar(it)) },
+                    onRemoveAvatar = { onIntent(TeamDetailsIntent.RemoveAvatar) },
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = -SheetOverlap - AvatarSize / 2)
+                )
             }
         }
     }
@@ -233,9 +301,19 @@ private fun TeamDetailsScreenContent(
     }
 }
 
+/** The size of the avatar on the edge between cover and sheet. */
+private val AvatarSize = 96.dp
+
 private val previewTeam = Team(
-    id = "t1", name = "Alpine Trail Blazers", description = "Hiking group for weekend trips.",
-    avatarUrl = null, coverUrl = null, inviteCode = "X7K9P2W1", createdBy = "u1", createdAt = 0L, updatedAt = 0L
+    id = "t1",
+    name = "Alpine Trail Blazers",
+    description = "Hiking group for weekend trips.",
+    avatarUrl = null,
+    coverUrl = null,
+    inviteCode = "X7K9P2W1",
+    createdBy = "u1",
+    createdAt = 0L,
+    updatedAt = 0L
 )
 
 private val previewMembers = listOf(

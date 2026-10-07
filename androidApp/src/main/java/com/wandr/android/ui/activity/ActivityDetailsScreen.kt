@@ -1,15 +1,16 @@
 package com.wandr.android.ui.activity
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,13 +35,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.CollapsingHeaderScaffold
+import com.wandr.android.ui.common.CoverHero
+import com.wandr.android.ui.common.CoverHeroHeight
 import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.SheetOverlap
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.social.SocialSectionHost
 import com.wandr.android.ui.theme.WandrTheme
@@ -151,85 +159,144 @@ private fun ActivityDetailsScreenContent(
         onIntent(ActivityIntent.ClearMessages)
     }
 
-    ScreenScaffold(
-        title = stringResource(R.string.activity_details_title),
-        modifier = modifier,
-        onBack = onBack,
-        actions = {
-            if (state.canEdit && activity != null) {
-                TextButton(onClick = {
-                    onIntent(ActivityIntent.StartEdit(activity.id))
-                    isEditing = true
-                }) { Text(stringResource(R.string.profile_edit_button)) }
-            }
-        },
-        // While the sheet is open, its own host shows the messages.
-        snackbarHost = { if (!isEditing) SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Box(Modifier
-            .fillMaxSize()
-            .padding(padding)) {
-            if (activity == null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            } else {
-                val locale = LocalConfiguration.current.locales[0]
-                Column(Modifier
+    // While the sheet is open, its own host shows the messages.
+    val snackbarHost: @Composable () -> Unit = { if (!isEditing) SnackbarHost(snackbarHostState) }
+
+    if (activity == null) {
+        ScreenScaffold(
+            title = stringResource(R.string.activity_details_title),
+            modifier = modifier,
+            onBack = onBack,
+            snackbarHost = snackbarHost
+        ) { padding ->
+            Box(
+                Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(24.dp)) {
-                    // The full track from this device's FIT file, otherwise the simplified route from the server.
-                    val route = remember(state.selectedTrack, activity.polyline) {
-                        state.selectedTrack.ifEmpty { activity.polyline?.let(PolylineCodec::decode).orEmpty() }
-                    }
-                    if (route.size >= 2) {
-                        OsmTrackMap(
-                            trackpoints = route, modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp))
-                        if (activity.userId == userId && !activity.showMap) {
-                            Text(
-                                text = stringResource(R.string.activity_map_hidden_hint),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) { CircularProgressIndicator() }
+        }
+    } else {
+        val locale = LocalConfiguration.current.locales[0]
+        // The full track from this device's FIT file, otherwise the simplified route from the server.
+        val route = remember(state.selectedTrack, activity.polyline) {
+            state.selectedTrack.ifEmpty { activity.polyline?.let(PolylineCodec::decode).orEmpty() }
+        }
+        val hasMap = route.size >= 2
+
+        // The map is the header: it scrolls away with a parallax effect, the top bar turns solid and shows the title.
+        CollapsingHeaderScaffold(
+            title = activity.title,
+            onBack = onBack,
+            headerHeight = if (hasMap) MapHeaderHeight else CoverHeroHeight,
+            modifier = modifier,
+            header = {
+                if (hasMap) {
+                    OsmTrackMap(
+                        trackpoints = route,
+                        modifier = Modifier.fillMaxSize(),
+                        // The route stays clear of the top bar and of the sheet that slides over the lower edge.
+                        topPadding = 96.dp,
+                        bottomPadding = 32.dp + SheetOverlap
+                    )
+                    // A scrim keeps the back button readable on any map.
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color.Black.copy(alpha = 0.35f),
+                                        Color.Transparent
+                                    )
+                                )
                             )
-                        }
-                        Spacer(Modifier.height(8.dp))
-                    } else if (!activity.isManualEntry) {
-                        // No route for this user: recorded on another device, or its owner keeps the map private.
+                    )
+                } else {
+                    CoverHero(coverUrl = null, seed = activity.id.hashCode())
+                }
+            },
+            actions = { contentColor ->
+                if (state.canEdit) {
+                    TextButton(
+                        onClick = {
+                            onIntent(ActivityIntent.StartEdit(activity.id))
+                            isEditing = true
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = contentColor)
+                    ) { Text(stringResource(R.string.profile_edit_button)) }
+                }
+            },
+            snackbarHost = snackbarHost
+        ) {
+            Column(
+                Modifier
+                    .offset(y = -SheetOverlap)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = SheetOverlap, topEnd = SheetOverlap))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 32.dp)
+            ) {
+                if (hasMap) {
+                    if (activity.userId == userId && !activity.showMap) {
                         Text(
-                            text = stringResource(R.string.activity_track_local_hint),
+                            text = stringResource(R.string.activity_map_hidden_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(8.dp))
                     }
-
-                    LabeledValue(stringResource(R.string.activity_title_label), activity.title)
-                    LabeledValue(stringResource(R.string.activity_description_label), activity.description)
-                    LabeledValue(stringResource(R.string.activity_type_label), activityTypeText(activity.activityType))
-                    LabeledValue(
-                        stringResource(R.string.challenge_start_label),
-                        AppDateFormatter.formatDateTime(activity.startTime, locale = locale)
+                } else if (!activity.isManualEntry) {
+                    // No route for this user: recorded on another device, or its owner keeps the map private.
+                    Text(
+                        text = stringResource(R.string.activity_track_local_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    LabeledValue(stringResource(R.string.distance_label), String.format(Locale.US, "%.2f", activity.distanceMeters / 1000.0))
-                    LabeledValue(stringResource(R.string.duration_label), "${(activity.durationSeconds / 60.0).toInt()}")
-                    LabeledValue(stringResource(R.string.elevation_label), "${activity.elevationGainMeters.toInt()}")
-                    LabeledValue(
-                        stringResource(R.string.activity_source_label),
-                        stringResource(if (activity.isManualEntry) R.string.manual_entry else R.string.gps_tracked)
-                    )
-                    if (state.canEdit) {
-                        Spacer(Modifier.height(16.dp))
-                        OutlinedButton(
-                            onClick = { confirmDelete = true },
-                            enabled = !state.isSaving,
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                            modifier = Modifier.fillMaxWidth()
-                        ) { Text(stringResource(R.string.activity_delete_button)) }
-                    }
-                    Spacer(Modifier.height(16.dp))
-                    socialSection(activity)
+                    Spacer(Modifier.height(8.dp))
                 }
+
+                LabeledValue(stringResource(R.string.activity_title_label), activity.title)
+                LabeledValue(
+                    stringResource(R.string.activity_description_label),
+                    activity.description
+                )
+                LabeledValue(
+                    stringResource(R.string.activity_type_label),
+                    activityTypeText(activity.activityType)
+                )
+                LabeledValue(
+                    stringResource(R.string.challenge_start_label),
+                    AppDateFormatter.formatDateTime(activity.startTime, locale = locale)
+                )
+                LabeledValue(
+                    stringResource(R.string.distance_label),
+                    String.format(Locale.US, "%.2f", activity.distanceMeters / 1000.0)
+                )
+                LabeledValue(
+                    stringResource(R.string.duration_label),
+                    "${(activity.durationSeconds / 60.0).toInt()}"
+                )
+                LabeledValue(
+                    stringResource(R.string.elevation_label),
+                    "${activity.elevationGainMeters.toInt()}"
+                )
+                LabeledValue(
+                    stringResource(R.string.activity_source_label),
+                    stringResource(if (activity.isManualEntry) R.string.manual_entry else R.string.gps_tracked)
+                )
+                if (state.canEdit) {
+                    Spacer(Modifier.height(16.dp))
+                    OutlinedButton(
+                        onClick = { confirmDelete = true },
+                        enabled = !state.isSaving,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(stringResource(R.string.activity_delete_button)) }
+                }
+                Spacer(Modifier.height(16.dp))
+                socialSection(activity)
             }
         }
     }
@@ -282,6 +349,9 @@ private fun ActivityDetailsScreenContent(
     }
 
 }
+
+/** The map header is taller than a cover: the route needs room. */
+private val MapHeaderHeight = 320.dp
 
 private val previewActivity = Activity(
     id = "a1", userId = "u1", teamId = null, title = "Evening run", description = "Along the river.",

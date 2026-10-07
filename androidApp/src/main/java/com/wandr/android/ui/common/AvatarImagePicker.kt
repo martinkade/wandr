@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.wandr.android.ui.theme.WandrTheme
 
 @Composable
@@ -14,12 +16,14 @@ fun AvatarImagePicker(
     onPickAvatar: () -> Unit,
     modifier: Modifier = Modifier,
     isBusy: Boolean = false,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    size: Dp = 64.dp
 ) = AvatarImage(
     avatarUrl = avatarUrl,
     displayName = displayName,
     modifier = modifier.clickable(enabled = enabled, onClick = onPickAvatar),
     isBusy = isBusy,
+    size = size,
 )
 
 @Preview(name = "Light Mode", showBackground = true)

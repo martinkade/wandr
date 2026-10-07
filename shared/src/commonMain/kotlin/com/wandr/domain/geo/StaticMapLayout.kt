@@ -65,14 +65,17 @@ class StaticMapLayout private constructor(
 
         /**
          * The most detailed zoom at which the whole route fits into a viewport of [width] x [height] pixels with
-         * [padding] around it, and the route centered. Fewer than two points (or a route of one spot) show a
+         * [padding] around it, and the route centered in the free space (the top and bottom padding can differ, e.g. when a
+         * bar covers the top of the viewport). Fewer than two points (or a route of one spot) show a
          * [MAX_ZOOM] view of the first point.
          */
         fun fit(
             points: List<GpsTrackpoint>,
             width: Double,
             height: Double,
-            padding: Double = 0.0
+            padding: Double = 0.0,
+            topPadding: Double = padding,
+            bottomPadding: Double = padding
         ): StaticMapLayout {
             if (points.isEmpty()) return StaticMapLayout(MIN_ZOOM, 0.0, 0.0, width, height)
             val minLat = points.minOf { it.latitude }
@@ -80,7 +83,7 @@ class StaticMapLayout private constructor(
             val minLon = points.minOf { it.longitude }
             val maxLon = points.maxOf { it.longitude }
             val availableW = (width - 2 * padding).coerceAtLeast(1.0)
-            val availableH = (height - 2 * padding).coerceAtLeast(1.0)
+            val availableH = (height - topPadding - bottomPadding).coerceAtLeast(1.0)
 
             val zoom = (MAX_ZOOM downTo MIN_ZOOM).firstOrNull { z ->
                 worldX(maxLon, z) - worldX(minLon, z) <= availableW && worldY(minLat, z) - worldY(
@@ -90,7 +93,14 @@ class StaticMapLayout private constructor(
             } ?: MIN_ZOOM
             val centerX = (worldX(minLon, zoom) + worldX(maxLon, zoom)) / 2
             val centerY = (worldY(minLat, zoom) + worldY(maxLat, zoom)) / 2
-            return StaticMapLayout(zoom, centerX - width / 2, centerY - height / 2, width, height)
+            // The route's center goes to the center of the free space.
+            return StaticMapLayout(
+                zoom,
+                centerX - width / 2,
+                centerY - (topPadding + availableH / 2),
+                width,
+                height
+            )
         }
 
         /** Pixel position on the whole world map at [zoom]. */

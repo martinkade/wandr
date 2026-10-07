@@ -44,7 +44,7 @@ enum OsmTileCache {
         let width = Double(UIScreen.main.bounds.width)
         let sizes = [(width, 192.0), (width - 32, 200.0)] // feed card, details (16 pt page padding)
         let urls = Set(sizes.flatMap {
-            StaticMapLayout.companion.fit(points: route, width: $0.0, height: $0.1, padding: 32).tiles
+            StaticMapLayout.companion.fit(points: route, width: $0.0, height: $0.1, padding: 32, topPadding: 32, bottomPadding: 32).tiles
         }
                        .compactMap {
                            URL(string: $0.url)

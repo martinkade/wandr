@@ -61,12 +61,18 @@ object OsmTiles {
         val metrics = context.resources.displayMetrics
         val widthPx = metrics.widthPixels.toDouble()
         val padding = 32 * metrics.density.toDouble()
-        val sizes = listOf(
-            widthPx to 192 * metrics.density.toDouble(), // feed card
-            widthPx - 48 * metrics.density to 200 * metrics.density.toDouble() // details (24 dp page padding)
+        val density = metrics.density.toDouble()
+        val feedCard = StaticMapLayout.fit(route, widthPx, 192 * density, padding)
+        // The details show the map as their header: taller, clear of the top bar and of the sheet over its lower edge.
+        val details = StaticMapLayout.fit(
+            route,
+            widthPx,
+            320 * density,
+            padding,
+            topPadding = 96 * density,
+            bottomPadding = (32 + 28) * density
         )
-        val urls = sizes.flatMap { (w, h) -> StaticMapLayout.fit(route, w, h, padding).tiles }
-            .map { it.url }.toSet()
+        val urls = (feedCard.tiles + details.tiles).map { it.url }.toSet()
         val loader = loader(context)
         urls.forEach { url ->
             loader.enqueue(

@@ -3,6 +3,8 @@ package com.wandr.android.ui.common
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.presentation.imagecrop.AvatarImageSpec
 
@@ -19,6 +21,7 @@ fun AvatarEditor(
     onRemoveAvatar: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    size: Dp = 64.dp,
     title: String = stringResource(R.string.avatar_change_title)
 ) {
     val flow = rememberImagePickerFlow(
@@ -36,6 +39,7 @@ fun AvatarEditor(
         onPickAvatar = flow::open,
         isBusy = isBusy,
         enabled = enabled,
+        size = size,
         modifier = modifier
     )
 }

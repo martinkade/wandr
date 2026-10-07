@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -53,7 +54,10 @@ import kotlin.math.roundToInt
 fun OsmTrackMap(
     trackpoints: List<GpsTrackpoint>,
     modifier: Modifier = Modifier,
-    shape: Shape = RectangleShape
+    shape: Shape = RectangleShape,
+    /** Free space above and below the route, e.g. where a top bar covers the map; the tiles still fill the whole view. */
+    topPadding: Dp = 32.dp,
+    bottomPadding: Dp = 32.dp
 ) {
     val routeColor = MaterialTheme.colorScheme.primary
     val startColor = Color(0xFF4CAF50)
@@ -61,7 +65,9 @@ fun OsmTrackMap(
     var size by remember { mutableStateOf(IntSize.Zero) }
     val density = LocalDensity.current
     val paddingPx = with(density) { 32.dp.toPx() }.toDouble()
-    val layout = remember(trackpoints, size) {
+    val topPaddingPx = with(density) { topPadding.toPx() }.toDouble()
+    val bottomPaddingPx = with(density) { bottomPadding.toPx() }.toDouble()
+    val layout = remember(trackpoints, size, topPaddingPx, bottomPaddingPx) {
         if (size.width > 0 && size.height > 0 && trackpoints.isNotEmpty()) {
             StaticMapLayout.fit(
                 trackpoints,

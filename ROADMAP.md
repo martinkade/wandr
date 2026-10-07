@@ -155,6 +155,14 @@ This document serves as the master implementation plan and roadmap for **WANDR**
     prefetched when a recording is saved, so the map also shows offline. The tile URL lives in
     `StaticMapLayout.TILE_URL_TEMPLATE`. An interactive map is not planned yet. Note: the public OSM
     tile server is for light use only; switch to a tile provider before a wide release.
+  - Android: the challenge and group details use `CollapsingHeaderScaffold` (top bar + cover header
+    that scrolls away with a parallax effect; the bar turns solid and shows the title).
+    `ChallengeHero` became the shared `CoverHero`; the challenge menu and the group's "Edit" are top
+    bar actions; the group page got a challenge-like sheet with the avatar on the cover's edge.
+  - Android: the activity details show the route map as the collapsing header
+    (`CollapsingHeaderScaffold`, parallax); the route stays clear of the top bar and the sheet
+    (`StaticMapLayout.fit` got separate top/bottom padding). Without a route the header is the
+    contour cover. The prefetch of map tiles on save covers this header size too.
 - [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
   - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).

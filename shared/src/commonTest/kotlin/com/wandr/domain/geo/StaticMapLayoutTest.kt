@@ -77,4 +77,21 @@ class StaticMapLayoutTest {
             MapTile(2145, 1434, 12, 0.0, 0.0).url
         )
     }
+
+    @Test
+    fun theRouteStaysClearOfAnAsymmetricTopAndBottomPadding() {
+        val layout = StaticMapLayout.fit(
+            route,
+            600.0,
+            600.0,
+            padding = 20.0,
+            topPadding = 150.0,
+            bottomPadding = 60.0
+        )
+        route.forEach {
+            val (x, y) = layout.project(it.latitude, it.longitude)
+            assertTrue(x >= 20.0 - 1e-6 && x <= 580.0 + 1e-6, "x=$x")
+            assertTrue(y >= 150.0 - 1e-6 && y <= 540.0 + 1e-6, "y=$y")
+        }
+    }
 }
