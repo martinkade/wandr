@@ -196,7 +196,10 @@ private fun LiveGpsTrackingScreenContent(
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    Icon(painterResource(R.drawable.ic_expand_more), contentDescription = stringResource(R.string.recording_leave))
+                    Icon(
+                        painterResource(R.drawable.ic_close),
+                        contentDescription = stringResource(R.string.recording_leave)
+                    )
                 }
                 GpsStatusBox(
                     state, onExpand = { expanded = true }, modifier = Modifier
