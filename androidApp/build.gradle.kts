@@ -71,7 +71,14 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
         getByName("release") {
-            isMinifyEnabled = false
+            // R8: shrinks, obfuscates and optimizes the code. scripts/build-release.sh keeps the resulting mapping.txt,
+            // which is needed to read crash stack traces of that build.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = signingConfigs.getByName("release")
         }
     }

@@ -8,12 +8,12 @@ import com.wandr.domain.model.ChallengeType
 import com.wandr.domain.usecase.CreateChallengeUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
+import com.wandr.domain.usecase.GetAdminTeamsUseCase
 import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
 import com.wandr.domain.usecase.GetChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
 import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
-import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
 import com.wandr.domain.usecase.LeaveChallengeUseCase
 import com.wandr.domain.usecase.RefreshChallengesUseCase
@@ -44,7 +44,7 @@ class ChallengeViewModel(
     private val removeChallengeCoverUseCase: RemoveChallengeCoverUseCase,
     private val evaluateChallengeStatusUseCase: EvaluateChallengeStatusUseCase,
     private val refreshChallengesUseCase: RefreshChallengesUseCase,
-    private val getUserTeamsUseCase: GetUserTeamsUseCase,
+    private val getAdminTeamsUseCase: GetAdminTeamsUseCase,
     private val createChallengeUseCase: CreateChallengeUseCase,
     private val updateChallengeUseCase: UpdateChallengeUseCase,
     private val getMemberRankingUseCase: GetMemberRankingUseCase,
@@ -123,7 +123,15 @@ class ChallengeViewModel(
                     _uiState.update { it.copy(participations = list.associateBy { p -> p.challengeId }) }
                 }
             }
-            launch { getUserTeamsUseCase(userId).collect { teams -> _uiState.update { it.copy(teams = teams) } } }
+            launch {
+                getAdminTeamsUseCase(userId).collect { teams ->
+                    _uiState.update {
+                        it.copy(
+                            adminTeams = teams
+                        )
+                    }
+                }
+            }
             getChallengesUseCase().collect { challenges ->
                 val now = Clock.System.now().toEpochMilliseconds()
                 val statuses = challenges.associate { it.id to evaluateChallengeStatusUseCase(it, currentTimeMillis = now) }
@@ -276,6 +284,11 @@ class ChallengeViewModel(
     }
 
     private fun enrollTeam(challengeId: String, teamId: String, userId: String) {
+        // Only the team's owner / admins may do this; the UI does not offer it otherwise, the server enforces it too.
+        if (_uiState.value.adminTeams.none { it.id == teamId }) {
+            _uiState.update { it.copy(error = AppError.PermissionDenied()) }
+            return
+        }
         scope.launch {
             enrollTeamInChallengeUseCase(challengeId, teamId, userId)
                 .onSuccess {
@@ -296,6 +309,10 @@ class ChallengeViewModel(
     }
 
     private fun withdrawTeam(challengeId: String, teamId: String) {
+        if (_uiState.value.adminTeams.none { it.id == teamId }) {
+            _uiState.update { it.copy(error = AppError.PermissionDenied()) }
+            return
+        }
         scope.launch {
             withdrawTeamFromChallengeUseCase(challengeId, teamId)
                 .onSuccess { _uiState.update { it.copy(success = ChallengeSuccess.TEAM_WITHDRAWN) } }

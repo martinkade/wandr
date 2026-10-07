@@ -9,6 +9,8 @@
 
 # Build & Gradle Output
 build/
+# Release artifacts collected by scripts/build-release.sh
+dist/
 */build/
 .gradle/
 *.class

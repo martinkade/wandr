@@ -18,12 +18,12 @@ import com.wandr.domain.repository.TeamRepository
 import com.wandr.domain.usecase.CreateChallengeUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
+import com.wandr.domain.usecase.GetAdminTeamsUseCase
 import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
 import com.wandr.domain.usecase.GetChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
 import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
-import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
 import com.wandr.domain.usecase.LeaveChallengeUseCase
 import com.wandr.domain.usecase.RefreshChallengesUseCase
@@ -116,6 +116,7 @@ private class FakeTeamRepository(teams: List<Team>) : TeamRepository {
     private val teamList = MutableStateFlow(teams)
     override fun getTeamById(teamId: String): Flow<Team?> = emptyFlow()
     override fun getUserTeams(userId: String): Flow<List<Team>> = teamList
+    override fun getAdminTeams(userId: String): Flow<List<Team>> = teamList
     override suspend fun refreshUserTeams(userId: String): Result<Unit> = Result.success(Unit)
     override fun getTeamMembers(teamId: String): Flow<List<TeamMember>> = emptyFlow()
     override suspend fun createTeam(name: String, description: String?, creatorId: String): Result<Team> = Result.failure(UnsupportedOperationException())
@@ -145,19 +146,21 @@ class ChallengeViewModelTest {
     ) = ChallengeViewModel(
         GetChallengesUseCase(repo), GetChallengeParticipationsUseCase(repo), LeaveChallengeUseCase(repo),
         WithdrawTeamFromChallengeUseCase(repo), GetChallengeUseCase(repo), SetChallengeCoverUseCase(repo), RemoveChallengeCoverUseCase(repo),
-        EvaluateChallengeStatusUseCase(), RefreshChallengesUseCase(repo), GetUserTeamsUseCase(FakeTeamRepository(teams)),
+        EvaluateChallengeStatusUseCase(),
+        RefreshChallengesUseCase(repo),
+        GetAdminTeamsUseCase(FakeTeamRepository(teams)),
         CreateChallengeUseCase(repo), UpdateChallengeUseCase(repo),
         GetMemberRankingUseCase(repo), GetTeamStandingsUseCase(repo), EnrollTeamInChallengeUseCase(repo),
         JoinChallengeUseCase(repo), scope
     )
 
     @Test
-    fun loadShowsChallengesTeamsAndRefreshes() = runTest {
+    fun loadShowsChallengesAdminTeamsAndRefreshes() = runTest {
         val repo = FakeChallengeRepository(listOf(open))
         val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
         assertEquals(listOf(open), vm.uiState.value.challenges)
-        assertEquals(listOf(team), vm.uiState.value.teams)
+        assertEquals(listOf(team), vm.uiState.value.adminTeams)
         assertEquals(1, repo.refreshed)
     }
 
@@ -327,6 +330,7 @@ class ChallengeViewModelTest {
     fun enrollTeamReportsSuccessAndPassesAllIds() = runTest {
         val repo = FakeChallengeRepository()
         val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1")) // loads the teams the user administers
         vm.processIntent(ChallengeIntent.EnrollTeam("c2", "t1", "u1"))
 
         assertEquals(Triple("c2", "t1", "u1"), repo.enrolled)
@@ -334,9 +338,26 @@ class ChallengeViewModelTest {
     }
 
     @Test
+    fun aTeamTheUserDoesNotAdministerCannotBeEnrolledOrWithdrawn() = runTest {
+        val repo = FakeChallengeRepository()
+        val vm =
+            viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+
+        vm.processIntent(ChallengeIntent.EnrollTeam("c2", "somebody-elses-team", "u1"))
+        assertIs<AppError.PermissionDenied>(vm.uiState.value.error)
+        assertNull(repo.enrolled) // never reached the repository
+
+        vm.processIntent(ChallengeIntent.ClearMessages)
+        vm.processIntent(ChallengeIntent.WithdrawTeam("c2", "somebody-elses-team"))
+        assertIs<AppError.PermissionDenied>(vm.uiState.value.error)
+    }
+
+    @Test
     fun enrollTeamFailureIsShownAsError() = runTest {
         val repo = FakeChallengeRepository().apply { failEnroll = true }
         val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        vm.processIntent(ChallengeIntent.LoadChallenges("u3"))
         vm.processIntent(ChallengeIntent.EnrollTeam("c2", "t1", "u3"))
 
         assertIs<AppError.PermissionDenied>(vm.uiState.value.error)

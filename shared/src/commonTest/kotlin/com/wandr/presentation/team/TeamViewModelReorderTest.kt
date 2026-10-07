@@ -33,6 +33,7 @@ private class OrderingTeamRepository(initial: List<Team>) : TeamRepository {
     var savedOrder: List<String>? = null
 
     override fun getUserTeams(userId: String): Flow<List<Team>> = teams
+    override fun getAdminTeams(userId: String): Flow<List<Team>> = teams
     override suspend fun reorderTeams(userId: String, orderedTeamIds: List<String>): Result<Unit> {
         if (failReorder) return Result.failure(IllegalStateException("offline"))
         savedOrder = orderedTeamIds

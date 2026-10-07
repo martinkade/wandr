@@ -27,6 +27,7 @@ val domainModule = module {
     factory { com.wandr.domain.usecase.RefreshProfileUseCase(get()) }
     factory { CreateTeamUseCase(get()) }
     factory { GetUserTeamsUseCase(get()) }
+    factory { com.wandr.domain.usecase.GetAdminTeamsUseCase(get()) }
     factory { com.wandr.domain.usecase.GetTeamUseCase(get()) }
     factory { com.wandr.domain.usecase.GetTeamMembersUseCase(get()) }
     factory { com.wandr.domain.usecase.RefreshTeamDetailsUseCase(get()) }

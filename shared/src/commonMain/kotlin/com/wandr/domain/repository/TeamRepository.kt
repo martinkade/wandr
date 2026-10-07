@@ -8,6 +8,10 @@ import kotlinx.coroutines.flow.Flow
 interface TeamRepository {
     fun getTeamById(teamId: String): Flow<Team?>
     fun getUserTeams(userId: String): Flow<List<Team>>
+
+    /** The teams [userId] administers (owner or admin): only these can be enrolled in group challenges. */
+    fun getAdminTeams(userId: String): Flow<List<Team>>
+
     /** Pulls the teams (and the user's memberships) visible to [userId] from Supabase into the local cache. */
     suspend fun refreshUserTeams(userId: String): Result<Unit>
     fun getTeamMembers(teamId: String): Flow<List<TeamMember>>

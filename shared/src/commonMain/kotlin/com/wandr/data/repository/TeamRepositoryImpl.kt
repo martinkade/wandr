@@ -77,6 +77,24 @@ class TeamRepositoryImpl(
         }
     }
 
+    override fun getAdminTeams(userId: String): Flow<List<Team>> {
+        return teamDao.getAdminTeamsForUser(userId).map { list ->
+            list.map {
+                Team(
+                    id = it.id,
+                    name = it.name,
+                    description = it.description,
+                    avatarUrl = it.avatarUrl,
+                    coverUrl = it.coverUrl,
+                    inviteCode = it.inviteCode,
+                    createdBy = it.createdBy,
+                    createdAt = it.createdAt,
+                    updatedAt = it.updatedAt
+                )
+            }
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getTeamMembers(teamId: String): Flow<List<TeamMember>> {
         return teamMemberDao.getMembersForTeam(teamId).flatMapLatest { members ->

@@ -35,6 +35,7 @@ private class FakeTeamRepository(initial: Team?, members: List<TeamMember>) : Te
 
     override fun getTeamById(teamId: String): Flow<Team?> = team
     override fun getUserTeams(userId: String): Flow<List<Team>> = emptyFlow()
+    override fun getAdminTeams(userId: String): Flow<List<Team>> = emptyFlow()
     override suspend fun refreshUserTeams(userId: String): Result<Unit> = Result.success(Unit)
     override fun getTeamMembers(teamId: String): Flow<List<TeamMember>> = memberList
     override suspend fun createTeam(name: String, description: String?, creatorId: String): Result<Team> =

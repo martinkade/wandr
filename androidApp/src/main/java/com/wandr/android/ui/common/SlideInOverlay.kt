@@ -13,17 +13,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.ui.theme.WandrTheme
@@ -44,6 +49,8 @@ fun <T : Any> SlideInOverlay(
     item: T?,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Reports how far the page is shown (0 = closed, 1 = open) on every frame, also while the back gesture drags; used by [HeroLayer]. */
+    onProgress: ((Float) -> Unit)? = null,
     content: @Composable (T) -> Unit
 ) {
     var lastItem by remember { mutableStateOf<T?>(null) }
@@ -54,6 +61,12 @@ fun <T : Any> SlideInOverlay(
     /** 0f..1f progress of an ongoing predictive back gesture (drives the scale). */
     val backProgress = remember { Animatable(0f) }
     val visible = item != null
+    val currentOnProgress by rememberUpdatedState(onProgress)
+    var pageCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { 1f - offset.value }.collect { currentOnProgress?.invoke(it) }
+    }
 
     LaunchedEffect(visible) {
         offset.animateTo(if (visible) 0f else 1f, tween(durationMillis = 300, easing = FastOutSlowInEasing))
@@ -90,10 +103,15 @@ fun <T : Any> SlideInOverlay(
                 }
                 .clip(if (backProgress.value > 0f) MaterialTheme.shapes.extraLarge else RectangleShape)
                 // Swallow touches so the page below does not react while this one is on top.
-                .pointerInput(Unit) { detectTapGestures { } },
+                .pointerInput(Unit) { detectTapGestures { } }
+                .onGloballyPositioned { pageCoordinates = it },
             color = MaterialTheme.colorScheme.background
         ) {
-            content(shown)
+            CompositionLocalProvider(LocalOverlayCoordinates provides { pageCoordinates }) {
+                content(
+                    shown
+                )
+            }
         }
     }
 }
@@ -109,7 +127,9 @@ private fun SlideInOverlayPreview() {
         Box(Modifier.fillMaxSize()) {
             Text("Underlying screen", modifier = Modifier.align(Alignment.Center))
             SlideInOverlay(item = "Group Details", onBack = {}) { title ->
-                Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) { Text(title) }
+                Box(Modifier
+                    .fillMaxSize()
+                    .padding(24.dp), contentAlignment = Alignment.Center) { Text(title) }
             }
         }
     }

@@ -12,10 +12,12 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -23,26 +25,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.wandr.android.health.HealthAutoSync
+import com.wandr.android.push.PushNavigation
+import com.wandr.android.push.PushPermissionPrompt
 import com.wandr.android.ui.activity.ActivityDetailsScreen
 import com.wandr.android.ui.activity.LiveGpsTrackingScreen
 import com.wandr.android.ui.activity.WatchImportHost
 import com.wandr.android.ui.challenge.ChallengeDetailsScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
-import com.wandr.android.ui.feed.FeedScreen
+import com.wandr.android.ui.common.HeroLayer
+import com.wandr.android.ui.common.HeroTransitionState
+import com.wandr.android.ui.common.LocalHeroTransition
 import com.wandr.android.ui.common.SlideInOverlay
+import com.wandr.android.ui.feed.FeedScreen
+import com.wandr.android.ui.notifications.NotificationBellAction
+import com.wandr.android.ui.notifications.NotificationsScreen
 import com.wandr.android.ui.profile.ProfileScreen
 import com.wandr.android.ui.team.GroupsScreen
 import com.wandr.android.ui.team.TeamDetailsScreen
 import com.wandr.android.ui.theme.WandrTheme
-import com.wandr.presentation.main.MainViewModel
-import com.wandr.presentation.notifications.NotificationsViewModel
-import com.wandr.presentation.notifications.NotificationsIntent
 import com.wandr.domain.model.SocialEntityType
-import com.wandr.android.ui.notifications.NotificationsScreen
-import com.wandr.android.ui.notifications.NotificationBellAction
-import com.wandr.android.health.HealthAutoSync
-import com.wandr.android.push.PushNavigation
-import com.wandr.android.push.PushPermissionPrompt
+import com.wandr.presentation.main.MainViewModel
+import com.wandr.presentation.notifications.NotificationsIntent
+import com.wandr.presentation.notifications.NotificationsViewModel
 import org.koin.compose.koinInject
 
 /**
@@ -74,10 +79,16 @@ fun MainScreen(
     val notifications by notificationsViewModel.state.collectAsState()
     LaunchedEffect(userId) { userId?.let { notificationsViewModel.processIntent(NotificationsIntent.RefreshBadge(it)) } }
 
+    // The badge of a tapped challenge flies from the list item to the details and back (see HeroTransition).
+    val heroState = remember { HeroTransitionState() }
+
     fun openEntity(type: SocialEntityType, id: String) {
         when (type) {
             SocialEntityType.ACTIVITY -> openActivityId = id
-            SocialEntityType.CHALLENGE -> openChallengeId = id
+            SocialEntityType.CHALLENGE -> {
+                heroState.clear() // opened without a tap on a list item: nothing to fly from
+                openChallengeId = id
+            }
         }
     }
 
@@ -90,7 +101,8 @@ fun MainScreen(
         PushNavigation.consume()
     }
 
-    Box(modifier = modifier) {
+    CompositionLocalProvider(LocalHeroTransition provides heroState) {
+        Box(modifier = modifier) {
         MainScreenContent(
             tabs = tabs,
             selectedTab = selectedTab,
@@ -131,7 +143,11 @@ fun MainScreen(
         SlideInOverlay(item = openTeamId.takeIf { userId != null }, onBack = { openTeamId = null }) { teamId ->
             TeamDetailsScreen(teamId = teamId, userId = userId.orEmpty(), onBack = { openTeamId = null })
         }
-        SlideInOverlay(item = openChallengeId.takeIf { userId != null }, onBack = { openChallengeId = null }) { challengeId ->
+            SlideInOverlay(
+                item = openChallengeId.takeIf { userId != null },
+                onBack = { openChallengeId = null },
+                onProgress = heroState::onProgress
+            ) { challengeId ->
             ChallengeDetailsScreen(
                 challengeId = challengeId,
                 userId = userId.orEmpty(),
@@ -152,6 +168,9 @@ fun MainScreen(
         // Back is handled by the screen itself: it is blocked while a recording is running.
         SlideInOverlay(item = userId.takeIf { isRecording }, onBack = { }) { id ->
             LiveGpsTrackingScreen(userId = id, teamId = state.teamId, onClose = { isRecording = false })
+        }
+            // The flying badge, above all pages.
+            HeroLayer(heroState)
         }
     }
 }
@@ -186,7 +205,9 @@ private fun MainScreenContent(
             }
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(bottom = padding.calculateBottomPadding())) {
+        Box(Modifier
+            .fillMaxSize()
+            .padding(bottom = padding.calculateBottomPadding())) {
             if (isLoading) CircularProgressIndicator(Modifier.align(Alignment.Center)) else tabContent(selectedTab)
         }
     }

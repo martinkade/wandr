@@ -17,6 +17,7 @@ private class RecordingTeamRepository : TeamRepository {
 
     override fun getTeamById(teamId: String): Flow<Team?> = emptyFlow()
     override fun getUserTeams(userId: String): Flow<List<Team>> = emptyFlow()
+    override fun getAdminTeams(userId: String): Flow<List<Team>> = emptyFlow()
     override suspend fun refreshUserTeams(userId: String): Result<Unit> {
         refreshedFor = userId
         return Result.success(Unit)

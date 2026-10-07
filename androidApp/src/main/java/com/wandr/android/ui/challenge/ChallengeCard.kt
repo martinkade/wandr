@@ -29,6 +29,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.LocalHeroTransition
+import com.wandr.android.ui.common.heroSource
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
@@ -50,6 +52,8 @@ fun ChallengeCard(
     val type = ChallengeType.fromValue(challenge.type)
     val isGroup = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.GROUP
     val remaining = challengeRemainingText(challenge, status)
+    val hero = LocalHeroTransition.current
+    val heroKey = challengeBadgeHeroKey(challenge.id)
 
     Column(
         modifier
@@ -57,7 +61,11 @@ fun ChallengeCard(
                 color = CardDefaults.cardColors().containerColor,
                 shape = RoundedCornerShape(16.dp)
             )
-            .clickable(onClick = onClick)
+            .clickable {
+                // Remember where the badge is, so it can fly to the details page.
+                hero.begin(heroKey) { size -> ChallengeBadge(type = type, size = size) }
+                onClick()
+            }
             .clip(RoundedCornerShape(16.dp)),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -91,7 +99,7 @@ fun ChallengeCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ChallengeBadge(type = type, size = 64.dp)
+                ChallengeBadge(type = type, size = 64.dp, modifier = Modifier.heroSource(heroKey))
                 Column(modifier = Modifier.weight(1.0f)) {
                     Text(
                         text = challenge.title,

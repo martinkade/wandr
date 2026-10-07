@@ -152,6 +152,15 @@ This document serves as the master implementation plan and roadmap for **WANDR**
       tapping the hero.
     - The list item uses the same structure (cover, emblem, title, description, key facts, status
       pill) and no longer has a join / leave button: participation is decided on the details.
+- [x] **Step 5.4 addition: Hero transition & team-admin-only enrolling (Android)**
+  - The badge of the tapped challenge flies from the list item to its place on the details page
+    while the page slides in, and flies back when it is left, by button or predictive back gesture
+    (`HeroTransitionState`, `heroSource` / `heroTarget`, `HeroLayer`, driven by the progress of
+    `SlideInOverlay`). Opening the details without a tap (notification) just slides.
+  - Group challenges can only be enrolled or withdrawn by owners / admins of a team
+    (`availableChallengeAction` takes the administered and the already enrolled team ids): default
+    members see no button, the choice dialog only offers administered teams that are not enrolled
+    yet, and the ViewModel rejects other teams (the server enforces it as well).
 - [x] **Step 5.4: Challenge & Leaderboard UI**
   - Build `ChallengeListScreen`/`View`, `ChallengeCard.kt`/`.swift` (group challenges: "Enroll Team" instead of "Join"), `LeaderboardRow.kt`/`.swift` (members of the own team).
 

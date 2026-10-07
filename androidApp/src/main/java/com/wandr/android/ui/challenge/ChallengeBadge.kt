@@ -41,10 +41,13 @@ internal val HexagonShape = GenericShape { size, _ ->
 
 @DrawableRes
 internal fun challengeTypeIcon(type: ChallengeType): Int = when (type) {
-    ChallengeType.DISTANCE -> R.drawable.ic_directions_run
+    ChallengeType.DISTANCE -> R.drawable.ic_distance
     ChallengeType.ELEVATION -> R.drawable.ic_terrain
     ChallengeType.TIME -> R.drawable.ic_schedule
 }
+
+/** Identifies the badge of a challenge for the hero transition between list item and details. */
+internal fun challengeBadgeHeroKey(challengeId: String) = "challenge-badge-$challengeId"
 
 /** The emblem of a challenge: a golden hexagon with the symbol of what is measured (distance, elevation, time). */
 @Composable

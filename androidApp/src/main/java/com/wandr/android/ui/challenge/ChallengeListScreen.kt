@@ -225,7 +225,19 @@ private fun ChallengeListScreenManagerPreview() {
         ChallengeListScreenContent(
             state = ChallengeState(
                 challenges = previewChallenges,
-                teams = listOf(com.wandr.domain.model.Team("t1", "Alpine Trail Blazers", null, null, null, "X7K9P2W1", "u1", 0L, 0L))
+                adminTeams = listOf(
+                    com.wandr.domain.model.Team(
+                        "t1",
+                        "Alpine Trail Blazers",
+                        null,
+                        null,
+                        null,
+                        "X7K9P2W1",
+                        "u1",
+                        0L,
+                        0L
+                    )
+                )
             ),
             userId = "u1", isManager = true, onIntent = {}, onOpenChallenge = {}
         )

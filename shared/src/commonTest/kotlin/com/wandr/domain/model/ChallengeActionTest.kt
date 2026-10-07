@@ -18,8 +18,9 @@ class ChallengeActionTest {
         challenge: Challenge,
         status: ChallengeStatus,
         participation: ChallengeParticipation? = null,
-        hasTeams: Boolean = true
-    ) = availableChallengeAction(challenge, status, participation, hasTeams)
+        admin: Set<String> = emptySet(),
+        enrolled: Set<String> = emptySet()
+    ) = availableChallengeAction(challenge, status, participation, admin, enrolled)
 
     @Test
     fun joinIsOfferedForPlannedAndActiveChallenges() {
@@ -52,17 +53,69 @@ class ChallengeActionTest {
     }
 
     @Test
-    fun groupChallengesOfferEnrollingOnlyToUsersWithATeam() {
-        assertEquals(ChallengeAction.ENROLL_TEAM, action(group, ChallengeStatus.ACTIVE, hasTeams = true))
-        assertNull(action(group, ChallengeStatus.ACTIVE, hasTeams = false))
-        assertNull(action(group, ChallengeStatus.DRAFT, hasTeams = true))
-        assertNull(action(group, ChallengeStatus.EXPIRED, hasTeams = true))
+    fun groupChallengesOfferEnrollingOnlyToTeamAdmins() {
+        assertEquals(
+            ChallengeAction.ENROLL_TEAM,
+            action(group, ChallengeStatus.ACTIVE, admin = setOf("t1"))
+        )
+        assertEquals(
+            ChallengeAction.ENROLL_TEAM,
+            action(group, ChallengeStatus.PLANNED, admin = setOf("t1"))
+        )
+        // a default member (no administered team) sees no button
+        assertNull(action(group, ChallengeStatus.ACTIVE, admin = emptySet()))
+        assertNull(action(group, ChallengeStatus.DRAFT, admin = setOf("t1")))
+        assertNull(action(group, ChallengeStatus.EXPIRED, admin = setOf("t1")))
     }
 
     @Test
-    fun enrolledTeamCanBeWithdrawnUntilTheChallengeIsOver() {
-        assertEquals(ChallengeAction.WITHDRAW_TEAM, action(group, ChallengeStatus.ACTIVE, enrolledTeam))
-        assertEquals(ChallengeAction.WITHDRAW_TEAM, action(group, ChallengeStatus.PLANNED, enrolledTeam, hasTeams = false))
-        assertNull(action(group, ChallengeStatus.COMPLETED, enrolledTeam))
+    fun aTeamThatIsEnrolledAlreadyIsNotOfferedAgain() {
+        assertNull(
+            action(
+                group,
+                ChallengeStatus.ACTIVE,
+                admin = setOf("t1"),
+                enrolled = setOf("t1")
+            ).takeIf { it == ChallengeAction.ENROLL_TEAM })
+        // an admin of two teams can still enroll the second one
+        assertEquals(
+            ChallengeAction.WITHDRAW_TEAM,
+            action(group, ChallengeStatus.ACTIVE, admin = setOf("t1", "t2"), enrolled = setOf("t1"))
+        )
+    }
+
+    @Test
+    fun onlyAdminsMayWithdrawAnEnrolledTeamAndOnlyUntilItIsOver() {
+        assertEquals(
+            ChallengeAction.WITHDRAW_TEAM,
+            action(group, ChallengeStatus.ACTIVE, admin = setOf("t1"), enrolled = setOf("t1"))
+        )
+        assertEquals(
+            ChallengeAction.WITHDRAW_TEAM,
+            action(group, ChallengeStatus.PLANNED, admin = setOf("t1"), enrolled = setOf("t1"))
+        )
+        assertNull(
+            action(
+                group,
+                ChallengeStatus.COMPLETED,
+                admin = setOf("t1"),
+                enrolled = setOf("t1")
+            )
+        )
+        // a default member of the enrolled team (participates, but does not administer it) sees nothing
+        assertNull(
+            action(
+                group,
+                ChallengeStatus.ACTIVE,
+                enrolledTeam,
+                admin = emptySet(),
+                enrolled = setOf("t1")
+            )
+        )
+        // an admin of another team cannot withdraw a team they do not administer
+        assertEquals(
+            ChallengeAction.ENROLL_TEAM,
+            action(group, ChallengeStatus.ACTIVE, admin = setOf("t9"), enrolled = setOf("t1"))
+        )
     }
 }

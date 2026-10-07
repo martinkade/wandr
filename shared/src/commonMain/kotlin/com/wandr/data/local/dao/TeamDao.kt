@@ -24,6 +24,13 @@ interface TeamDao {
     )
     fun getTeamsForUser(userId: String): Flow<List<TeamEntity>>
 
+    /** The teams the user may manage: the ones they created and those where they are an admin. */
+    @Query(
+        "SELECT * FROM teams WHERE created_by = :userId " +
+                "OR id IN (SELECT team_id FROM team_members WHERE user_id = :userId AND role = 'admin') ORDER BY name"
+    )
+    fun getAdminTeamsForUser(userId: String): Flow<List<TeamEntity>>
+
     @Query("SELECT * FROM teams WHERE sync_status = 'DIRTY' OR sync_status = 'PENDING'")
     suspend fun getDirtyTeams(): List<TeamEntity>
 

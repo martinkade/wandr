@@ -40,8 +40,8 @@ data class ChallengeState(
     val statuses: Map<String, ChallengeStatus> = emptyMap(),
     /** The user's participations by challenge id; absent = not taking part. See [availableChallengeAction]. */
     val participations: Map<String, ChallengeParticipation> = emptyMap(),
-    /** Teams the user belongs to; the choices when enrolling a team in a group challenge. */
-    val teams: List<Team> = emptyList(),
+    /** Teams the user owns or administers: only they can be enrolled in a group challenge (or withdrawn). */
+    val adminTeams: List<Team> = emptyList(),
     val selectedChallenge: Challenge? = null,
     /** Only the creator (owner) of the selected challenge may edit it and change its cover. */
     val canEdit: Boolean = false,

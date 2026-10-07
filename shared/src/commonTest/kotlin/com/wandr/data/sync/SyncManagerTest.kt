@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 // Fake DAOs for unit testing
 private class FakeProfileDao : ProfileDao {
@@ -31,6 +30,7 @@ private class FakeTeamDao : TeamDao {
     override fun getTeamById(id: String): Flow<TeamEntity?> = flowOf(null)
     override suspend fun getTeamOnce(id: String): TeamEntity? = null
     override fun getTeamsForUser(userId: String): Flow<List<TeamEntity>> = flowOf(emptyList())
+    override fun getAdminTeamsForUser(userId: String): Flow<List<TeamEntity>> = flowOf(emptyList())
     override suspend fun getDirtyTeams(): List<TeamEntity> = emptyList()
     override suspend fun insertTeam(team: TeamEntity) { }
     override suspend fun updateTeam(team: TeamEntity) { }

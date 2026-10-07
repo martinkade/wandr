@@ -50,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.activity.activityTypeText
+import com.wandr.android.ui.common.heroTarget
 import com.wandr.android.ui.common.rememberImagePickerFlow
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.social.SocialSectionHost
@@ -291,11 +292,17 @@ private fun ChallengeDetailsScreenContent(
                             Spacer(Modifier.height(24.dp))
                             // Join / leave (individual) or enroll / withdraw a team (group); none for drafts and finished challenges.
                             val participation = state.participations[challenge.id]
-                            val action = availableChallengeAction(
+                            // Group challenges are about teams: only their owners / admins can enroll or withdraw one.
+                            // The standings tell which teams are enrolled, so wait for them to avoid a flickering button.
+                            val adminTeamIds = state.adminTeams.map { it.id }.toSet()
+                            val enrolledTeamIds = state.standings.map { it.teamId }.toSet()
+                            val action = if (isGroup && state.isLoading) null
+                            else availableChallengeAction(
                                 challenge,
                                 status,
                                 participation,
-                                state.teams.isNotEmpty()
+                                adminTeamIds,
+                                enrolledTeamIds
                             )
                             action?.let {
                                 ChallengeActionButton(
@@ -304,7 +311,7 @@ private fun ChallengeDetailsScreenContent(
                                         performChallengeAction(
                                             it,
                                             challenge.id,
-                                            participation,
+                                            adminTeamIds.firstOrNull { id -> id in enrolledTeamIds },
                                             userId,
                                             onIntent
                                         ) { enrolling = true }
@@ -375,6 +382,7 @@ private fun ChallengeDetailsScreenContent(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .offset(y = ChallengeHeroHeight - SheetOverlap - BadgeSize / 2)
+                            .heroTarget(challengeBadgeHeroKey(challenge.id))
                     )
                     if (canEdit) {
                         Box(
@@ -423,7 +431,8 @@ private fun ChallengeDetailsScreenContent(
 
     if (enrolling) {
         EnrollTeamDialog(
-            teams = state.teams,
+            // Only administered teams that are not enrolled yet can be chosen.
+            teams = state.adminTeams.filter { team -> state.standings.none { it.teamId == team.id } },
             onTeamSelected = { team ->
                 enrolling = false
                 challenge?.let { onIntent(ChallengeIntent.EnrollTeam(it.id, team.id, userId)) }
@@ -492,7 +501,19 @@ private fun ChallengeDetailsScreenGroupPreview() {
                 selectedChallenge = previewGroupChallenge,
                 canEdit = true, // the creator sees "Edit" and can change the cover
                 statuses = mapOf("c2" to ChallengeStatus.ACTIVE),
-                teams = listOf(Team("t1", "Alpine Trail Blazers", null, null, null, "X7K9P2W1", "u1", 0L, 0L)),
+                adminTeams = listOf(
+                    Team(
+                        "t1",
+                        "Alpine Trail Blazers",
+                        null,
+                        null,
+                        null,
+                        "X7K9P2W1",
+                        "u1",
+                        0L,
+                        0L
+                    )
+                ),
                 standings = listOf(
                     TeamStanding(1, "t2", "City Runners", null, 3_800.0, 76.0, 4, 1, false),
                     TeamStanding(2, "t1", "Alpine Trail Blazers", null, 2_500.0, 50.0, 3, 0, false)
