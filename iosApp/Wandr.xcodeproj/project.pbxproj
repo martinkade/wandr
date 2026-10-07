@@ -162,7 +162,7 @@
 /* Begin PBXFileReference section */
 		004861D686700490F3CBAD1C /* WatchWorkout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWorkout.swift; sourceTree = "<group>"; };
 		008681D41D040CAF4C5B6C1E /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		022E447A680C9EEFC823E597 /* WandrLiveActivity.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WandrLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		022E447A680C9EEFC823E597 /* WandrLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WandrLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		030D0E58E4667331C08163F7 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		042424561531E6C842BE618E /* MetricFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricFormatter.swift; sourceTree = "<group>"; };
 		052F351F50B69C25F4EACC19 /* TeamCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCardView.swift; sourceTree = "<group>"; };
@@ -263,7 +263,7 @@
 		E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamInviteQRCodeView.swift; sourceTree = "<group>"; };
 		EB1A774847358BD88BAD1147 /* NotificationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRowView.swift; sourceTree = "<group>"; };
-		EF8F681FAE45E23A27F35D1F /* Wandr.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Wandr.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF8F681FAE45E23A27F35D1F /* Wandr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wandr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F09589BD59713E8218BA7799 /* AppError+Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppError+Message.swift"; sourceTree = "<group>"; };
 		F0E1DD9CC37A1F385B749A6E /* RecordingObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingObserver.swift; sourceTree = "<group>"; };
 		F572C10C5B7BCCEA9761D20D /* WandrWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WandrWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -682,8 +682,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = D897BBECB9717ED4F25B5B06 /* Build configuration list for PBXProject "Wandr" */;
 			developmentRegion = en;
@@ -940,14 +938,22 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Wandr/Wandr.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
+				DEVELOPMENT_TEAM = K66M8A88HU;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Wandr/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				OTHER_LDFLAGS = "$(inherited) -framework shared";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					shared,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness;
 				PRODUCT_NAME = Wandr;
 				SDKROOT = iphoneos;
@@ -1029,6 +1035,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = WandrWatch/WandrWatch.entitlements;
+				DEVELOPMENT_TEAM = K66M8A88HU;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WandrWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness.watchkitapp;
@@ -1064,14 +1071,22 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Wandr/Wandr.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
+				DEVELOPMENT_TEAM = K66M8A88HU;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Wandr/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				OTHER_LDFLAGS = "$(inherited) -framework shared";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					shared,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness;
 				PRODUCT_NAME = Wandr;
 				SDKROOT = iphoneos;
@@ -1082,6 +1097,7 @@
 		9042062BDEC1C9B9B25CC5A7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = K66M8A88HU;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WandrLiveActivity/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1103,6 +1119,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = WandrWatch/WandrWatch.entitlements;
+				DEVELOPMENT_TEAM = K66M8A88HU;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WandrWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness.watchkitapp;
@@ -1195,6 +1212,7 @@
 		E3F3072A73AF845CD2BF2555 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = K66M8A88HU;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WandrLiveActivity/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
