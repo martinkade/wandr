@@ -32,6 +32,7 @@ import com.wandr.domain.model.SocialSummary
 import com.wandr.presentation.social.SocialIntent
 import com.wandr.presentation.social.SocialState
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 /** Like button, comments with reactions and the comment composer of one activity or challenge. */
 @Composable
@@ -44,7 +45,7 @@ fun SocialSection(
     val errorText = state.error?.userMessage()
     LaunchedEffect(state.error) {
         if (state.error != null) {
-            delay(ERROR_VISIBLE_MILLIS)
+            delay(ERROR_VISIBLE_MILLIS.milliseconds)
             onIntent(SocialIntent.ClearMessages)
         }
     }
@@ -60,7 +61,11 @@ fun SocialSection(
                 )
             }
             Text(
-                text = pluralStringResource(R.plurals.social_like_count, state.summary.likeCount, state.summary.likeCount),
+                text = pluralStringResource(
+                    R.plurals.social_like_count,
+                    state.summary.likeCount,
+                    state.summary.likeCount
+                ),
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -90,9 +95,15 @@ fun SocialSection(
         }
 
         errorText?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            Text(
+                it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
         }
-        CommentComposer(isPosting = state.isPosting, onSend = { onIntent(SocialIntent.PostComment(it)) })
+        CommentComposer(
+            isPosting = state.isPosting,
+            onSend = { onIntent(SocialIntent.PostComment(it)) })
         Spacer(Modifier.height(8.dp))
     }
 }
@@ -100,19 +111,47 @@ fun SocialSection(
 private const val ERROR_VISIBLE_MILLIS = 4_000L
 
 private val previewComments = listOf(
-    Comment("c1", SocialEntityType.ACTIVITY, "a1", "u2", "Alex Kim", null, "Great pace today!", 1_768_435_200_000L, 1_768_435_200_000L),
-    Comment("c2", SocialEntityType.ACTIVITY, "a1", "me", "Me", null, "Thanks! The river route.", 1_768_438_800_000L, 1_768_438_800_000L)
+    Comment(
+        "c1",
+        SocialEntityType.ACTIVITY,
+        "a1",
+        "u2",
+        "Alex Kim",
+        null,
+        "Great pace today!",
+        1_768_435_200_000L,
+        1_768_435_200_000L
+    ),
+    Comment(
+        "c2",
+        SocialEntityType.ACTIVITY,
+        "a1",
+        "me",
+        "Me",
+        null,
+        "Thanks! The river route.",
+        1_768_438_800_000L,
+        1_768_438_800_000L
+    )
 )
 
 @Preview(name = "Light Mode", showBackground = true, heightDp = 900)
-@Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 900)
+@Preview(
+    name = "Dark Mode",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    heightDp = 900
+)
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true, heightDp = 1400)
 @Composable
 private fun SocialSectionPreview() {
     WandrTheme {
         SocialSection(
             state = SocialState(
-                currentUserId = "me", entityOwnerId = "me", summary = SocialSummary(3, true), comments = previewComments
+                currentUserId = "me",
+                entityOwnerId = "me",
+                summary = SocialSummary(3, true),
+                comments = previewComments
             ),
             onIntent = {},
             modifier = Modifier.padding(16.dp)

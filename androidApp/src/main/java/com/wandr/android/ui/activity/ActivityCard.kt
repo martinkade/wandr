@@ -22,17 +22,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
-import com.wandr.android.ui.common.AvatarImage
+import com.wandr.android.ui.activity.components.ActivityOwner
+import com.wandr.android.ui.activity.components.ActivityStats
+import com.wandr.android.ui.activity.components.ActivityTitle
 import com.wandr.android.ui.theme.WandrTheme
-import com.wandr.android.util.AppDateFormatter
 import com.wandr.domain.geo.PolylineCodec
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.SocialCounts
@@ -54,12 +53,10 @@ fun ActivityCard(
     modifier: Modifier = Modifier,
     isOwn: Boolean = false
 ) {
-    val locale = LocalConfiguration.current.locales[0]
     // Decoding a polyline of a few hundred points is cheap, but not worth repeating on every recomposition.
     val route = remember(activity.polyline) {
         activity.polyline?.let(PolylineCodec::decode).orEmpty()
     }
-    val author = authorName.ifBlank { stringResource(R.string.social_unknown_author) }
 
     Column(
         modifier
@@ -67,52 +64,29 @@ fun ActivityCard(
                 color = CardDefaults.cardColors().containerColor,
                 shape = RoundedCornerShape(16.dp)
             )
-            .padding(vertical = 16.dp)
             .clickable(onClick = onClick),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ActivityOwner(
+            author = authorName.ifBlank { stringResource(R.string.social_unknown_author) },
+            authorAvatarUrl = authorAvatarUrl,
+            activity = activity,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            AvatarImage(avatarUrl = authorAvatarUrl, displayName = author, size = 40.dp)
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = author,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "${
-                        AppDateFormatter.formatDateTime(
-                            activity.startTime,
-                            locale = locale
-                        )
-                    } · ${activityTypeText(activity.activityType)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+        )
 
-        Text(
-            text = activity.title,
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+        ActivityTitle(
+            activity = activity,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         )
 
         ActivityStats(
-            activity, modifier = Modifier
+            activity = activity,
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
         )
 
         if (route.size >= 2) {
@@ -136,7 +110,7 @@ fun ActivityCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -153,7 +127,7 @@ fun ActivityCard(
                     modifier = Modifier.size(22.dp)
                 )
                 Text(
-                    counts.likeCount.toString(),
+                    text = counts.likeCount.toString(),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
             }
@@ -168,59 +142,11 @@ fun ActivityCard(
                     modifier = Modifier.size(22.dp)
                 )
                 Text(
-                    counts.commentCount.toString(),
+                    text = counts.commentCount.toString(),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
             }
         }
-    }
-}
-
-/** Distance, pace (or speed on a bike), time and elevation gain. */
-@Composable
-private fun ActivityStats(activity: Activity, modifier: Modifier = Modifier) {
-    val isCycling = activity.activityType == "cycling"
-    val pace =
-        if (isCycling) ActivityFormat.speedKmh(activity.distanceMeters, activity.durationSeconds)
-        else ActivityFormat.pace(activity.distanceMeters, activity.durationSeconds)
-
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Stat(
-            stringResource(R.string.activity_stat_distance),
-            "${ActivityFormat.distanceKm(activity.distanceMeters)} km",
-            Modifier.weight(1f)
-        )
-        if (pace != null) {
-            Stat(
-                label = stringResource(if (isCycling) R.string.activity_stat_speed else R.string.activity_stat_pace),
-                value = if (isCycling) "$pace km/h" else "$pace /km",
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Stat(
-            stringResource(R.string.activity_stat_time),
-            ActivityFormat.duration(activity.durationSeconds),
-            Modifier.weight(1f)
-        )
-        if (activity.elevationGainMeters >= 1) {
-            Stat(
-                stringResource(R.string.activity_stat_elevation),
-                "${activity.elevationGainMeters.toInt()} m",
-                Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-private fun Stat(label: String, value: String, modifier: Modifier = Modifier) {
-    Column(modifier) {
-        Text(
-            label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(value, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
     }
 }
 
@@ -229,7 +155,7 @@ private val previewActivity = Activity(
     userId = "u1",
     teamId = "t1",
     title = "Afternoon run",
-    description = null,
+    description = "Cycling, own, map hidden",
     activityType = "running",
     distanceMeters = 9_160.0,
     durationSeconds = 3_067.0,

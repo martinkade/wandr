@@ -194,8 +194,18 @@ class ActivityViewModel(
         selectJob?.cancel()
         selectJob = scope.launch {
             var trackLoadedFor: String? = null
+            var authorLoadedFor: String? = null
             getActivityUseCase(activityId).collect { activity ->
                 _state.update { it.copy(selectedActivity = activity, canEdit = activity?.userId == currentUserId) }
+                // The owner is shown on the details; the list of this view model may not hold them (opened from a notification).
+                if (activity != null && authorLoadedFor != activity.userId && _state.value.authors[activity.userId] == null) {
+                    authorLoadedFor = activity.userId
+                    launch {
+                        getProfilesUseCase(listOf(activity.userId)).collect { profiles ->
+                            _state.update { it.copy(authors = it.authors + profiles.associateBy { p -> p.id }) }
+                        }
+                    }
+                }
                 // The track is read from the .FIT file on this device, once per file.
                 if (activity?.fitFilePath != null && trackLoadedFor != activity.fitFilePath) {
                     trackLoadedFor = activity.fitFilePath

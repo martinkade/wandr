@@ -2,7 +2,6 @@ package com.wandr.android.ui.profile.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -18,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.common.LabeledValue
 import com.wandr.android.ui.theme.WandrTheme
 import java.text.NumberFormat
 
@@ -42,26 +42,16 @@ fun ProfileStatsRow(
         NumberFormat.getIntegerInstance(locale).format(activityCount)
     }
 
-    Column {
-        Text(
-            text = stringResource(R.string.profile_stats_member_since),
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Text(
-            text = memberSince ?: stringResource(R.string.empty_value_placeholder),
-            style = MaterialTheme.typography.titleMedium
-        )
-    }
-    Column {
-        Text(
-            text = stringResource(R.string.profile_stats_activities),
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Text(
-            text = formattedCount,
-            style = MaterialTheme.typography.titleMedium
-        )
-    }
+    LabeledValue(
+        label = stringResource(R.string.profile_stats_member_since),
+        value = memberSince ?: stringResource(R.string.empty_value_placeholder)
+    )
+
+    LabeledValue(
+        label = stringResource(R.string.profile_stats_activities),
+        value = formattedCount
+    )
+
     Spacer(Modifier.weight(1.0f))
     OutlinedButton(onClick = onEnterEditMode) {
         Text(

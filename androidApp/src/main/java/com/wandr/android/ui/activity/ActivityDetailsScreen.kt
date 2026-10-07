@@ -43,6 +43,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.ui.activity.components.ActivityOwner
+import com.wandr.android.ui.activity.components.ActivityStats
+import com.wandr.android.ui.activity.components.ActivityTitle
 import com.wandr.android.ui.common.CollapsingHeaderScaffold
 import com.wandr.android.ui.common.CoverHero
 import com.wandr.android.ui.common.CoverHeroHeight
@@ -52,7 +55,6 @@ import com.wandr.android.ui.common.SheetOverlap
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.social.SocialSectionHost
 import com.wandr.android.ui.theme.WandrTheme
-import com.wandr.android.util.AppDateFormatter
 import com.wandr.domain.geo.PolylineCodec
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
@@ -63,7 +65,6 @@ import com.wandr.presentation.activity.ActivitySuccess
 import com.wandr.presentation.activity.ActivityViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import java.util.Locale
 
 /**
  * Read-only activity details with the recorded track (when it is on this device). Only the owner of the activity
@@ -231,12 +232,12 @@ private fun ActivityDetailsScreenContent(
             snackbarHost = snackbarHost
         ) {
             Column(
-                Modifier
+                modifier = Modifier
                     .offset(y = -SheetOverlap)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(topStart = SheetOverlap, topEnd = SheetOverlap))
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 32.dp)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
             ) {
                 if (hasMap) {
                     if (activity.userId == userId && !activity.showMap) {
@@ -257,34 +258,35 @@ private fun ActivityDetailsScreenContent(
                     Spacer(Modifier.height(8.dp))
                 }
 
-                LabeledValue(stringResource(R.string.activity_title_label), activity.title)
-                LabeledValue(
-                    stringResource(R.string.activity_description_label),
-                    activity.description
+                val owner = state.authors[activity.userId]
+                ActivityOwner(
+                    author = owner?.displayName.orEmpty()
+                        .ifBlank { stringResource(R.string.social_unknown_author) },
+                    authorAvatarUrl = owner?.avatarUrl,
+                    activity = activity,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
                 )
-                LabeledValue(
-                    stringResource(R.string.activity_type_label),
-                    activityTypeText(activity.activityType)
+
+                ActivityTitle(
+                    activity = activity,
+                    modifier = Modifier
+                        .fillMaxWidth()
                 )
-                LabeledValue(
-                    stringResource(R.string.challenge_start_label),
-                    AppDateFormatter.formatDateTime(activity.startTime, locale = locale)
+
+                ActivityStats(
+                    activity = activity,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
                 )
+
                 LabeledValue(
-                    stringResource(R.string.distance_label),
-                    String.format(Locale.US, "%.2f", activity.distanceMeters / 1000.0)
-                )
-                LabeledValue(
-                    stringResource(R.string.duration_label),
-                    "${(activity.durationSeconds / 60.0).toInt()}"
-                )
-                LabeledValue(
-                    stringResource(R.string.elevation_label),
-                    "${activity.elevationGainMeters.toInt()}"
-                )
-                LabeledValue(
-                    stringResource(R.string.activity_source_label),
-                    stringResource(if (activity.isManualEntry) R.string.manual_entry else R.string.gps_tracked)
+                    label = stringResource(R.string.activity_source_label),
+                    value = stringResource(if (activity.isManualEntry) R.string.manual_entry else R.string.gps_tracked),
+                    modifier = Modifier
+                        .fillMaxWidth()
                 )
                 if (state.canEdit) {
                     Spacer(Modifier.height(16.dp))
@@ -295,6 +297,7 @@ private fun ActivityDetailsScreenContent(
                         modifier = Modifier.fillMaxWidth()
                     ) { Text(stringResource(R.string.activity_delete_button)) }
                 }
+
                 Spacer(Modifier.height(16.dp))
                 socialSection(activity)
             }
@@ -310,9 +313,22 @@ private fun ActivityDetailsScreenContent(
                 TextButton(onClick = {
                     confirmDelete = false
                     onIntent(ActivityIntent.DeleteActivity(activity.id))
-                }) { Text(stringResource(R.string.social_delete), color = MaterialTheme.colorScheme.error) }
+                }) {
+                    Text(
+                        stringResource(R.string.social_delete),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel_button)) } }
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = false }) {
+                    Text(
+                        stringResource(
+                            R.string.cancel_button
+                        )
+                    )
+                }
+            }
         )
     }
 
@@ -354,14 +370,30 @@ private fun ActivityDetailsScreenContent(
 private val MapHeaderHeight = 320.dp
 
 private val previewActivity = Activity(
-    id = "a1", userId = "u1", teamId = null, title = "Evening run", description = "Along the river.",
-    activityType = "running", distanceMeters = 10_300.0, durationSeconds = 3000.0, elevationGainMeters = 85.0,
-    fitFilePath = "/files/fit/a1.fit", startTime = 1_768_435_200_000L, endTime = 1_768_438_200_000L,
-    isManualEntry = false, createdAt = 0L, updatedAt = 0L
+    id = "a1",
+    userId = "u1",
+    teamId = null,
+    title = "Evening run",
+    description = "Along the river.",
+    activityType = "running",
+    distanceMeters = 10_300.0,
+    durationSeconds = 3000.0,
+    elevationGainMeters = 85.0,
+    fitFilePath = "/files/fit/a1.fit",
+    startTime = 1_768_435_200_000L,
+    endTime = 1_768_438_200_000L,
+    isManualEntry = false,
+    createdAt = 0L,
+    updatedAt = 0L
 )
 
 @Preview(name = "Owner with track", showBackground = true, heightDp = 1000)
-@Preview(name = "Owner Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 1000)
+@Preview(
+    name = "Owner Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    heightDp = 1000
+)
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true, heightDp = 1400)
 @Composable
 private fun ActivityDetailsScreenOwnerPreview() {
