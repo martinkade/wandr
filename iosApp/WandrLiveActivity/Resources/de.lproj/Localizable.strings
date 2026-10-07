@@ -1,0 +1,4 @@
+"pause_button" = "Pause";
+"resume_button" = "Fortsetzen";
+"recording_notification_title" = "Aktivität wird aufgezeichnet";
+"recording_notification_paused" = "Aufzeichnung pausiert";

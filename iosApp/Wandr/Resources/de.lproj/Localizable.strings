@@ -218,3 +218,19 @@
 "registration_sign_in_now" = "Jetzt anmelden";
 
 "map_attribution" = "© OpenStreetMap-Mitwirkende";
+
+/* Recording */
+"recording_type_label" = "Sportart";
+"recording_finish_button" = "Beenden";
+"recording_finish_title" = "Aufzeichnung beenden?";
+"recording_finish_message" = "Speichere die Aktivität oder verwirf sie.";
+"recording_discard_button" = "Verwerfen";
+"recording_continue_button" = "Weiter";
+"recording_close" = "Schließen";
+"recording_distance_label" = "Distanz (km)";
+"recording_time_label" = "Zeit";
+"recording_pace_label" = "Tempo (/km)";
+"record_activity" = "Aktivität aufzeichnen";
+"recording_gps_searching" = "GPS-Ortung läuft…";
+"recording_gps_weak" = "GPS-Signal schwach";
+"recording_gps_good" = "GPS-Signal gut";

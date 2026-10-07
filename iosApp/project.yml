@@ -20,8 +20,10 @@ targets:
     platform: iOS
     sources:
       - path: Wandr
+      - path: Shared   # also compiled into the Live Activity extension
     dependencies:
       - target: WandrWatch   # embedded in Wandr.app/Watch
+      - target: WandrLiveActivity   # embedded in Wandr.app/PlugIns
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mediabeam.fitness
@@ -56,6 +58,7 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+        NSSupportsLiveActivities: true   # the running recording shows on the lock screen and in the Dynamic Island
         UIBackgroundModes:
           - location
           - remote-notification
@@ -69,6 +72,25 @@ targets:
         script: |
           cd "$SRCROOT/.."
           ./gradlew :shared:embedAndSignAppleFrameworkForXcode
+  WandrLiveActivity:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: WandrLiveActivity
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mediabeam.fitness.LiveActivity
+        PRODUCT_NAME: WandrLiveActivity
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+    info:
+      path: WandrLiveActivity/Info.plist
+      properties:
+        CFBundleDisplayName: WANDR
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
   WandrWatch:
     type: application
     platform: watchOS

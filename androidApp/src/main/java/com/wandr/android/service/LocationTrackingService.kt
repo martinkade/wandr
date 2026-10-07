@@ -53,6 +53,11 @@ class LocationTrackingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // The notification's button: pause or resume (the recording screen does the same through the view model).
+        when (intent?.action) {
+            ACTION_PAUSE -> if (recording.state.value.isTracking) recording.processIntent(ActivityIntent.PauseGpsTracking)
+            ACTION_RESUME -> if (recording.state.value.isTracking) recording.processIntent(ActivityIntent.ResumeGpsTracking)
+        }
         // A foreground service must show its notification right away.
         val type = recording.state.value.trackingActivityType
         ServiceCompat.startForeground(
@@ -103,6 +108,11 @@ class LocationTrackingService : Service() {
     private fun notificationText(state: ActivityState): String =
         "${ActivityFormat.distanceKm(state.liveDistanceMeters)} km · ${ActivityFormat.clock(state.liveDurationSeconds)}"
 
+    /**
+     * The ongoing notification, shown as a Live Update on Android 16+ (a chip in the status bar with the recording time, and
+     * on the lock screen): the progress bar fills towards the next full kilometer. Older versions show a plain ongoing
+     * notification with a progress bar.
+     */
     private fun buildNotification(state: ActivityState) = NotificationCompat.Builder(this, CHANNEL_ID)
         .setContentTitle(getString(if (state.isPaused) R.string.recording_notification_paused else R.string.recording_notification_title))
         .setContentText(notificationText(state))
@@ -110,6 +120,23 @@ class LocationTrackingService : Service() {
         .setOngoing(true)
         .setOnlyAlertOnce(true)
         .setCategory(NotificationCompat.CATEGORY_WORKOUT)
+        .setStyle(
+            NotificationCompat.ProgressStyle()
+                .addProgressSegment(NotificationCompat.ProgressStyle.Segment(METERS_PER_KM))
+                .setProgress((state.liveDistanceMeters % METERS_PER_KM).toInt())
+                .setStyledByProgress(false)
+        )
+        .setRequestPromotedOngoing(true)
+        .setShortCriticalText(if (state.isPaused) getString(R.string.recording_chip_paused) else ActivityFormat.clock(state.liveDurationSeconds))
+        .addAction(
+            if (state.isPaused) R.drawable.ic_play_arrow else R.drawable.ic_pause,
+            getString(if (state.isPaused) R.string.resume_button else R.string.pause_button),
+            PendingIntent.getService(
+                this, 1,
+                Intent(this, LocationTrackingService::class.java).setAction(if (state.isPaused) ACTION_RESUME else ACTION_PAUSE),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        )
         .setContentIntent(
             PendingIntent.getActivity(
                 this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
@@ -136,5 +163,8 @@ class LocationTrackingService : Service() {
         const val CHANNEL_ID = "wandr_location_channel"
         const val NOTIFICATION_ID = 1001
         const val CLOCK_MILLIS = 1_000L
+        const val METERS_PER_KM = 1_000
+        const val ACTION_PAUSE = "com.wandr.android.action.PAUSE_RECORDING"
+        const val ACTION_RESUME = "com.wandr.android.action.RESUME_RECORDING"
     }
 }

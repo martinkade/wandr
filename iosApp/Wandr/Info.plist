@@ -28,6 +28,8 @@
 	<string>WANDR uses your location to keep recording your activity while the screen is off.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>WANDR uses your location to record your outdoor activities.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

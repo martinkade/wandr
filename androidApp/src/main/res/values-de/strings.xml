@@ -308,6 +308,7 @@
     <string name="activity_show_map_hint">Andere Nutzer sehen die Route dieser Aktivität auf der Karte. Du siehst sie immer selbst.</string>
     <string name="recording_notification_title">Aktivität wird aufgezeichnet</string>
     <string name="recording_notification_paused">Aufzeichnung pausiert</string>
+    <string name="recording_chip_paused">Pause</string>
     <string name="recording_channel_name">Aktivitätsaufzeichnung</string>
     <string name="recording_gps_searching">GPS-Ortung läuft…</string>
     <string name="recording_gps_weak">GPS-Signal schwach</string>

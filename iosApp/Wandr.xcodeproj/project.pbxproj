@@ -46,7 +46,9 @@
 		72759DFE4370187BDF2C5309 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFB5478137F630B1D7AB56D /* MainView.swift */; };
 		76E6867A061B36EB34AB4883 /* ActivityDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D505906CFB45A43FCB1D6927 /* ActivityDetailView.swift */; };
 		78A62356EAA8B83EADF3BB14 /* ChallengeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91E44C9A43FEFC228879856C /* ChallengeCardView.swift */; };
+		7AEFD8246E2D275CAFEE7CDD /* RecordingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4C287280B1F3144283E57B /* RecordingCoordinator.swift */; };
 		839DE07AAFE62365616B0827 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A4B93108E53344CEAF07D265 /* Assets.xcassets */; };
+		8485CE32C228B99FC919207D /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9675A11474504FBE58AF17DA /* Localizable.strings */; };
 		8646FDDB2CC2BD6B43D0676D /* WatchConnectivityReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4474A6197EC42920F413A24C /* WatchConnectivityReceiver.swift */; };
 		883012FBA6B614053C9C5A36 /* ChallengeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */; };
 		8934816DC76780DF6A1D8EAF /* TeamInviteQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */; };
@@ -56,6 +58,7 @@
 		932EEDB086286F47A67BFDDB /* PermissionDeniedAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = C773A7258331A26CA44463C5 /* PermissionDeniedAlert.swift */; };
 		9374D0818A3322594F64DDC2 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A1206E61CBE3C615FE343F8 /* Localizable.strings */; };
 		93B93795838B9DAE827B9763 /* MetricFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042424561531E6C842BE618E /* MetricFormatter.swift */; };
+		94695253054C7B0380227393 /* RecordingLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5062829063112F38D2345632 /* RecordingLiveActivity.swift */; };
 		9478CB3A4731560C9DB82C28 /* ImageCropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115EB2163FD8A62DE4182546 /* ImageCropperView.swift */; };
 		9693FC9BFA957142341044F6 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */; };
 		97A8E758BFB27917E69E8BC3 /* ManualActivityEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */; };
@@ -66,6 +69,7 @@
 		A564F82915762734C0B7BBCE /* SocialObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC305F4B69CB146DFA02A5A /* SocialObserver.swift */; };
 		A58A38F5B42AF95186796227 /* CreateTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */; };
 		A5AB48F938600C9DF53545CB /* WandrApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AED3E697232F3B3088A7AF3 /* WandrApp.swift */; };
+		A726FB56A90607223218442F /* RecordingActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A859A26FB3D2791E7870C0 /* RecordingActivityAttributes.swift */; };
 		ACCA357EBF0C1AD8660332F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 699CCA43CF6AF687DC06B039 /* Assets.xcassets */; };
 		B51EF210750258040264FACB /* AppLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46666A31D21A7C2510B344E8 /* AppLogoView.swift */; };
 		B5EEFCBBA1510081592EDAA8 /* InitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42152663049BD4302AE8974B /* InitView.swift */; };
@@ -74,22 +78,27 @@
 		B990EB2EC2155D8298E270A4 /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3653ED86BC7CE2C6050FD9E /* CameraPickerView.swift */; };
 		BCD1E431624925D253C9C78C /* PermissionDeniedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8DC0AA7048044EF3A52658E /* PermissionDeniedView.swift */; };
 		BE20AFD1D19291A6A51DB18B /* WorkoutKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C4DA371AAC859152784A5B /* WorkoutKind.swift */; };
+		C0A4AFF39E6982E3C8023B0F /* WandrLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 022E447A680C9EEFC823E597 /* WandrLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C188AC200B14FF2124C853BD /* NotificationsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4FCD2FF9B7452D237C647B /* NotificationsObserver.swift */; };
 		C2530ABF0198B7B51832728D /* WatchWorkoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830456A8D90F27D7B2909FF5 /* WatchWorkoutTests.swift */; };
 		C75644AB091C76D6E9A6153E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030D0E58E4667331C08163F7 /* RootView.swift */; };
 		CAF4E2EA38CABCDB8223DB01 /* PermissionFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E13FF43BEB26A3882E77034 /* PermissionFlowView.swift */; };
 		CDACF2980198394941FEBD77 /* AuthErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B142380261C3F545348B386E /* AuthErrorView.swift */; };
 		CFFCEEA267E245DAA09AD031 /* TeamEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B005E538E34F018DF5CCDF17 /* TeamEditView.swift */; };
+		D3639368A1C032D8A46304BB /* RecordingActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A859A26FB3D2791E7870C0 /* RecordingActivityAttributes.swift */; };
+		D4825D8B9683FF020634F004 /* RecordingObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1DD9CC37A1F385B749A6E /* RecordingObserver.swift */; };
 		DAEBECD269BBCD914921E961 /* WandrWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DDBF0E99D053169932A70025 /* ContourBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 312204683E071FA3343D661D /* ContourBackground.swift */; };
 		E02923DE8FAB5B1851037B18 /* HealthStatsCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296F996B2D85EB6A2160B976 /* HealthStatsCardView.swift */; };
 		E15716E31EC34014D8F02787 /* HealthImportCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E99E04513B9C12E013CC426 /* HealthImportCardView.swift */; };
 		E37804C242AF6993C13B5F4D /* LocationTrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */; };
 		E3797D0914B92781A032273B /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDDF344466CF9C080E23ADA /* ProfileEditView.swift */; };
+		E40D747A29C5214058251086 /* WandrWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493839A62A15D2B9998C3AF7 /* WandrWidgets.swift */; };
 		E4DBE66F9CC3B2BD68AAEBFB /* TeamCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052F351F50B69C25F4EACC19 /* TeamCardView.swift */; };
 		E52F96EE21035B80EB925116 /* WorkoutSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CDE9170DDAB2D190FD5E07 /* WorkoutSummaryView.swift */; };
 		E87E13069E65E069C7A03EBB /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5619383385D8D00B5FD7FABC /* RegisterView.swift */; };
 		E91012B339F24FEA8101929E /* ReactionChipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34601CF0F11076210BD324B3 /* ReactionChipView.swift */; };
+		EB1FC819251A35923C6B2B27 /* RecordingLockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A78C7596ABC16F66896B733 /* RecordingLockScreenView.swift */; };
 		EB47F711C1BCDD7D40F7621C /* LabeledValueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC1A3A2F17BA295EC0FDFFA /* LabeledValueView.swift */; };
 		EE187BBF07ED2F2406D1A0A2 /* TeamListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380DDDFFC40217E0B7081CF3 /* TeamListView.swift */; };
 		F880DE0FC2B8B8972B80A0A7 /* MetricRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8B5A0D127DD0FF62963477 /* MetricRow.swift */; };
@@ -98,6 +107,7 @@
 		FB8F26126A97A88C9668FDE6 /* WandrWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51864558E59285BB52A70D8B /* WandrWatchApp.swift */; };
 		FBB6C1F5AF643CBB4D580684 /* PermissionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA6F3F9FB14EF2A242986141 /* PermissionState.swift */; };
 		FE7C548F5DAF13847A8DA0B1 /* AvatarPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B8EC331944CA88AF8EBB34 /* AvatarPickerView.swift */; };
+		FEFA00999D9CBEBDCD24B97F /* RecordingLiveActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F752F454E555DF4944AFA3 /* RecordingLiveActivityController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,9 +125,27 @@
 			remoteGlobalIDString = BB56287A5FCCD4498462EE43;
 			remoteInfo = WandrWatch;
 		};
+		C4A944394B13C61DA7384B75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2EEBA0B09FEB8EE8D819C670 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BD3F964E1F74F2080279521A;
+			remoteInfo = WandrLiveActivity;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		98720F14A8CAC2A4895B0670 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C0A4AFF39E6982E3C8023B0F /* WandrLiveActivity.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E12BEB1202A4667B6C39B653 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -134,6 +162,7 @@
 /* Begin PBXFileReference section */
 		004861D686700490F3CBAD1C /* WatchWorkout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWorkout.swift; sourceTree = "<group>"; };
 		008681D41D040CAF4C5B6C1E /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		022E447A680C9EEFC823E597 /* WandrLiveActivity.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WandrLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		030D0E58E4667331C08163F7 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		042424561531E6C842BE618E /* MetricFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricFormatter.swift; sourceTree = "<group>"; };
 		052F351F50B69C25F4EACC19 /* TeamCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCardView.swift; sourceTree = "<group>"; };
@@ -146,6 +175,7 @@
 		160BDCA3B8C2B858ABCC0BA6 /* TeamCoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCoverView.swift; sourceTree = "<group>"; };
 		1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualActivityEntryView.swift; sourceTree = "<group>"; };
 		1677174E725ACC2C452EF7A6 /* OsmTileCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OsmTileCache.swift; sourceTree = "<group>"; };
+		16A859A26FB3D2791E7870C0 /* RecordingActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingActivityAttributes.swift; sourceTree = "<group>"; };
 		1AB83B9D146EE3F83E601807 /* LiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutView.swift; sourceTree = "<group>"; };
 		207844348B3B1C21DABF7C63 /* GroupsContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsContainerView.swift; sourceTree = "<group>"; };
 		20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WandrWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -165,15 +195,19 @@
 		3F93A3A4732FE5FE3552A124 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		40AECD3F3D385592C1849AAA /* WandrWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WandrWatch.entitlements; sourceTree = "<group>"; };
 		42152663049BD4302AE8974B /* InitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitView.swift; sourceTree = "<group>"; };
+		4417F5A88FEEE2B99A3888EF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4474A6197EC42920F413A24C /* WatchConnectivityReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityReceiver.swift; sourceTree = "<group>"; };
 		44B2FE98DB2578F585436D0F /* PermissionDisclosureAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDisclosureAlert.swift; sourceTree = "<group>"; };
 		46666A31D21A7C2510B344E8 /* AppLogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogoView.swift; sourceTree = "<group>"; };
 		4862639D95533C753F255604 /* Wandr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Wandr.entitlements; sourceTree = "<group>"; };
 		48D58E5F83A7078503199EAB /* CommentRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentRowView.swift; sourceTree = "<group>"; };
+		493839A62A15D2B9998C3AF7 /* WandrWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrWidgets.swift; sourceTree = "<group>"; };
 		4B7779D495C80ACD2BAC579A /* ActivityConflictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityConflictView.swift; sourceTree = "<group>"; };
+		4B79A2183B81275107891D25 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4BD4F0F34D51BA9B11C1472F /* ActivityPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPickerView.swift; sourceTree = "<group>"; };
 		4CFE6549782F33E2DF4ADC87 /* ActivityCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCardView.swift; sourceTree = "<group>"; };
 		4EC6958483D2BBD8BAAF6653 /* ChallengeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeListView.swift; sourceTree = "<group>"; };
+		5062829063112F38D2345632 /* RecordingLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingLiveActivity.swift; sourceTree = "<group>"; };
 		51864558E59285BB52A70D8B /* WandrWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrWatchApp.swift; sourceTree = "<group>"; };
 		555E057BD69D274330BF1110 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		5619383385D8D00B5FD7FABC /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
@@ -188,6 +222,7 @@
 		7BC305F4B69CB146DFA02A5A /* SocialObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialObserver.swift; sourceTree = "<group>"; };
 		7CD8B2D26BA7B27B204E3FFA /* LeaderboardRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardRowView.swift; sourceTree = "<group>"; };
 		7E6AEE33C95B7CD3AAEE7BC1 /* AvatarEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarEditorView.swift; sourceTree = "<group>"; };
+		80F752F454E555DF4944AFA3 /* RecordingLiveActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingLiveActivityController.swift; sourceTree = "<group>"; };
 		830456A8D90F27D7B2909FF5 /* WatchWorkoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWorkoutTests.swift; sourceTree = "<group>"; };
 		8395BB0E436E0ABA2D07CE76 /* WatchImportObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchImportObserver.swift; sourceTree = "<group>"; };
 		86CDE9170DDAB2D190FD5E07 /* WorkoutSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSummaryView.swift; sourceTree = "<group>"; };
@@ -196,6 +231,7 @@
 		91E44C9A43FEFC228879856C /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
 		934AF717F85F41D842253D48 /* SocialSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialSectionView.swift; sourceTree = "<group>"; };
 		96FD1CEAB4397D0FADFA1089 /* HealthKitImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitImporter.swift; sourceTree = "<group>"; };
+		9A78C7596ABC16F66896B733 /* RecordingLockScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingLockScreenView.swift; sourceTree = "<group>"; };
 		9A8AA9573F81E6187BFCB89A /* WandrColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WandrColors.swift; sourceTree = "<group>"; };
 		9B8BA41F09221973D9512A2A /* EmailConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailConfirmationSheet.swift; sourceTree = "<group>"; };
 		9C506924DA47F20EE14FFC8C /* WorkoutMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutMetrics.swift; sourceTree = "<group>"; };
@@ -207,6 +243,7 @@
 		A8DC0AA7048044EF3A52658E /* PermissionDeniedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDeniedView.swift; sourceTree = "<group>"; };
 		AA5E1946BEF153BD54411032 /* TeamDetailsObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailsObserver.swift; sourceTree = "<group>"; };
 		AD1FCD9F98E116AC4C303D3B /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AE4C287280B1F3144283E57B /* RecordingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingCoordinator.swift; sourceTree = "<group>"; };
 		B005E538E34F018DF5CCDF17 /* TeamEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamEditView.swift; sourceTree = "<group>"; };
 		B142380261C3F545348B386E /* AuthErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthErrorView.swift; sourceTree = "<group>"; };
 		B3653ED86BC7CE2C6050FD9E /* CameraPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPickerView.swift; sourceTree = "<group>"; };
@@ -222,11 +259,13 @@
 		D7B2E703D952E6CC088E6522 /* WorkoutOutbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutOutbox.swift; sourceTree = "<group>"; };
 		D7E5D2D7B5C98F9E5AC89D11 /* CreateTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTeamView.swift; sourceTree = "<group>"; };
 		DCDDF344466CF9C080E23ADA /* ProfileEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditView.swift; sourceTree = "<group>"; };
+		DFD87A505A78E7440726FA71 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E2E63BB7F888CE9A70E26BFA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		E7BEB3F28F5654F48DA8772A /* TeamInviteQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamInviteQRCodeView.swift; sourceTree = "<group>"; };
 		EB1A774847358BD88BAD1147 /* NotificationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRowView.swift; sourceTree = "<group>"; };
 		EF8F681FAE45E23A27F35D1F /* Wandr.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Wandr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F09589BD59713E8218BA7799 /* AppError+Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppError+Message.swift"; sourceTree = "<group>"; };
+		F0E1DD9CC37A1F385B749A6E /* RecordingObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingObserver.swift; sourceTree = "<group>"; };
 		F572C10C5B7BCCEA9761D20D /* WandrWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WandrWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F754D10490320AE8ECAF9D1A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F77AC45796364259E7355793 /* PushPermissionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushPermissionPrompt.swift; sourceTree = "<group>"; };
@@ -260,6 +299,8 @@
 				96FD1CEAB4397D0FADFA1089 /* HealthKitImporter.swift */,
 				8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */,
 				12A03E91276A96FD5CFDD53C /* PushNavigation.swift */,
+				AE4C287280B1F3144283E57B /* RecordingCoordinator.swift */,
+				80F752F454E555DF4944AFA3 /* RecordingLiveActivityController.swift */,
 				4474A6197EC42920F413A24C /* WatchConnectivityReceiver.swift */,
 			);
 			path = Services;
@@ -269,6 +310,7 @@
 			isa = PBXGroup;
 			children = (
 				EF8F681FAE45E23A27F35D1F /* Wandr.app */,
+				022E447A680C9EEFC823E597 /* WandrLiveActivity.appex */,
 				20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */,
 				F572C10C5B7BCCEA9761D20D /* WandrWatchTests.xctest */,
 			);
@@ -329,6 +371,7 @@
 				A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */,
 				1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */,
 				1677174E725ACC2C452EF7A6 /* OsmTileCache.swift */,
+				F0E1DD9CC37A1F385B749A6E /* RecordingObserver.swift */,
 				B9DF35BB2F38C21C740C7DE3 /* TrackMapView.swift */,
 				8395BB0E436E0ABA2D07CE76 /* WatchImportObserver.swift */,
 			);
@@ -404,6 +447,18 @@
 			path = WandrWatch;
 			sourceTree = "<group>";
 		};
+		75D6812341C92123DFC4049B /* WandrLiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				DFD87A505A78E7440726FA71 /* Info.plist */,
+				5062829063112F38D2345632 /* RecordingLiveActivity.swift */,
+				9A78C7596ABC16F66896B733 /* RecordingLockScreenView.swift */,
+				493839A62A15D2B9998C3AF7 /* WandrWidgets.swift */,
+				950A5823F1AEE23838B2C9C4 /* Resources */,
+			);
+			path = WandrLiveActivity;
+			sourceTree = "<group>";
+		};
 		76BB7398115F785FC273437F /* Theme */ = {
 			isa = PBXGroup;
 			children = (
@@ -438,6 +493,14 @@
 				8F8BBAFE852C9E2A4CD85657 /* TeamObserver.swift */,
 			);
 			path = Team;
+			sourceTree = "<group>";
+		};
+		950A5823F1AEE23838B2C9C4 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				9675A11474504FBE58AF17DA /* Localizable.strings */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		A15E9F90D7D079C51E47A595 /* Main */ = {
@@ -502,11 +565,21 @@
 		D6ABC1200B64C0566C03CC1C = {
 			isa = PBXGroup;
 			children = (
+				D95C2374E7FA6B75605A9A55 /* Shared */,
 				5FB5D6C4FFAD050EBB8F042C /* Wandr */,
+				75D6812341C92123DFC4049B /* WandrLiveActivity */,
 				6FDC5CB3F03B2EE1779CCAD8 /* WandrWatch */,
 				A3AE349C0A6F2A2DCC7FBE20 /* WandrWatchTests */,
 				252AF8D5F63E356B3391D539 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		D95C2374E7FA6B75605A9A55 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				16A859A26FB3D2791E7870C0 /* RecordingActivityAttributes.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		DFF09727974371EDDF32977A /* Model */ = {
@@ -531,12 +604,14 @@
 				D5A54C84CDBAB7C27B639C36 /* Build Kotlin shared framework */,
 				A26ED7843CA56F3398EEC1E3 /* Sources */,
 				E2036483AD86DE93DC8AEDFC /* Resources */,
+				98720F14A8CAC2A4895B0670 /* Embed Foundation Extensions */,
 				E12BEB1202A4667B6C39B653 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				2434996B3EEB57581FD4A8F6 /* PBXTargetDependency */,
+				74D4395DBA16F87904CE8E79 /* PBXTargetDependency */,
 			);
 			name = Wandr;
 			packageProductDependencies = (
@@ -562,6 +637,24 @@
 			productName = WandrWatch;
 			productReference = 20BEB27AED7C9E32FF6461C2 /* WandrWatch.app */;
 			productType = "com.apple.product-type.application";
+		};
+		BD3F964E1F74F2080279521A /* WandrLiveActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7BD360A61F6C26EAD5835602 /* Build configuration list for PBXNativeTarget "WandrLiveActivity" */;
+			buildPhases = (
+				DF5F3A1CC776507C61F5D0CA /* Sources */,
+				43305E11F3F493F9D69CDAEB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WandrLiveActivity;
+			packageProductDependencies = (
+			);
+			productName = WandrLiveActivity;
+			productReference = 022E447A680C9EEFC823E597 /* WandrLiveActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		E26402BB45E4D9756638E0E1 /* WandrWatchTests */ = {
 			isa = PBXNativeTarget;
@@ -608,6 +701,7 @@
 			projectRoot = "";
 			targets = (
 				ABB5BFB31D3910443D8F6810 /* Wandr */,
+				BD3F964E1F74F2080279521A /* WandrLiveActivity */,
 				BB56287A5FCCD4498462EE43 /* WandrWatch */,
 				E26402BB45E4D9756638E0E1 /* WandrWatchTests */,
 			);
@@ -615,6 +709,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		43305E11F3F493F9D69CDAEB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8485CE32C228B99FC919207D /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DBA573DBB78C5AA4E249C23C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -742,6 +844,10 @@
 				F9D77DEBC73D8B439B96E464 /* PushNavigation.swift in Sources */,
 				512299E8FF24ABFCD71599F3 /* PushPermissionPrompt.swift in Sources */,
 				E91012B339F24FEA8101929E /* ReactionChipView.swift in Sources */,
+				A726FB56A90607223218442F /* RecordingActivityAttributes.swift in Sources */,
+				7AEFD8246E2D275CAFEE7CDD /* RecordingCoordinator.swift in Sources */,
+				FEFA00999D9CBEBDCD24B97F /* RecordingLiveActivityController.swift in Sources */,
+				D4825D8B9683FF020634F004 /* RecordingObserver.swift in Sources */,
 				E87E13069E65E069C7A03EBB /* RegisterView.swift in Sources */,
 				078F48F905F1A79CB905CFCA /* RootView.swift in Sources */,
 				8B02F63C333462A749131FD7 /* RootViewModel.swift in Sources */,
@@ -765,6 +871,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DF5F3A1CC776507C61F5D0CA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3639368A1C032D8A46304BB /* RecordingActivityAttributes.swift in Sources */,
+				94695253054C7B0380227393 /* RecordingLiveActivity.swift in Sources */,
+				EB1FC819251A35923C6B2B27 /* RecordingLockScreenView.swift in Sources */,
+				E40D747A29C5214058251086 /* WandrWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -772,6 +889,11 @@
 			isa = PBXTargetDependency;
 			target = BB56287A5FCCD4498462EE43 /* WandrWatch */;
 			targetProxy = 382D5F551E2C113F7640AF4B /* PBXContainerItemProxy */;
+		};
+		74D4395DBA16F87904CE8E79 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BD3F964E1F74F2080279521A /* WandrLiveActivity */;
+			targetProxy = C4A944394B13C61DA7384B75 /* PBXContainerItemProxy */;
 		};
 		AA4A4EDE55F31EA60ED17A4C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -786,6 +908,15 @@
 			children = (
 				A00AB15374288E5B4586B035 /* de */,
 				555E057BD69D274330BF1110 /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		9675A11474504FBE58AF17DA /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4B79A2183B81275107891D25 /* de */,
+				4417F5A88FEEE2B99A3888EF /* en */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -948,6 +1079,24 @@
 			};
 			name = Release;
 		};
+		9042062BDEC1C9B9B25CC5A7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WandrLiveActivity/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness.LiveActivity;
+				PRODUCT_NAME = WandrLiveActivity;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		B0471986A399D1DF939E531A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1043,6 +1192,24 @@
 			};
 			name = Debug;
 		};
+		E3F3072A73AF845CD2BF2555 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WandrLiveActivity/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mediabeam.fitness.LiveActivity;
+				PRODUCT_NAME = WandrLiveActivity;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1060,6 +1227,15 @@
 			buildConfigurations = (
 				D42E3A989490AEAE236827EA /* Debug */,
 				3CEAB50964D40BC8617E30D4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7BD360A61F6C26EAD5835602 /* Build configuration list for PBXNativeTarget "WandrLiveActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9042062BDEC1C9B9B25CC5A7 /* Debug */,
+				E3F3072A73AF845CD2BF2555 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

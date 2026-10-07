@@ -308,6 +308,7 @@
     <string name="activity_show_map_hint">Other users can see the route of this activity on the map. You always see it yourself.</string>
     <string name="recording_notification_title">Recording your activity</string>
     <string name="recording_notification_paused">Recording paused</string>
+    <string name="recording_chip_paused">Paused</string>
     <string name="recording_channel_name">Activity recording</string>
     <string name="recording_gps_searching">GPS locating…</string>
     <string name="recording_gps_weak">GPS signal weak</string>

@@ -12,6 +12,7 @@ struct MainView: View {
     @State private var selectedTab = 0
     @State private var selectedActivity: Activity?
     @State private var showNotifications = false
+    @State private var showRecording = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -23,6 +24,15 @@ struct MainView: View {
                         ActivityDetailView(activity: activity, userId: viewModel.userId)
                     }
                     .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            // Red while a recording runs: the record button then opens the running recording.
+                            Button { showRecording = true } label: {
+                                Image(systemName: viewModel.isRecording ? "record.circle.fill" : "record.circle")
+                                    .foregroundColor(viewModel.isRecording ? .red : .accentColor)
+                            }
+                                .accessibilityLabel(Text(LocalizedStringKey("record_activity")))
+                                .disabled(viewModel.userId == nil)
+                        }
                         ToolbarItem(placement: .topBarLeading) {
                             Button {
                                 notifications.load()
@@ -69,6 +79,12 @@ struct MainView: View {
             .tag(3)
         }
         .pushPermissionPrompt(isEnabled: viewModel.userId != nil)
+        // The recording (GPS, Live Activity) covers the whole screen.
+        .fullScreenCover(isPresented: $showRecording) {
+            if let userId = viewModel.userId {
+                LiveGpsTrackingView(userId: userId, teamId: viewModel.teamId, onClose: { showRecording = false })
+            }
+        }
         .task { viewModel.start() }
         // Sync Apple Health whenever the app becomes active (and once at launch), if it is connected.
         .task(id: scenePhase) {
@@ -124,6 +140,7 @@ final class MainObserver: ObservableObject {
     @Published var userId: String?
     @Published var teamId: String?
     @Published var isManager = false
+    @Published var isRecording = false
 
     private let mainViewModel = IosDependencies.shared.mainViewModel()
     private let activity = IosDependencies.shared.activityViewModel()
@@ -145,6 +162,11 @@ final class MainObserver: ObservableObject {
         jobs.append(FlowObserverKt.watch(activity.state) { [weak self] value in
             guard let state = value as? ActivityState else { return }
             Task { @MainActor in self?.activities = state.activities }
+        })
+        // A running recording shows in the feed's toolbar, so it can be opened again after leaving its screen.
+        jobs.append(FlowObserverKt.watch(IosDependencies.shared.recordingViewModel().state) { [weak self] value in
+            guard let state = value as? ActivityState else { return }
+            Task { @MainActor in self?.isRecording = state.isTracking }
         })
         mainViewModel.load()
     }
