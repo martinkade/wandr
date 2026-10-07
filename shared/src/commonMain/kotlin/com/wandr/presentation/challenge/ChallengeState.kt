@@ -42,6 +42,8 @@ data class ChallengeState(
     val participations: Map<String, ChallengeParticipation> = emptyMap(),
     /** Teams the user owns or administers: only they can be enrolled in a group challenge (or withdrawn). */
     val adminTeams: List<Team> = emptyList(),
+    /** The user's highest-priority team: the only one that counts for group challenges. */
+    val primaryTeamId: String? = null,
     val selectedChallenge: Challenge? = null,
     /** Only the creator (owner) of the selected challenge may edit it and change its cover. */
     val canEdit: Boolean = false,

@@ -433,6 +433,7 @@ private fun ChallengeDetailsScreenContent(
         EnrollTeamSheet(
             // Only administered teams that are not enrolled yet can be chosen.
             teams = state.adminTeams.filter { team -> state.standings.none { it.teamId == team.id } },
+            primaryTeamId = state.primaryTeamId,
             onTeamSelected = { team ->
                 enrolling = false
                 challenge?.let { onIntent(ChallengeIntent.EnrollTeam(it.id, team.id, userId)) }

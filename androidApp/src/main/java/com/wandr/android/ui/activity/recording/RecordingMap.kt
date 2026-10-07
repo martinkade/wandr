@@ -16,12 +16,25 @@ import com.wandr.android.ui.activity.TrackMapView
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.GpsTrackpoint
 
-/** The full-screen backdrop of the recording: the route so far (no map tiles), or a hint while there is none. */
+/**
+ * The full-screen backdrop of the recording: the route so far (no map tiles). It is shown once the GPS is connected
+ * ([isGpsConnected]); until then only a hint is shown.
+ */
 @Composable
-fun RecordingMap(route: List<GpsTrackpoint>, modifier: Modifier = Modifier) {
+fun RecordingMap(
+    route: List<GpsTrackpoint>,
+    isGpsConnected: Boolean,
+    modifier: Modifier = Modifier
+) {
     Box(modifier.fillMaxSize()) {
-        TrackMapView(trackpoints = route, modifier = Modifier.fillMaxSize(), shape = RectangleShape)
-        if (route.size < 2) {
+        if (isGpsConnected) {
+            TrackMapView(
+                trackpoints = route,
+                modifier = Modifier.fillMaxSize(),
+                shape = RectangleShape
+            )
+        }
+        if (!isGpsConnected || route.size < 2) {
             Text(
                 text = stringResource(R.string.recording_waiting_for_gps),
                 style = MaterialTheme.typography.bodyMedium,
@@ -41,7 +54,8 @@ private fun RecordingMapPreview() {
             listOf(
                 GpsTrackpoint(47.3769, 8.5417, 400.0, 0L), GpsTrackpoint(47.3779, 8.5437, 400.0, 0L),
                 GpsTrackpoint(47.3789, 8.5427, 400.0, 0L), GpsTrackpoint(47.3801, 8.5460, 400.0, 0L)
-            )
+            ),
+            isGpsConnected = true
         )
     }
 }
@@ -49,5 +63,5 @@ private fun RecordingMapPreview() {
 @Preview(name = "Waiting", showBackground = true)
 @Composable
 private fun RecordingMapWaitingPreview() {
-    WandrTheme { RecordingMap(emptyList()) }
+    WandrTheme { RecordingMap(emptyList(), isGpsConnected = false) }
 }

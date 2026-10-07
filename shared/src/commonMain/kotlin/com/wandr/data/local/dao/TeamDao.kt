@@ -24,10 +24,11 @@ interface TeamDao {
     )
     fun getTeamsForUser(userId: String): Flow<List<TeamEntity>>
 
-    /** The teams the user may manage: the ones they created and those where they are an admin. */
+    /** The teams the user may manage (created or admin), in the user's priority order like [getTeamsForUser]. */
     @Query(
-        "SELECT * FROM teams WHERE created_by = :userId " +
-                "OR id IN (SELECT team_id FROM team_members WHERE user_id = :userId AND role = 'admin') ORDER BY name"
+        "SELECT t.* FROM teams t LEFT JOIN team_members m ON m.team_id = t.id AND m.user_id = :userId " +
+                "WHERE t.created_by = :userId OR m.role = 'admin' " +
+                "ORDER BY COALESCE(m.priority, 2147483647), t.created_at DESC"
     )
     fun getAdminTeamsForUser(userId: String): Flow<List<TeamEntity>>
 

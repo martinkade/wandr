@@ -27,6 +27,8 @@ import com.wandr.domain.model.Team
 @Composable
 fun EnrollTeamSheet(
     teams: List<Team>,
+    /** The user's highest-priority team, marked like in the profile. */
+    primaryTeamId: String?,
     onTeamSelected: (Team) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -34,12 +36,16 @@ fun EnrollTeamSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ) {
-        EnrollTeamSheetContent(teams, onTeamSelected)
+        EnrollTeamSheetContent(teams, primaryTeamId, onTeamSelected)
     }
 }
 
 @Composable
-internal fun EnrollTeamSheetContent(teams: List<Team>, onTeamSelected: (Team) -> Unit) {
+internal fun EnrollTeamSheetContent(
+    teams: List<Team>,
+    primaryTeamId: String?,
+    onTeamSelected: (Team) -> Unit
+) {
     Column(
         Modifier
             .verticalScroll(rememberScrollState())
@@ -61,7 +67,7 @@ internal fun EnrollTeamSheetContent(teams: List<Team>, onTeamSelected: (Team) ->
         teams.forEachIndexed { index, team ->
             TeamMembershipItem(
                 team = team,
-                isPrimary = false,
+                isPrimary = team.id == primaryTeamId,
                 isFirstItemInSection = index == 0,
                 isLastItemInSection = index == teams.lastIndex,
                 dragHandleModifier = null,
@@ -82,6 +88,7 @@ private fun EnrollTeamSheetPreview() {
                 Team("t1", "Alpine Trail Blazers", null, null, null, "X7K9P2W1", "u1", 0L, 0L),
                 Team("t2", "City Runners", null, null, null, "Q3M8D5LA", "u1", 0L, 0L)
             ),
+            primaryTeamId = "t1",
             onTeamSelected = {}
         )
     }

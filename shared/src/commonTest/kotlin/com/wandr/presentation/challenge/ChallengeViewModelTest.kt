@@ -24,6 +24,7 @@ import com.wandr.domain.usecase.GetChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
 import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
+import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
 import com.wandr.domain.usecase.LeaveChallengeUseCase
 import com.wandr.domain.usecase.RefreshChallengesUseCase
@@ -149,6 +150,7 @@ class ChallengeViewModelTest {
         EvaluateChallengeStatusUseCase(),
         RefreshChallengesUseCase(repo),
         GetAdminTeamsUseCase(FakeTeamRepository(teams)),
+        GetUserTeamsUseCase(FakeTeamRepository(teams)),
         CreateChallengeUseCase(repo), UpdateChallengeUseCase(repo),
         GetMemberRankingUseCase(repo), GetTeamStandingsUseCase(repo), EnrollTeamInChallengeUseCase(repo),
         JoinChallengeUseCase(repo), scope
@@ -161,6 +163,7 @@ class ChallengeViewModelTest {
         vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
         assertEquals(listOf(open), vm.uiState.value.challenges)
         assertEquals(listOf(team), vm.uiState.value.adminTeams)
+        assertEquals(team.id, vm.uiState.value.primaryTeamId)
         assertEquals(1, repo.refreshed)
     }
 

@@ -14,6 +14,7 @@ import com.wandr.domain.usecase.GetChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
 import com.wandr.domain.usecase.GetMemberRankingUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
+import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
 import com.wandr.domain.usecase.LeaveChallengeUseCase
 import com.wandr.domain.usecase.RefreshChallengesUseCase
@@ -45,6 +46,7 @@ class ChallengeViewModel(
     private val evaluateChallengeStatusUseCase: EvaluateChallengeStatusUseCase,
     private val refreshChallengesUseCase: RefreshChallengesUseCase,
     private val getAdminTeamsUseCase: GetAdminTeamsUseCase,
+    private val getUserTeamsUseCase: GetUserTeamsUseCase,
     private val createChallengeUseCase: CreateChallengeUseCase,
     private val updateChallengeUseCase: UpdateChallengeUseCase,
     private val getMemberRankingUseCase: GetMemberRankingUseCase,
@@ -130,6 +132,12 @@ class ChallengeViewModel(
                             adminTeams = teams
                         )
                     }
+                }
+            }
+            launch {
+                // The first team by priority is the only one that counts for group challenges.
+                getUserTeamsUseCase(userId).collect { teams ->
+                    _uiState.update { it.copy(primaryTeamId = teams.firstOrNull()?.id) }
                 }
             }
             getChallengesUseCase().collect { challenges ->

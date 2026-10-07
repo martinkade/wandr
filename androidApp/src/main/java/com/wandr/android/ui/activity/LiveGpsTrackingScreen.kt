@@ -5,6 +5,9 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +32,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +50,7 @@ import com.wandr.android.location.FusedLocationSource
 import com.wandr.android.location.toTrackpoint
 import com.wandr.android.service.LocationTrackingService
 import com.wandr.android.ui.activity.recording.GpsStatusBox
+import com.wandr.android.ui.activity.recording.GrowFromBounds
 import com.wandr.android.ui.activity.recording.RecordingControls
 import com.wandr.android.ui.activity.recording.RecordingFinishDialog
 import com.wandr.android.ui.activity.recording.RecordingMap
@@ -55,6 +63,7 @@ import com.wandr.presentation.activity.ActivityState
 import com.wandr.presentation.activity.ActivitySuccess
 import com.wandr.presentation.activity.ActivityTypes
 import com.wandr.presentation.activity.ActivityViewModel
+import com.wandr.presentation.activity.GpsStatus
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -160,22 +169,54 @@ private fun LiveGpsTrackingScreenContent(
         if (!isPreview) ContextCompat.startForegroundService(context, Intent(context, LocationTrackingService::class.java))
     }
 
+    // 0 = collapsed (just the box), 1 = expanded (full screen); the expanded view grows out of the box's bounds.
+    val expandProgress by animateFloatAsState(
+        targetValue = if (expanded) 1f else 0f,
+        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+        label = "expandProgress"
+    )
+    var boxBounds by remember { mutableStateOf(Rect.Zero) }
+
     val route = if (state.isTracking) state.liveTrackpoints else listOfNotNull(currentLocation)
 
-    Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    Box(modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)) {
         Column(Modifier.fillMaxSize()) {
-            Box(Modifier.weight(1f).fillMaxSize()) {
-                RecordingMap(route)
+            Box(Modifier
+                .weight(1f)
+                .fillMaxSize()) {
+                // The map appears as soon as the GPS is connected; until then only the hint is shown.
+                RecordingMap(route, isGpsConnected = state.gpsStatus != GpsStatus.SEARCHING)
                 IconButton(
                     onClick = ::tryLeave,
-                    modifier = Modifier.statusBarsPadding().padding(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surface)
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(8.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
                     Icon(painterResource(R.drawable.ic_expand_more), contentDescription = stringResource(R.string.recording_leave))
                 }
-                GpsStatusBox(state, onExpand = { expanded = true }, modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp))
-                SnackbarHost(snackbarHostState, Modifier.align(Alignment.TopCenter).statusBarsPadding())
+                GpsStatusBox(
+                    state, onExpand = { expanded = true }, modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp)
+                        .onGloballyPositioned { boxBounds = it.boundsInParent() }
+                )
+                SnackbarHost(snackbarHostState, Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding())
 
-                if (expanded) RecordingOverlay(state, onCollapse = { expanded = false })
+                // Grows out of the bounds of the box and shrinks back into them.
+                if (expandProgress > 0f) {
+                    GrowFromBounds(
+                        expandProgress,
+                        from = boxBounds,
+                        fromCornerRadius = with(LocalDensity.current) { 16.dp.toPx() }) {
+                        RecordingOverlay(state, onCollapse = { expanded = false })
+                    }
+                }
             }
             RecordingControls(
                 activityType = if (state.isTracking) state.trackingActivityType else activityType,
