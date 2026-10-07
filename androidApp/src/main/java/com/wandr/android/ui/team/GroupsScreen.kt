@@ -151,8 +151,8 @@ private fun GroupList(
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 // Bottom padding keeps the last card clear of the floating button.
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 96.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(teams, key = { it.id }) { team ->
                     TeamCard(team = team, onSelect = { onSelectTeam(team) })

@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -57,7 +58,7 @@ fun TeamMembershipItem(
         AvatarImage(avatarUrl = team.avatarUrl, displayName = team.name, size = 40.dp)
         Column(Modifier.weight(1f)) {
             Text(
-                team.name,
+                text = team.name,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -65,8 +66,7 @@ fun TeamMembershipItem(
             if (isPrimary) {
                 Text(
                     text = stringResource(R.string.memberships_primary),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.tertiary),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -89,21 +89,23 @@ private val previewTeam =
 @Composable
 private fun TeamMembershipItemPreview() {
     WandrTheme {
-        Column {
-            TeamMembershipItem(
-                previewTeam,
-                isPrimary = true,
-                isFirstItemInSection = true,
-                isLastItemInSection = false,
-                dragHandleModifier = Modifier
-            )
-            TeamMembershipItem(
-                previewTeam.copy(name = "City Runners"),
-                isFirstItemInSection = false,
-                isLastItemInSection = true,
-                isPrimary = false,
-                dragHandleModifier = Modifier
-            )
+        Surface {
+            Column {
+                TeamMembershipItem(
+                    previewTeam,
+                    isPrimary = true,
+                    isFirstItemInSection = true,
+                    isLastItemInSection = false,
+                    dragHandleModifier = Modifier
+                )
+                TeamMembershipItem(
+                    previewTeam.copy(name = "City Runners"),
+                    isFirstItemInSection = false,
+                    isLastItemInSection = true,
+                    isPrimary = false,
+                    dragHandleModifier = Modifier
+                )
+            }
         }
     }
 }

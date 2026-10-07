@@ -67,7 +67,7 @@ fun TeamMembershipList(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 6.dp)
             )
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(16.dp))
         order.forEachIndexed { index, team ->
             // The key keeps the drag gesture alive while the item changes its position in the list.
             key(team.id) {

@@ -1,13 +1,16 @@
 package com.wandr.android.ui.challenge
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,72 +31,81 @@ fun ChallengeCard(
     challenge: Challenge,
     /** Derived at runtime from the dates, never stored (see `EvaluateChallengeStatusUseCase`). */
     status: ChallengeStatus,
-    onSelect: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     /** The participation action to offer, or null when none applies (draft, over, no team, ...). */
     action: ChallengeAction? = null,
     onAction: () -> Unit = {}
 ) {
-    Card(
-        onClick = onSelect,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = challenge.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = stringResource(statusLabel(status)).uppercase(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-            }
-
-            challenge.description?.let { desc ->
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = desc,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = challengePeriodText(challenge),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+    Column(
+        modifier
+            .background(
+                color = CardDefaults.cardColors().containerColor,
+                shape = RoundedCornerShape(16.dp)
             )
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .clickable(onClick = onClick),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = challenge.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = stringResource(statusLabel(status)).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+        }
 
+        challenge.description?.let { desc ->
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = desc,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = challengePeriodText(challenge),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (challenge.requireAllMembersCompletion) {
+            Text(
+                text = "🔒 " + stringResource(R.string.require_all_members_label),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
             Spacer(modifier = Modifier.height(12.dp))
+        }
 
-            if (challenge.requireAllMembersCompletion) {
-                Text(
-                    text = "🔒 " + stringResource(R.string.require_all_members_label),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            if (challenge.scope == "group") {
-                Text(
-                    text = stringResource(R.string.challenge_group_card_hint),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            // Editing is only possible on the detail screen.
-            action?.let { ChallengeActionButton(it, onClick = onAction, modifier = Modifier.fillMaxWidth()) }
+        if (challenge.scope == "group") {
+            Text(
+                text = stringResource(R.string.challenge_group_card_hint),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        // Editing is only possible on the detail screen.
+        action?.let {
+            ChallengeActionButton(
+                it,
+                onClick = onAction,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -121,25 +133,39 @@ private fun ChallengeCardPreview() {
                 updatedAt = 0L
             ),
             status = ChallengeStatus.ACTIVE,
-            onSelect = {},
+            onClick = {},
             action = ChallengeAction.JOIN
         )
     }
 }
 
 @Preview(name = "Group challenge", showBackground = true)
-@Preview(name = "Group challenge Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Preview(
+    name = "Group challenge Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true
+)
 @Composable
 private fun ChallengeCardGroupPreview() {
     WandrTheme {
         ChallengeCard(
             challenge = Challenge(
-                id = "c2", title = "Team Altitude Climb", description = "Teams compete for 5000 m.", coverUrl = null,
-                scope = "group", type = "elevation", targetValue = 5000.0, requireAllMembersCompletion = true,
-                startDate = 1_768_435_200_000L, endDate = 1_768_435_200_000L + 5 * 3_600_000L, createdBy = "u1", createdAt = 0L, updatedAt = 0L
+                id = "c2",
+                title = "Team Altitude Climb",
+                description = "Teams compete for 5000 m.",
+                coverUrl = null,
+                scope = "group",
+                type = "elevation",
+                targetValue = 5000.0,
+                requireAllMembersCompletion = true,
+                startDate = 1_768_435_200_000L,
+                endDate = 1_768_435_200_000L + 5 * 3_600_000L,
+                createdBy = "u1",
+                createdAt = 0L,
+                updatedAt = 0L
             ),
             status = ChallengeStatus.ACTIVE,
-            onSelect = {},
+            onClick = {},
             action = ChallengeAction.ENROLL_TEAM
         )
     }

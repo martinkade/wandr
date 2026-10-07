@@ -155,8 +155,8 @@ private fun ChallengeListScreenContent(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     // Bottom padding keeps the last card clear of the floating button.
-                    contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 96.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 96.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(state.challenges, key = { it.id }) { challenge ->
                         val status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE
@@ -166,7 +166,7 @@ private fun ChallengeListScreenContent(
                         ChallengeCard(
                             challenge = challenge,
                             status = status,
-                            onSelect = { onOpenChallenge(challenge.id) },
+                            onClick = { onOpenChallenge(challenge.id) },
                             action = action,
                             onAction = {
                                 action?.let {

@@ -169,9 +169,15 @@ private fun FeedScreenContent(
             )
         }
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
+        Column(Modifier
+            .fillMaxSize()
+            .padding(padding)) {
             if (teamId != null) {
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                SingleChoiceSegmentedButtonRow(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
                     FeedScope.entries.forEachIndexed { index, option ->
                         SegmentedButton(
                             selected = feed == option,
@@ -181,39 +187,48 @@ private fun FeedScreenContent(
                     }
                 }
             }
-        Box(Modifier.fillMaxWidth().weight(1f)) {
-            if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (state.activities.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.activities_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.Center).padding(32.dp)
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    // Bottom padding keeps the last card clear of the floating button.
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp)
-                ) {
-                    items(state.activities, key = { it.id }) { activity ->
-                        val author = state.authors[activity.userId]
-                        ActivityCard(
-                            activity = activity,
-                            authorName = author?.displayName.orEmpty(),
-                            authorAvatarUrl = author?.avatarUrl,
-                            counts = state.socialCounts[activity.id] ?: SocialCounts(),
-                            onClick = { onOpenActivity(activity.id) },
-                            onLikeClick = { onIntent(ActivityIntent.ToggleActivityLike(activity.id)) },
-                            isOwn = activity.userId == userId
+            Box(Modifier
+                .fillMaxWidth()
+                .weight(1f)) {
+                if (state.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else if (state.activities.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.activities_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(32.dp)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        // Bottom padding keeps the last card clear of the floating button.
+                        contentPadding = PaddingValues(
+                            start = 8.dp,
+                            end = 8.dp,
+                            top = 16.dp,
+                            bottom = 96.dp
                         )
+                    ) {
+                        items(state.activities, key = { it.id }) { activity ->
+                            val author = state.authors[activity.userId]
+                            ActivityCard(
+                                activity = activity,
+                                authorName = author?.displayName.orEmpty(),
+                                authorAvatarUrl = author?.avatarUrl,
+                                counts = state.socialCounts[activity.id] ?: SocialCounts(),
+                                onClick = { onOpenActivity(activity.id) },
+                                onLikeClick = { onIntent(ActivityIntent.ToggleActivityLike(activity.id)) },
+                                isOwn = activity.userId == userId
+                            )
+                        }
                     }
                 }
             }
-        }
         }
     }
 
@@ -253,10 +268,21 @@ private fun FeedScreenContent(
 
 private val previewActivities = listOf(
     Activity(
-        id = "a1", userId = "u1", teamId = "t1", title = "Weekend Trail Walk", description = null,
-        activityType = "hiking", distanceMeters = 5400.0, durationSeconds = 3600.0, elevationGainMeters = 150.0,
-        fitFilePath = null, startTime = 1_768_435_200_000L, endTime = 1_768_438_800_000L, isManualEntry = true,
-        createdAt = 0L, updatedAt = 0L
+        id = "a1",
+        userId = "u1",
+        teamId = "t1",
+        title = "Weekend Trail Walk",
+        description = null,
+        activityType = "hiking",
+        distanceMeters = 5400.0,
+        durationSeconds = 3600.0,
+        elevationGainMeters = 150.0,
+        fitFilePath = null,
+        startTime = 1_768_435_200_000L,
+        endTime = 1_768_438_800_000L,
+        isManualEntry = true,
+        createdAt = 0L,
+        updatedAt = 0L
     )
 )
 
@@ -279,7 +305,12 @@ private fun FeedScreenPreview() {
 private fun FeedScreenEmptyPreview() {
     WandrTheme {
         FeedScreenContent(
-            state = ActivityState(), userId = "u1", teamId = null, onIntent = {}, onOpenActivity = {}, onRecord = {}
+            state = ActivityState(),
+            userId = "u1",
+            teamId = null,
+            onIntent = {},
+            onOpenActivity = {},
+            onRecord = {}
         )
     }
 }
