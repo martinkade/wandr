@@ -147,14 +147,12 @@ fun ChallengeCard(
                     modifier = Modifier
                         .fillMaxWidth()
                 )
-                if (isGroup) {
-                    CardFact(
-                        icon = R.drawable.ic_tab_groups,
-                        text = stringResource(R.string.challenge_scope_group),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                }
+                CardFact(
+                    icon = R.drawable.ic_emoji_events,
+                    text = stringResource(if (isGroup) R.string.challenge_scope_group else R.string.challenge_scope_individual),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
             }
         }
     }

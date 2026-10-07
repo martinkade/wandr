@@ -2,6 +2,7 @@ package com.wandr.android.ui.profile.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,7 +30,8 @@ import com.wandr.domain.model.Team
 
 /**
  * One group of the user. The first one (highest priority) is marked: it is the only group that counts for group
- * challenges. [dragHandleModifier] makes the handle the grip for drag and drop.
+ * challenges. [dragHandleModifier] makes the handle the grip for drag and drop; without it (null) the item is not
+ * reorderable and shows no handle. With [onClick] the item can be tapped.
  */
 @Composable
 fun TeamMembershipItem(
@@ -36,20 +39,24 @@ fun TeamMembershipItem(
     isPrimary: Boolean,
     isFirstItemInSection: Boolean,
     isLastItemInSection: Boolean,
-    dragHandleModifier: Modifier,
-    modifier: Modifier = Modifier
+    dragHandleModifier: Modifier?,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
+    val itemShape = RoundedCornerShape(
+        topStart = if (isFirstItemInSection) 16.dp else 4.dp,
+        topEnd = if (isFirstItemInSection) 16.dp else 4.dp,
+        bottomStart = if (isLastItemInSection) 16.dp else 4.dp,
+        bottomEnd = if (isLastItemInSection) 16.dp else 4.dp
+    )
     Row(
         modifier
             .fillMaxWidth()
+            .clip(itemShape)
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
             .background(
                 color = CardDefaults.cardColors().containerColor,
-                shape = RoundedCornerShape(
-                    topStart = if (isFirstItemInSection) 16.dp else 4.dp,
-                    topEnd = if (isFirstItemInSection) 16.dp else 4.dp,
-                    bottomStart = if (isLastItemInSection) 16.dp else 4.dp,
-                    bottomEnd = if (isLastItemInSection) 16.dp else 4.dp
-                )
+                shape = itemShape
             )
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -72,11 +79,13 @@ fun TeamMembershipItem(
                 )
             }
         }
-        Icon(
-            painter = painterResource(R.drawable.ic_drag_handle),
-            contentDescription = stringResource(R.string.memberships_reorder),
-            modifier = dragHandleModifier.padding(8.dp)
-        )
+        if (dragHandleModifier != null) {
+            Icon(
+                painter = painterResource(R.drawable.ic_drag_handle),
+                contentDescription = stringResource(R.string.memberships_reorder),
+                modifier = dragHandleModifier.padding(8.dp)
+            )
+        }
     }
 }
 
@@ -101,9 +110,17 @@ private fun TeamMembershipItemPreview() {
                 TeamMembershipItem(
                     previewTeam.copy(name = "City Runners"),
                     isFirstItemInSection = false,
-                    isLastItemInSection = true,
+                    isLastItemInSection = false,
                     isPrimary = false,
                     dragHandleModifier = Modifier
+                )
+                TeamMembershipItem(
+                    previewTeam.copy(name = "Not reorderable"),
+                    isFirstItemInSection = false,
+                    isLastItemInSection = true,
+                    isPrimary = false,
+                    dragHandleModifier = null,
+                    onClick = {}
                 )
             }
         }

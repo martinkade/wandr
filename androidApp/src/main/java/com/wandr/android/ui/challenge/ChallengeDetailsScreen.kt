@@ -430,7 +430,7 @@ private fun ChallengeDetailsScreenContent(
     }
 
     if (enrolling) {
-        EnrollTeamDialog(
+        EnrollTeamSheet(
             // Only administered teams that are not enrolled yet can be chosen.
             teams = state.adminTeams.filter { team -> state.standings.none { it.teamId == team.id } },
             onTeamSelected = { team ->
