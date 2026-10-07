@@ -19,3 +19,10 @@ data class Challenge(
     /** Activity types that count for the challenge (e.g. `running`); empty = every type counts. */
     val activityTypes: List<String> = emptyList()
 )
+
+/**
+ * Whether [userId] may see this challenge in lists: published challenges are open to everybody, a draft only to the
+ * manager who created it. The server enforces the same (a non-manager never gets drafts), but the local cache can still
+ * hold a draft, e.g. from before the user's role changed, so lists filter with this too.
+ */
+fun Challenge.isVisibleTo(userId: String, isManager: Boolean): Boolean = isActive || (isManager && createdBy == userId)

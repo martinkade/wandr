@@ -37,6 +37,7 @@ import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
+import com.wandr.domain.model.isVisibleTo
 import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.availableChallengeAction
@@ -81,6 +82,10 @@ private fun ChallengeListScreenContent(
     onOpenChallenge: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Drafts are for their creating manager only (the server filters too; the local cache may be older).
+    val visibleChallenges = remember(state.challenges, userId, isManager) {
+        state.challenges.filter { it.isVisibleTo(userId, isManager) }
+    }
     var isEditing by rememberSaveable { mutableStateOf(false) }
     var enrollChallengeId by rememberSaveable { mutableStateOf<String?>(null) }
     // Only a save started from the sheet may close it.
@@ -147,7 +152,7 @@ private fun ChallengeListScreenContent(
         Box(Modifier
             .fillMaxSize()
             .padding(padding)) {
-            if (state.challenges.isEmpty() && !state.isLoading) {
+            if (visibleChallenges.isEmpty() && !state.isLoading) {
                 Text(
                     text = stringResource(R.string.challenges_empty),
                     style = MaterialTheme.typography.bodyMedium,
@@ -164,7 +169,7 @@ private fun ChallengeListScreenContent(
                     contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 96.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(state.challenges, key = { it.id }) { challenge ->
+                    items(visibleChallenges, key = { it.id }) { challenge ->
                         val status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE
                         val participation = state.participations[challenge.id]
                         val action = availableChallengeAction(challenge, status, participation, state.teams.isNotEmpty())
