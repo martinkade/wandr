@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,7 +54,7 @@ private const val PARALLAX_FACTOR = 0.5f
 private val TopBarHeight = 64.dp
 
 /** Opacity of the dark discs behind the top bar's icons while the header is fully shown. */
-private const val HEADER_DISC_ALPHA = 0.4f
+private const val HEADER_DISC_ALPHA = 0.5f
 
 /**
  * Page with a top bar and a header (a cover image) that scrolls away with a parallax effect. The top bar is transparent
@@ -83,7 +84,7 @@ fun CollapsingHeaderScaffold(
     val collapseDistancePx =
         with(density) { headerHeight.toPx() - TopBarHeight.toPx() } - statusBarPx
     val collapse by remember(collapseDistancePx) {
-        androidx.compose.runtime.derivedStateOf {
+        derivedStateOf {
             (scroll.value / collapseDistancePx.coerceAtLeast(
                 1f
             )).coerceIn(0f, 1f)
@@ -145,10 +146,12 @@ fun CollapsingHeaderScaffold(
                 .padding(bottom = padding.calculateBottomPadding())
                 .verticalScroll(scroll)
         ) {
-            Box(Modifier
-                .fillMaxWidth()
-                .height(headerHeight)
-                .clipToBounds()) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(headerHeight)
+                    .clipToBounds()
+            ) {
                 Box(
                     Modifier
                         .fillMaxSize()
@@ -175,9 +178,13 @@ private fun CollapsingHeaderScaffoldPreview() {
             title = "Group Details",
             onBack = {},
             headerHeight = 220.dp,
-            header = { Box(Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary)) },
+            header = {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primary)
+                )
+            },
             actions = { color ->
                 Text(
                     "Edit",

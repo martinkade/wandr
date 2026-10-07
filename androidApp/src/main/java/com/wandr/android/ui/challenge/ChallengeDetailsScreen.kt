@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
@@ -359,14 +358,13 @@ private fun ChallengeDetailsScreenContent(
                     }
 
                     if (isGroup) {
-                        Spacer(Modifier.height(24.dp))
-                        HorizontalDivider()
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(32.dp))
                         Text(
                             text = stringResource(R.string.challenge_standings_title),
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
                         )
                         if (state.standings.isEmpty()) {
                             Spacer(Modifier.height(8.dp))
@@ -377,38 +375,47 @@ private fun ChallengeDetailsScreenContent(
                                 modifier = Modifier.fillMaxWidth()
                             )
                         } else {
-                            state.standings.forEach { standing ->
-                                TeamStandingRow(
-                                    standing,
-                                    type
-                                )
+                            Spacer(Modifier.height(8.dp))
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                state.standings.forEachIndexed { index, standing ->
+                                    TeamStandingRow(
+                                        standing,
+                                        type,
+                                        isFirstItemInSection = index == 0,
+                                        isLastItemInSection = index == state.standings.lastIndex,
+                                        isMine = standing.teamId == state.primaryTeamId,
+                                        showMemberProgress = challenge.requireAllMembersCompletion
+                                    )
+                                }
                             }
                         }
                     }
 
                     // Who is ahead: everybody in an individual challenge, your own team in a group challenge.
                     if (state.leaderboard.isNotEmpty()) {
-                        Spacer(Modifier.height(24.dp))
-                        HorizontalDivider()
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(32.dp))
                         Text(
                             text = stringResource(if (isGroup) R.string.challenge_team_ranking_title else R.string.challenge_ranking_title),
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
                         )
-                        state.leaderboard.forEach { entry ->
-                            LeaderboardRow(
-                                entry,
-                                type,
-                                isMe = entry.userId == userId
-                            )
+                        Spacer(Modifier.height(8.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            state.leaderboard.forEachIndexed { index, entry ->
+                                LeaderboardRow(
+                                    entry,
+                                    type,
+                                    isMe = entry.userId == userId,
+                                    isFirstItemInSection = index == 0,
+                                    isLastItemInSection = index == state.leaderboard.lastIndex
+                                )
+                            }
                         }
                     }
 
                     Spacer(Modifier.height(24.dp))
-                    HorizontalDivider()
-                    Spacer(Modifier.height(12.dp))
                     SocialBar(
                         likeCount = socialState.summary.likeCount,
                         likedByMe = socialState.summary.likedByMe,
