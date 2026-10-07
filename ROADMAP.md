@@ -142,6 +142,16 @@ This document serves as the master implementation plan and roadmap for **WANDR**
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).
 - [x] **Step 5.4 addition: Ranking in the challenge details**
   - The details show who is ahead: team standings for group challenges, plus the member ranking (`challenge_member_ranking`): everybody in an individual challenge (for participants and the creator), only the own team in a group challenge. Your own row is highlighted; equal progress shares a rank.
+- [x] **Step 5.4 addition: Challenge details & list redesign (Android)**
+    - The details open with a hero (cover photo, or a gradient with elevation lines that differ per
+      challenge), the back button on top and a sheet sliding over its lower edge; the hexagon emblem
+      of the challenge (symbol of distance / elevation / time) sits on the edge. Below: centered
+      title and description, facts with icons (length and "ends in 3 days", goal, counting
+      activities, scope), the join / leave / enroll action, then team standings, ranking and
+      comments. Editing moved into a "..." menu of the creator; changing the cover photo works by
+      tapping the hero.
+    - The list item uses the same structure (cover, emblem, title, description, key facts, status
+      pill) and no longer has a join / leave button: participation is decided on the details.
 - [x] **Step 5.4: Challenge & Leaderboard UI**
   - Build `ChallengeListScreen`/`View`, `ChallengeCard.kt`/`.swift` (group challenges: "Enroll Team" instead of "Join"), `LeaderboardRow.kt`/`.swift` (members of the own team).
 

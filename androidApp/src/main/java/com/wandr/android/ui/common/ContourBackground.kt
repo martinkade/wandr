@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -31,11 +32,17 @@ fun ContourBackground(
     contentAlignment: Alignment = Alignment.Center,
     lineColor: Color = MaterialTheme.colorScheme.onBackground,
     seed: Int = 7,
+    /** Replaces the plain background, e.g. a gradient behind white lines. */
+    backgroundBrush: Brush? = null,
     content: @Composable () -> Unit = {}
 ) {
     Box(
         modifier
-            .background(MaterialTheme.colorScheme.background)
+            .then(
+                if (backgroundBrush != null) Modifier.background(backgroundBrush) else Modifier.background(
+                    MaterialTheme.colorScheme.background
+                )
+            )
             .drawWithCache {
                 // The terrain depends on the shape of the area only (rounded, so a small resize does not rebuild it).
                 val aspect = ((size.width / size.height) * ASPECT_STEPS).roundToInt() / ASPECT_STEPS

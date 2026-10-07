@@ -1,24 +1,33 @@
 package com.wandr.android.ui.challenge
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,14 +41,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.activity.activityTypeText
-import com.wandr.android.ui.common.CoverEditor
-import com.wandr.android.ui.common.LabeledValue
-import com.wandr.android.ui.common.ScreenScaffold
+import com.wandr.android.ui.common.rememberImagePickerFlow
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.social.SocialSectionHost
 import com.wandr.android.ui.theme.WandrTheme
@@ -55,6 +66,7 @@ import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeState
 import com.wandr.presentation.challenge.ChallengeSuccess
 import com.wandr.presentation.challenge.ChallengeViewModel
+import com.wandr.presentation.imagecrop.CoverImageSpec
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -155,133 +167,258 @@ private fun ChallengeDetailsScreenContent(
         onIntent(ChallengeIntent.ClearMessages)
     }
 
-    ScreenScaffold(
-        title = stringResource(R.string.challenge_details_title),
-        modifier = modifier,
-        onBack = onBack,
-        actions = {
-            if (canEdit && challenge != null) {
-                TextButton(onClick = {
-                    onIntent(ChallengeIntent.StartEdit(challenge.id))
-                    isEditing = true
-                }) { Text(stringResource(R.string.challenge_edit_button)) }
+    val coverFlow = rememberImagePickerFlow(
+        title = stringResource(R.string.team_cover_title),
+        aspectRatio = CoverImageSpec.ASPECT_RATIO,
+        outputMaxEdgePx = CoverImageSpec.MAX_EDGE_PX,
+        jpegQuality = CoverImageSpec.JPEG_QUALITY,
+        canRemove = challenge?.coverUrl != null,
+        onImageReady = { onIntent(ChallengeIntent.UploadCover(it)) },
+        onRemove = { onIntent(ChallengeIntent.RemoveCover) }
+    )
+    var menuOpen by remember { mutableStateOf(false) }
+
+    Box(modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)) {
+        if (challenge == null) {
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) { CircularProgressIndicator() }
+            IconButton(onClick = onBack, modifier = Modifier
+                .statusBarsPadding()
+                .padding(8.dp)) {
+                Icon(
+                    painterResource(R.drawable.ic_arrow_back),
+                    contentDescription = stringResource(R.string.back_button)
+                )
             }
-        },
-        // While the sheet is open, its own host shows the messages.
-        snackbarHost = { if (!isEditing) SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Box(Modifier
-            .fillMaxSize()
-            .padding(padding)) {
-            if (challenge == null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            } else {
-                val type = ChallengeType.fromValue(challenge.type)
-                val isGroup = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.GROUP
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CoverEditor(
-                        coverUrl = challenge.coverUrl,
-                        isBusy = state.isImageUpdating,
-                        enabled = canEdit,
-                        onCoverReady = { onIntent(ChallengeIntent.UploadCover(it)) },
-                        onRemoveCover = { onIntent(ChallengeIntent.RemoveCover) }
-                    )
-                    Spacer(Modifier.height(8.dp))
+        } else {
+            val type = ChallengeType.fromValue(challenge.type)
+            val isGroup = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.GROUP
+            val status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE
+            val remaining = challengeRemainingText(challenge, status)
 
-                    LabeledValue(stringResource(R.string.challenge_title_label), challenge.title)
-                    LabeledValue(stringResource(R.string.challenge_description_label), challenge.description)
-                    LabeledValue(
-                        stringResource(R.string.challenge_status_label),
-                        stringResource(statusLabel(state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE))
-                    )
-                    LabeledValue(
-                        stringResource(R.string.challenge_target_label),
-                        "${stringResource(typeLabel(type))}: ${challengeValueText(type, challenge.targetValue)}"
-                    )
-                    LabeledValue(stringResource(R.string.challenge_period_label), challengePeriodText(challenge))
-                    LabeledValue(
-                        stringResource(R.string.challenge_activity_types_label),
-                        if (challenge.activityTypes.isEmpty()) stringResource(R.string.challenge_activity_types_all)
-                        else challenge.activityTypes.map { activityTypeText(it) }.joinToString(", ")
-                    )
-                    LabeledValue(
-                        stringResource(R.string.challenge_scope_label),
-                        stringResource(if (isGroup) R.string.challenge_scope_group else R.string.challenge_scope_individual)
-                    )
-                    if (isGroup && challenge.requireAllMembersCompletion) {
-                        Text(
-                            text = stringResource(R.string.require_all_members_label),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.fillMaxWidth()
+            Column(Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())) {
+                Box(Modifier.fillMaxWidth()) {
+                    Column(Modifier.fillMaxWidth()) {
+                        // The cover (or the elevation lines) with the sheet that slides over its lower edge.
+                        ChallengeHero(
+                            coverUrl = challenge.coverUrl,
+                            seed = challenge.id.hashCode(),
+                            isBusy = state.isImageUpdating,
+                            onBack = onBack,
+                            onPickCover = if (canEdit) coverFlow::open else null
                         )
-                    }
-
-                    Spacer(Modifier.height(12.dp))
-                    // Join / leave (individual) or enroll / withdraw a team (group); none for drafts and finished challenges.
-                    val status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE
-                    val participation = state.participations[challenge.id]
-                    val action = availableChallengeAction(challenge, status, participation, state.teams.isNotEmpty())
-                    action?.let {
-                        ChallengeActionButton(
-                            action = it,
-                            onClick = {
-                                performChallengeAction(it, challenge.id, participation, userId, onIntent) { enrolling = true }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    if (isGroup) {
-                        Spacer(Modifier.height(24.dp))
-                        HorizontalDivider()
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = stringResource(R.string.challenge_standings_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        if (state.standings.isEmpty()) {
-                            Spacer(Modifier.height(8.dp))
+                        Column(
+                            modifier = Modifier
+                                .offset(y = -SheetOverlap)
+                                .fillMaxWidth()
+                                .clip(
+                                    RoundedCornerShape(
+                                        topStart = SheetOverlap,
+                                        topEnd = SheetOverlap
+                                    )
+                                )
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(
+                                    start = 24.dp,
+                                    end = 24.dp,
+                                    top = BadgeSize / 2 + 12.dp,
+                                    bottom = 32.dp
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
-                                text = stringResource(R.string.challenge_standings_empty),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.fillMaxWidth()
+                                text = challenge.title,
+                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                                textAlign = TextAlign.Center
                             )
-                        } else {
-                            state.standings.forEach { standing -> TeamStandingRow(standing, type) }
+                            if (status == ChallengeStatus.DRAFT) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = stringResource(R.string.challenge_draft_hint),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                            challenge.description?.takeIf { it.isNotBlank() }?.let {
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            Spacer(Modifier.height(28.dp))
+                            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                                ChallengeInfoRow(
+                                    icon = R.drawable.ic_event,
+                                    text = listOfNotNull(
+                                        challengeLengthText(challenge),
+                                        remaining
+                                    ).joinToString(" · "),
+                                    secondaryText = challengePeriodText(challenge).substringBefore(" (")
+                                )
+                                ChallengeInfoRow(
+                                    icon = R.drawable.ic_flag,
+                                    text = stringResource(
+                                        R.string.challenge_goal_text,
+                                        stringResource(typeLabel(type)),
+                                        challengeValueText(type, challenge.targetValue)
+                                    )
+                                )
+                                ChallengeInfoRow(
+                                    icon = R.drawable.ic_directions_run,
+                                    text = if (challenge.activityTypes.isEmpty()) stringResource(R.string.challenge_activity_types_all)
+                                    else challenge.activityTypes.map { activityTypeText(it) }
+                                        .joinToString(", ")
+                                )
+                                ChallengeInfoRow(
+                                    icon = R.drawable.ic_emoji_events,
+                                    text = stringResource(if (isGroup) R.string.challenge_scope_group else R.string.challenge_scope_individual),
+                                    secondaryText = if (isGroup && challenge.requireAllMembersCompletion) stringResource(
+                                        R.string.require_all_members_label
+                                    ) else null
+                                )
+                            }
+
+                            Spacer(Modifier.height(24.dp))
+                            // Join / leave (individual) or enroll / withdraw a team (group); none for drafts and finished challenges.
+                            val participation = state.participations[challenge.id]
+                            val action = availableChallengeAction(
+                                challenge,
+                                status,
+                                participation,
+                                state.teams.isNotEmpty()
+                            )
+                            action?.let {
+                                ChallengeActionButton(
+                                    action = it,
+                                    onClick = {
+                                        performChallengeAction(
+                                            it,
+                                            challenge.id,
+                                            participation,
+                                            userId,
+                                            onIntent
+                                        ) { enrolling = true }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+
+                            if (isGroup) {
+                                Spacer(Modifier.height(24.dp))
+                                HorizontalDivider()
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    text = stringResource(R.string.challenge_standings_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                if (state.standings.isEmpty()) {
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(
+                                        text = stringResource(R.string.challenge_standings_empty),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                } else {
+                                    state.standings.forEach { standing ->
+                                        TeamStandingRow(
+                                            standing,
+                                            type
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Who is ahead: everybody in an individual challenge, your own team in a group challenge.
+                            if (state.leaderboard.isNotEmpty()) {
+                                Spacer(Modifier.height(24.dp))
+                                HorizontalDivider()
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    text = stringResource(if (isGroup) R.string.challenge_team_ranking_title else R.string.challenge_ranking_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                state.leaderboard.forEach { entry ->
+                                    LeaderboardRow(
+                                        entry,
+                                        type,
+                                        isMe = entry.userId == userId
+                                    )
+                                }
+                            }
+
+                            Spacer(Modifier.height(24.dp))
+                            HorizontalDivider()
+                            Spacer(Modifier.height(12.dp))
+                            socialSection(challenge)
                         }
                     }
 
-                    // Who is ahead: everybody in an individual challenge, your own team in a group challenge.
-                    if (state.leaderboard.isNotEmpty()) {
-                        Spacer(Modifier.height(24.dp))
-                        HorizontalDivider()
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = stringResource(if (isGroup) R.string.challenge_team_ranking_title else R.string.challenge_ranking_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        state.leaderboard.forEach { entry -> LeaderboardRow(entry, type, isMe = entry.userId == userId) }
+                    // The emblem sits on the edge between cover and sheet; the overflow menu (creator only) in the sheet's corner.
+                    ChallengeBadge(
+                        type = type,
+                        size = BadgeSize,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .offset(y = ChallengeHeroHeight - SheetOverlap - BadgeSize / 2)
+                    )
+                    if (canEdit) {
+                        Box(
+                            Modifier
+                                .align(Alignment.TopEnd)
+                                .offset(y = ChallengeHeroHeight - SheetOverlap + 8.dp)
+                                .padding(end = 12.dp)
+                        ) {
+                            IconButton(onClick = { menuOpen = true }) {
+                                Icon(
+                                    painterResource(R.drawable.ic_more_horiz),
+                                    contentDescription = stringResource(R.string.challenge_more_options)
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = menuOpen,
+                                onDismissRequest = { menuOpen = false }) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.challenge_edit_button)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.ic_edit),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    onClick = {
+                                        menuOpen = false
+                                        onIntent(ChallengeIntent.StartEdit(challenge.id))
+                                        isEditing = true
+                                    }
+                                )
+                            }
+                        }
                     }
-
-                    Spacer(Modifier.height(24.dp))
-                    HorizontalDivider()
-                    Spacer(Modifier.height(12.dp))
-                    socialSection(challenge)
                 }
             }
         }
+        // While the sheet is open, its own host shows the messages.
+        if (!isEditing) SnackbarHost(
+            snackbarHostState,
+            Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+        )
     }
 
     if (enrolling) {
@@ -319,6 +456,10 @@ private fun ChallengeDetailsScreenContent(
         }
     }
 }
+
+/** How far the sheet slides over the lower edge of the cover, and the size of the emblem on that edge. */
+private val SheetOverlap = 28.dp
+private val BadgeSize = 88.dp
 
 private fun typeLabel(type: ChallengeType) = when (type) {
     ChallengeType.DISTANCE -> R.string.challenge_type_distance

@@ -37,10 +37,9 @@ import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
-import com.wandr.domain.model.isVisibleTo
 import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.ChallengeStatus
-import com.wandr.domain.model.availableChallengeAction
+import com.wandr.domain.model.isVisibleTo
 import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeState
 import com.wandr.presentation.challenge.ChallengeSuccess
@@ -87,7 +86,6 @@ private fun ChallengeListScreenContent(
         state.challenges.filter { it.isVisibleTo(userId, isManager) }
     }
     var isEditing by rememberSaveable { mutableStateOf(false) }
-    var enrollChallengeId by rememberSaveable { mutableStateOf<String?>(null) }
     // Only a save started from the sheet may close it.
     var saveRequested by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -166,42 +164,26 @@ private fun ChallengeListScreenContent(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     // Bottom padding keeps the last card clear of the floating button.
-                    contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 96.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 96.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(visibleChallenges, key = { it.id }) { challenge ->
                         val status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE
-                        val participation = state.participations[challenge.id]
-                        val action = availableChallengeAction(challenge, status, participation, state.teams.isNotEmpty())
-                        // Editing is only possible on the detail screen.
+                        // Joining, leaving and editing happen on the details screen.
                         ChallengeCard(
                             challenge = challenge,
                             status = status,
-                            onClick = { onOpenChallenge(challenge.id) },
-                            action = action,
-                            onAction = {
-                                action?.let {
-                                    performChallengeAction(it, challenge.id, participation, userId, onIntent) {
-                                        enrollChallengeId = challenge.id
-                                    }
-                                }
-                            }
+                            onClick = { onOpenChallenge(challenge.id) }
                         )
                     }
                 }
             }
         }
-    }
-
-    enrollChallengeId?.let { challengeId ->
-        EnrollTeamDialog(
-            teams = state.teams,
-            onTeamSelected = { team ->
-                enrollChallengeId = null
-                onIntent(ChallengeIntent.EnrollTeam(challengeId, team.id, userId))
-            },
-            onDismiss = { enrollChallengeId = null }
-        )
     }
 
     val form = state.form

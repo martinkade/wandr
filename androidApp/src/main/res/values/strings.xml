@@ -378,4 +378,25 @@
     <string name="registration_success_title">Account created</string>
     <string name="registration_success_confirm_email">We sent a confirmation link to your email address. Confirm it, then sign in.</string>
     <string name="registration_sign_in_now">Sign in now</string>
+    <plurals name="challenge_ends_in_days">
+        <item quantity="one">Ends in %d day</item>
+        <item quantity="other">Ends in %d days</item>
+    </plurals>
+    <plurals name="challenge_ends_in_hours">
+        <item quantity="one">Ends in %d hour</item>
+        <item quantity="other">Ends in %d hours</item>
+    </plurals>
+    <plurals name="challenge_starts_in_days">
+        <item quantity="one">Starts in %d day</item>
+        <item quantity="other">Starts in %d days</item>
+    </plurals>
+    <plurals name="challenge_starts_in_hours">
+        <item quantity="one">Starts in %d hour</item>
+        <item quantity="other">Starts in %d hours</item>
+    </plurals>
+    <string name="challenge_ended">Ended</string>
+    <string name="challenge_draft_hint">Draft · only you can see it</string>
+    <string name="challenge_change_cover">Change cover photo</string>
+    <string name="challenge_more_options">More options</string>
+    <string name="challenge_goal_text">%1$s: %2$s</string>
 </resources>
