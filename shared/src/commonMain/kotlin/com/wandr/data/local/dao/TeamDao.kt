@@ -32,11 +32,20 @@ interface TeamDao {
     )
     fun getAdminTeamsForUser(userId: String): Flow<List<TeamEntity>>
 
+    @Query("SELECT * FROM teams")
+    suspend fun getAllTeamsOnce(): List<TeamEntity>
+
+    @Query("DELETE FROM teams WHERE id = :id")
+    suspend fun deleteTeam(id: String)
+
     @Query("SELECT * FROM teams WHERE sync_status = 'DIRTY' OR sync_status = 'PENDING'")
     suspend fun getDirtyTeams(): List<TeamEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTeam(team: TeamEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTeams(teams: List<TeamEntity>)
 
     @Update
     suspend fun updateTeam(team: TeamEntity)

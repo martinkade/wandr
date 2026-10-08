@@ -26,6 +26,9 @@ interface ChallengeParticipantDao {
     @Query("SELECT * FROM challenge_participants WHERE user_id = :userId")
     suspend fun getParticipationsForUserOnce(userId: String): List<ChallengeParticipantEntity>
 
+    @Query("DELETE FROM challenge_participants WHERE challenge_id = :challengeId")
+    suspend fun deleteParticipantsForChallenge(challengeId: String)
+
     @Query("DELETE FROM challenge_participants WHERE id = :id")
     suspend fun deleteParticipantById(id: String)
 
@@ -37,6 +40,9 @@ interface ChallengeParticipantDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertParticipant(participant: ChallengeParticipantEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertParticipants(participants: List<ChallengeParticipantEntity>)
 
     @Update
     suspend fun updateParticipant(participant: ChallengeParticipantEntity)

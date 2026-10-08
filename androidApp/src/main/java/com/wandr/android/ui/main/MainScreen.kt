@@ -144,6 +144,15 @@ fun MainScreen(
             HealthAutoSync()
         }
 
+        // The notifications list is below the pages it opens, so the page of a tapped notification shows above it.
+        SlideInOverlay(item = userId.takeIf { showNotifications }, onBack = { showNotifications = false }) { id ->
+            NotificationsScreen(
+                userId = id,
+                onBack = { showNotifications = false },
+                onOpen = { type, entityId -> openEntity(type, entityId) },
+                viewModel = notificationsViewModel
+            )
+        }
             SlideInOverlay(
                 item = openTeamId.takeIf { userId != null },
                 onBack = { openTeamId = null },
@@ -160,14 +169,6 @@ fun MainScreen(
                 challengeId = challengeId,
                 userId = userId.orEmpty(),
                 onBack = { openChallengeId = null }
-            )
-        }
-        SlideInOverlay(item = userId.takeIf { showNotifications }, onBack = { showNotifications = false }) { id ->
-            NotificationsScreen(
-                userId = id,
-                onBack = { showNotifications = false },
-                onOpen = { type, entityId -> openEntity(type, entityId) },
-                viewModel = notificationsViewModel
             )
         }
         SlideInOverlay(item = openActivityId.takeIf { userId != null }, onBack = { openActivityId = null }) { activityId ->

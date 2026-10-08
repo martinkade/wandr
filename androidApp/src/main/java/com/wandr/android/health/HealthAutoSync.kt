@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.wandr.domain.watch.WatchWorkoutInbox
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -26,7 +27,8 @@ fun HealthAutoSync(inbox: WatchWorkoutInbox = koinInject()) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                scope.launch {
+                // Off the main thread: the import reads and maps a month of workouts the first time.
+                scope.launch(Dispatchers.Default) {
                     val recentlyRead = System.currentTimeMillis() - importer.lastReadAt < MIN_INTERVAL_MILLIS
                     if (!recentlyRead && importer.isAvailable) {
                         runCatching { if (importer.hasPermissions()) importer.readWorkouts().forEach(inbox::offer) }

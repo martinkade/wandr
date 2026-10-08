@@ -11,6 +11,8 @@ import com.wandr.data.remote.TeamMemberWithProfileDto
 import com.wandr.data.remote.supabaseResult
 import com.wandr.data.remote.toDto
 import com.wandr.data.remote.toUpdatePayload
+import com.wandr.data.sync.CacheReconciler
+import com.wandr.data.sync.CachedRow
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamImageKind
 import com.wandr.domain.model.TeamMember
@@ -123,12 +125,26 @@ class TeamRepositoryImpl(
 
     override suspend fun refreshUserTeams(userId: String): Result<Unit> = supabaseResult {
         // RLS only returns teams the user is a member of, and the memberships of those teams.
+        val requestedAt = Clock.System.now().toEpochMilliseconds()
         val teams = supabase.postgrest.from("teams").select().decodeList<TeamDto>()
         val memberships = supabase.postgrest.from("team_members").select {
             filter { eq("user_id", userId) }
         }.decodeList<TeamMemberDto>()
-        teams.forEach { teamDao.insertTeam(it.toEntity()) }
-        memberships.forEach { teamMemberDao.insertMember(it.toEntity()) }
+        teamDao.insertTeams(teams.map { it.toEntity() })
+        teamMemberDao.insertMembers(memberships.map { it.toEntity() })
+
+        // Teams that were deleted on another device (or that the user left) and memberships that ended leave the cache.
+        CacheReconciler.staleIds(
+            teamDao.getAllTeamsOnce().map { CachedRow(it.id, isSynced = it.syncStatus == SYNCED && it.updatedAt < requestedAt) },
+            teams.map { it.id }.toSet()
+        ).forEach { id ->
+            teamMemberDao.deleteMembersForTeam(id)
+            teamDao.deleteTeam(id)
+        }
+        val remoteMembershipIds = memberships.map { it.id }.toSet()
+        teamMemberDao.getMembershipsForUserOnce(userId)
+            .filter { it.id !in remoteMembershipIds }
+            .forEach { teamMemberDao.deleteMemberById(it.id) }
     }
 
     /**
@@ -188,9 +204,16 @@ class TeamRepositoryImpl(
             // Unsynced local edits win; try to push them instead of overwriting.
             supabaseResult { pushTeam(local) }.onSuccess { teamDao.insertTeam(local.copy(syncStatus = SYNCED)) }
         } else {
-            supabase.postgrest.from("teams").select { filter { eq("id", teamId) } }
+            val remote = supabase.postgrest.from("teams").select { filter { eq("id", teamId) } }
                 .decodeSingleOrNull<TeamDto>()
-                ?.let { teamDao.insertTeam(it.toEntity()) }
+            if (remote != null) {
+                teamDao.insertTeam(remote.toEntity())
+            } else {
+                // Deleted on another device (or not visible to the user anymore): out of the cache.
+                teamMemberDao.deleteMembersForTeam(teamId)
+                teamDao.deleteTeam(teamId)
+                return@supabaseResult
+            }
         }
 
         val rows = supabase.postgrest.from("team_members")

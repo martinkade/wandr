@@ -75,9 +75,11 @@ fun FeedScreen(
     val state by viewModel.state.collectAsState()
     var feed by rememberSaveable { mutableStateOf(FeedScope.Mine) }
     // The team feed shows what all members of the team recorded.
-    LaunchedEffect(userId, teamId, feed) {
-        if (feed == FeedScope.Team && teamId != null) {
-            viewModel.processIntent(ActivityIntent.LoadTeamActivities(teamId, userId))
+    // Keyed by the team only while the team feed is shown: the team arriving after the start must not reload "mine".
+    val teamFeedId = teamId.takeIf { feed == FeedScope.Team }
+    LaunchedEffect(userId, teamFeedId) {
+        if (teamFeedId != null) {
+            viewModel.processIntent(ActivityIntent.LoadTeamActivities(teamFeedId, userId))
         } else {
             viewModel.processIntent(ActivityIntent.LoadUserActivities(userId))
         }

@@ -26,10 +26,13 @@ private class InMemoryActivityDao : ActivityDao {
     override fun getActivityCountForUser(userId: String): Flow<Int> = flowOf(rows.size)
     override suspend fun insertActivity(activity: ActivityEntity) { rows[activity.id] = activity }
     override suspend fun updateActivity(activity: ActivityEntity) { rows[activity.id] = activity }
+    override suspend fun insertActivities(activities: List<ActivityEntity>) { activities.forEach { rows[it.id] = it } }
     override suspend fun deleteActivity(id: String) { rows.remove(id) }
     override suspend fun getDirtyActivities(): List<ActivityEntity> = rows.values.toList()
     override suspend fun markDeleted(id: String) { rows[id]?.let { rows[id] = it.copy(syncStatus = "DELETED") } }
     override suspend fun getDeletedActivities(): List<ActivityEntity> = rows.values.filter { it.syncStatus == "DELETED" }
+    override suspend fun getSyncedActivitiesForUserOnce(userId: String) = rows.values.filter { it.userId == userId && it.syncStatus == "SYNCED" }
+    override suspend fun getSyncedActivitiesForTeamOnce(teamId: String) = rows.values.filter { it.teamId == teamId && it.syncStatus == "SYNCED" }
 }
 
 class ActivityRepositoryImplTest {

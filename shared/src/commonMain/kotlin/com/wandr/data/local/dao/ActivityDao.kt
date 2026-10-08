@@ -31,6 +31,10 @@ interface ActivityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertActivity(activity: ActivityEntity)
 
+    /** A whole page in one transaction: the lists of the screens update once, not once per row. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertActivities(activities: List<ActivityEntity>)
+
     @Update
     suspend fun updateActivity(activity: ActivityEntity)
 
@@ -46,6 +50,13 @@ interface ActivityDao {
      */
     @Query("UPDATE activities SET sync_status = 'DELETED' WHERE id = :id")
     suspend fun markDeleted(id: String)
+
+    /** The activities of [userId] that are in step with the server (no local edit waiting): candidates for clean-up. */
+    @Query("SELECT * FROM activities WHERE user_id = :userId AND sync_status = 'SYNCED'")
+    suspend fun getSyncedActivitiesForUserOnce(userId: String): List<ActivityEntity>
+
+    @Query("SELECT * FROM activities WHERE team_id = :teamId AND sync_status = 'SYNCED'")
+    suspend fun getSyncedActivitiesForTeamOnce(teamId: String): List<ActivityEntity>
 
     @Query("SELECT * FROM activities WHERE sync_status = 'DELETED'")
     suspend fun getDeletedActivities(): List<ActivityEntity>

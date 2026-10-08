@@ -34,6 +34,9 @@ private class FakeTeamDao : TeamDao {
     override suspend fun getDirtyTeams(): List<TeamEntity> = emptyList()
     override suspend fun insertTeam(team: TeamEntity) { }
     override suspend fun updateTeam(team: TeamEntity) { }
+    override suspend fun insertTeams(teams: List<TeamEntity>) { }
+    override suspend fun getAllTeamsOnce(): List<TeamEntity> = emptyList()
+    override suspend fun deleteTeam(id: String) { }
 }
 
 private class FakeChallengeDao : ChallengeDao {
@@ -43,6 +46,9 @@ private class FakeChallengeDao : ChallengeDao {
     override suspend fun getDirtyChallenges(): List<ChallengeEntity> = emptyList()
     override suspend fun insertChallenge(challenge: ChallengeEntity) { }
     override suspend fun updateChallenge(challenge: ChallengeEntity) { }
+    override suspend fun insertChallenges(challenges: List<ChallengeEntity>) { }
+    override suspend fun getAllChallengesOnce(): List<ChallengeEntity> = emptyList()
+    override suspend fun deleteChallenge(id: String) { }
 }
 
 private class FakeActivityDao : ActivityDao {
@@ -54,10 +60,13 @@ private class FakeActivityDao : ActivityDao {
     override suspend fun getOverlappingActivities(userId: String, startTime: Long, endTime: Long): List<ActivityEntity> = emptyList()
     override suspend fun insertActivity(activity: ActivityEntity) { }
     override suspend fun updateActivity(activity: ActivityEntity) { }
+    override suspend fun insertActivities(activities: List<ActivityEntity>) { }
     override suspend fun deleteActivity(id: String) { }
     override suspend fun getDirtyActivities(): List<ActivityEntity> = emptyList()
     override suspend fun markDeleted(id: String) { }
     override suspend fun getDeletedActivities(): List<ActivityEntity> = emptyList()
+    override suspend fun getSyncedActivitiesForUserOnce(userId: String): List<ActivityEntity> = emptyList()
+    override suspend fun getSyncedActivitiesForTeamOnce(teamId: String): List<ActivityEntity> = emptyList()
 }
 
 class SyncManagerTest {

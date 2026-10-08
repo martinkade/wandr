@@ -11,7 +11,10 @@ import com.wandr.domain.geo.TrackSimplifier
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.GpsTrackpoint
 import com.wandr.domain.repository.ActivityRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.map
 
 class ActivityRepositoryImpl(
@@ -24,15 +27,19 @@ class ActivityRepositoryImpl(
     override fun getUserActivities(userId: String): Flow<List<Activity>> {
         return activityDao.getActivitiesForUser(userId).map { list ->
             list.map { it.toDomain() }
-        }
+        }.flowOn(Dispatchers.Default) // the screens collect on the main thread; mapping the list is not their job
     }
 
-    override fun getActivityById(id: String): Flow<Activity?> = activityDao.getActivityById(id).map { it?.toDomain() }
+    override fun getActivityById(id: String): Flow<Activity?> =
+        activityDao.getActivityById(id).map { it?.toDomain() }.flowOn(Dispatchers.Default)
 
     override suspend fun getTrackpoints(activityId: String): List<GpsTrackpoint> {
         val path = activityDao.getActivityOnce(activityId)?.fitFilePath ?: return emptyList()
-        val bytes = fitFileStorage.read(path) ?: return emptyList()
-        return FitFileDecoder.decodeTrackpoints(bytes)
+        // Reading and decoding a FIT file is work for a background thread, whoever asks.
+        return withContext(Dispatchers.Default) {
+            val bytes = fitFileStorage.read(path) ?: return@withContext emptyList()
+            FitFileDecoder.decodeTrackpoints(bytes)
+        }
     }
 
     override fun getUserActivityCount(userId: String): Flow<Int> = activityDao.getActivityCountForUser(userId)
@@ -40,7 +47,7 @@ class ActivityRepositoryImpl(
     override fun getTeamActivities(teamId: String): Flow<List<Activity>> {
         return activityDao.getActivitiesForTeam(teamId).map { list ->
             list.map { it.toDomain() }
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     override suspend fun getOverlappingActivities(userId: String, startTime: Long, endTime: Long): List<Activity> {
@@ -48,7 +55,7 @@ class ActivityRepositoryImpl(
     }
 
     override suspend fun saveActivity(activity: Activity, trackpoints: List<GpsTrackpoint>?): Result<Activity> {
-        return localResult {
+        return localResult { withContext(Dispatchers.Default) {
             var fitFilePath = activity.fitFilePath
             var polyline = activity.polyline
 
@@ -93,7 +100,7 @@ class ActivityRepositoryImpl(
             activityDao.insertActivity(entity)
             onLocalChange()
             entity.toDomain()
-        }
+        } }
     }
 
     override suspend fun deleteActivity(id: String): Result<Unit> {

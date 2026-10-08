@@ -16,6 +16,8 @@ import com.wandr.data.remote.toUpdatePayload
 import com.wandr.domain.error.AppError
 import com.wandr.domain.error.InputProblem
 import com.wandr.domain.model.Challenge
+import com.wandr.data.sync.CacheReconciler
+import com.wandr.data.sync.CachedRow
 import com.wandr.domain.model.ChallengeParticipant
 import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.ChallengeStatus
@@ -109,9 +111,21 @@ class ChallengeRepositoryImpl(
 
     override suspend fun refreshChallenges(userId: String): Result<Unit> = supabaseResult {
         // RLS only returns what the user may see. Unsynced local edits are never overwritten.
-        supabase.postgrest.from("challenges").select().decodeList<ChallengeDto>().forEach { dto ->
+        val requestedAt = Clock.System.now().toEpochMilliseconds()
+        val remoteChallenges = supabase.postgrest.from("challenges").select().decodeList<ChallengeDto>()
+        challengeDao.insertChallenges(remoteChallenges.mapNotNull { dto ->
             val local = challengeDao.getChallengeOnce(dto.id)
-            if (local == null || local.syncStatus == SYNCED) challengeDao.insertChallenge(dto.toEntity())
+            if (local == null || local.syncStatus == SYNCED) dto.toEntity() else null
+        })
+        // Challenges that were deleted on another device (or are not visible to the user anymore) leave the cache, with
+        // their participants.
+        val remoteChallengeIds = remoteChallenges.map { it.id }.toSet()
+        CacheReconciler.staleIds(
+            challengeDao.getAllChallengesOnce().map { CachedRow(it.id, isSynced = it.syncStatus == SYNCED && it.updatedAt < requestedAt) },
+            remoteChallengeIds
+        ).forEach { id ->
+            participantDao.deleteParticipantsForChallenge(id)
+            challengeDao.deleteChallenge(id)
         }
 
         // Own participations (team members' rows are visible too, so filter by user). Synced rows that no longer
@@ -123,7 +137,7 @@ class ChallengeRepositoryImpl(
         participantDao.getParticipationsForUserOnce(userId)
             .filter { it.syncStatus == SYNCED && it.id !in remoteIds }
             .forEach { participantDao.deleteParticipantById(it.id) }
-        mine.forEach { participantDao.insertParticipant(it.toEntity()) }
+        participantDao.insertParticipants(mine.map { it.toEntity() })
     }
 
     override fun getParticipations(userId: String): Flow<List<ChallengeParticipation>> =
