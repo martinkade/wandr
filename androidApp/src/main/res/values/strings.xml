@@ -141,7 +141,7 @@
     <string name="challenge_unit_time">h</string>
     <string name="challenge_scope_label">Mode</string>
     <string name="challenge_scope_individual">Everyone (individual)</string>
-    <string name="challenge_scope_team">Teams (team vs. team)</string>
+    <string name="challenge_scope_team">Team (team vs. team)</string>
     <string name="challenge_created_message">Challenge created</string>
     <string name="challenge_updated_message">Challenge saved</string>
     <string name="challenge_joined_message">Joined challenge</string>
