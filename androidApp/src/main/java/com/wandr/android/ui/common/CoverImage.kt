@@ -32,7 +32,7 @@ import com.wandr.presentation.imagecrop.CoverImageSpec
 internal val CoverImageShape = RoundedCornerShape(16.dp)
 
 /**
- * 4:3 cover image (or a brand gradient placeholder), used for groups and challenges. Display only; see
+ * 4:3 cover image (or a brand gradient placeholder), used for teams and challenges. Display only; see
  * [CoverImagePicker] for the tappable variant. [isBusy] dims the image and shows a progress indicator.
  */
 @Composable

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.wandr.android.R
+import com.wandr.android.ui.theme.WandrRouteBlue
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.geo.MapTile
 import com.wandr.domain.geo.StaticMapLayout
@@ -59,9 +60,10 @@ fun OsmTrackMap(
     topPadding: Dp = 32.dp,
     bottomPadding: Dp = 32.dp
 ) {
-    val routeColor = MaterialTheme.colorScheme.primary
+    val routeColor = WandrRouteBlue
     val startColor = Color(0xFF4CAF50)
-    val endColor = MaterialTheme.colorScheme.error
+    val endColor =
+        Color(0xFFE53935) // red, like the start is green: the same in both themes on the map
     var size by remember { mutableStateOf(IntSize.Zero) }
     val density = LocalDensity.current
     val paddingPx = with(density) { 32.dp.toPx() }.toDouble()

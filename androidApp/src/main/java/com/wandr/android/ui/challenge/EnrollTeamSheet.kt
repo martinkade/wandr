@@ -22,7 +22,7 @@ import com.wandr.android.ui.profile.components.TeamMembershipItem
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 
-/** Bottom sheet to choose which of their teams the user enrolls in a group challenge. */
+/** Bottom sheet to choose which of their teams the user enrolls in a team challenge. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnrollTeamSheet(

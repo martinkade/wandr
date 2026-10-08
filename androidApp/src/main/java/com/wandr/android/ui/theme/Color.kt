@@ -6,6 +6,9 @@ import androidx.compose.ui.graphics.Color
 val WandrGold = Color(0xFFFFD700)
 val WandrInk = Color(0xFF000000)
 
+/** The route line on maps: a strong royal blue, the complement of the brand gold. Stands out on the map tiles in both themes. */
+val WandrRouteBlue = Color(0xFF1F5FD6)
+
 // Light
 val LightBackground = Color(0xFFFFFFFF)
 val LightSurface = Color(0xFFFFFFFF)

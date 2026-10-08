@@ -1,7 +1,7 @@
 @preconcurrency import shared
 import SwiftUI
 
-/// Read-only group details with the member list. Owners and admins get an "Edit" button that opens
+/// Read-only team details with the member list. Owners and admins get an "Edit" button that opens
 /// `TeamEditView` in a sheet; saving closes it. Results (saved / image updated / error) are reported
 /// in a snackbar (on the sheet while it is open).
 struct TeamDetailsView: View {
@@ -38,7 +38,7 @@ struct TeamDetailsView: View {
                 LabeledValueView(label: "team_name_label", value: name)
                 LabeledValueView(label: "team_description_label", value: teamDescription)
 
-                Text(String(format: String(localized: "group_invite_code"), inviteCode))
+                Text(String(format: String(localized: "team_invite_code"), inviteCode))
                     .font(.footnote.weight(.semibold))
                     .foregroundColor(.wandrAccentText)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -150,7 +150,7 @@ struct TeamDetailsContainerView: View {
 #Preview("Read-only") {
     NavigationStack {
         TeamDetailsView(
-            name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking group for weekend trips."),
+            name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking team for weekend trips."),
             inviteCode: "X7K9P2W1", canEdit: true, snackbar: .constant(nil)
         )
     }
@@ -159,7 +159,7 @@ struct TeamDetailsContainerView: View {
 #Preview("Read-only Dark") {
     NavigationStack {
         TeamDetailsView(
-            name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking group for weekend trips."),
+            name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking team for weekend trips."),
             inviteCode: "X7K9P2W1", canEdit: true, snackbar: .constant(nil)
         )
     }
@@ -169,7 +169,7 @@ struct TeamDetailsContainerView: View {
 #Preview("With edit sheet") {
     NavigationStack {
         TeamDetailsView(
-            name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking group for weekend trips."),
+            name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking team for weekend trips."),
             inviteCode: "X7K9P2W1", canEdit: true, snackbar: .constant(nil), startEditing: true
         )
     }
@@ -180,7 +180,7 @@ struct TeamDetailsContainerView: View {
         TeamDetailsView(
             name: .constant("Alpine Trail Blazers"), teamDescription: .constant(""),
             inviteCode: "X7K9P2W1", canEdit: true,
-            snackbar: .constant(SnackbarMessage(text: "Group saved")), startEditing: true
+            snackbar: .constant(SnackbarMessage(text: "Team saved")), startEditing: true
         )
     }
 }

@@ -30,8 +30,8 @@ import com.wandr.android.R
 import com.wandr.android.ui.theme.WandrTheme
 
 /**
- * Name and description form shown in a bottom sheet, for creating a group and for editing one. Photos are not part
- * of the form: avatar and cover are changed directly on the group's detail screen.
+ * Name and description form shown in a bottom sheet, for creating a team and for editing one. Photos are not part
+ * of the form: avatar and cover are changed directly on the team's detail screen.
  */
 @Composable
 fun TeamEditScreen(
@@ -69,15 +69,21 @@ fun TeamEditScreen(
             value = description,
             onValueChange = onDescriptionChange,
             label = { Text(stringResource(R.string.team_description_label)) },
-            modifier = Modifier.fillMaxWidth().height(120.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
         )
         Spacer(Modifier.height(24.dp))
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onCancel, enabled = !isSaving, modifier = Modifier.weight(1f).height(50.dp)) {
+            OutlinedButton(onClick = onCancel, enabled = !isSaving, modifier = Modifier
+                .weight(1f)
+                .height(50.dp)) {
                 Text(stringResource(R.string.cancel_button))
             }
-            Button(onClick = onSave, enabled = !isSaving, modifier = Modifier.weight(1f).height(50.dp)) {
+            Button(onClick = onSave, enabled = !isSaving, modifier = Modifier
+                .weight(1f)
+                .height(50.dp)) {
                 if (isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.height(24.dp),
@@ -117,7 +123,7 @@ private fun TeamEditScreenEditPreview() {
     WandrTheme {
         TeamEditScreen(
             title = stringResource(R.string.team_edit_title), name = "Alpine Trail Blazers",
-            description = "Hiking group for weekend trips.",
+            description = "Hiking team for weekend trips.",
             onNameChange = {}, onDescriptionChange = {}, isSaving = true, onSave = {}, onCancel = {},
             snackbarHostState = remember { SnackbarHostState() }
         )

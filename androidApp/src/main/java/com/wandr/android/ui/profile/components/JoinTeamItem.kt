@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.theme.WandrTheme
 
-/** Trailing list item that starts joining another group. */
+/** Trailing list item that starts joining another team. */
 @Composable
 fun JoinTeamItem(
     onClick: () -> Unit,

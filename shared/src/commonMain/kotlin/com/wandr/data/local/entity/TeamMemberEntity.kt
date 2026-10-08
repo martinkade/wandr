@@ -21,8 +21,8 @@ data class TeamMemberEntity(
     
     @ColumnInfo(name = "joined_at")
     val joinedAt: Long,
-    
-    /** Order of the user's teams, 0 = highest priority. Only the highest-priority team contributes to group challenges. */
+
+    /** Order of the user's teams, 0 = highest priority. Only the highest-priority team contributes to team challenges. */
     @ColumnInfo(name = "priority", defaultValue = "0")
     val priority: Int = 0,
 

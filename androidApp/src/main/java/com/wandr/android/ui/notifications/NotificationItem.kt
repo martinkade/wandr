@@ -34,7 +34,7 @@ import com.wandr.domain.model.NotificationType
 import com.wandr.domain.model.SocialEntityType
 
 /**
- * One notification row, a card like the groups in the profile: [isFirstItemInSection] / [isLastItemInSection] round the
+ * One notification row, a card like the teams in the profile: [isFirstItemInSection] / [isLastItemInSection] round the
  * corners of the list's ends. Unread ones are bold and marked with a dot.
  */
 @Composable

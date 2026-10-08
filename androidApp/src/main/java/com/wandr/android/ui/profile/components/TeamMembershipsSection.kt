@@ -18,12 +18,13 @@ import com.wandr.presentation.team.TeamViewModel
 import org.koin.compose.koinInject
 
 /**
- * The user's groups in the profile: reorder them by priority and join another one by invite code or QR code. Only the
- * first group counts for group challenges.
+ * The user's teams in the profile: reorder them by priority and join another one by invite code or QR code. Only the
+ * first team counts for team challenges.
  */
 @Composable
 fun TeamMembershipsSection(
     userId: String,
+    onOpenTeam: (teamId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TeamViewModel = koinInject()
 ) {
@@ -57,11 +58,12 @@ fun TeamMembershipsSection(
             viewModel.processIntent(TeamIntent.ClearMessages)
             showJoin = true
         },
+        onOpenTeam = onOpenTeam,
         modifier = modifier
     )
 
     if (showJoin) {
-        JoinTeamDialog(
+        JoinTeamSheet(
             code = state.joinInviteCode,
             onCodeChange = { viewModel.processIntent(TeamIntent.JoinInviteCodeChanged(it)) },
             isJoining = state.isLoading,

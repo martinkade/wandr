@@ -34,9 +34,9 @@ import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Team
 
 /**
- * The groups of the user, ordered by priority, with a trailing item to join another one. A group is moved by dragging
- * its handle; [onReorder] reports the new order when the finger is lifted. The first group is the only one that counts
- * for group challenges.
+ * The teams of the user, ordered by priority, with a trailing item to join another one. A team is moved by dragging
+ * its handle; [onReorder] reports the new order when the finger is lifted. The first team is the only one that counts
+ * for team challenges. Tapping a team opens its details ([onOpenTeam]).
  *
  * @param teams the saved order; when it changes (e.g. a rejected reorder is reverted) the list follows it
  */
@@ -45,7 +45,8 @@ fun TeamMembershipList(
     teams: List<Team>,
     onReorder: (List<Team>) -> Unit,
     onJoin: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOpenTeam: (teamId: String) -> Unit = {}
 ) {
     var order by remember(teams) { mutableStateOf(teams) }
     var draggedId by remember { mutableStateOf<String?>(null) }
@@ -77,6 +78,7 @@ fun TeamMembershipList(
                     isPrimary = index == 0,
                     isFirstItemInSection = index == 0,
                     isLastItemInSection = false,
+                    onClick = { onOpenTeam(team.id) },
                     modifier = Modifier
                         .onSizeChanged { heights[team.id] = it.height }
                         .zIndex(if (isDragged) 1f else 0f)
@@ -152,7 +154,7 @@ private fun TeamMembershipListPreview() {
     }
 }
 
-@Preview(name = "No group yet", showBackground = true)
+@Preview(name = "No team yet", showBackground = true)
 @Composable
 private fun TeamMembershipListEmptyPreview() {
     WandrTheme {

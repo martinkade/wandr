@@ -21,7 +21,7 @@ struct TeamCardView: View {
                         .multilineTextAlignment(.leading)
                 }
 
-                Text(String(format: String(localized: "group_invite_code"), inviteCode))
+                Text(String(format: String(localized: "team_invite_code"), inviteCode))
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.wandrAccentText)
             }
@@ -35,13 +35,13 @@ struct TeamCardView: View {
 }
 
 #Preview("Light Mode") {
-    TeamCardView(name: "Alpine Trail Blazers", teamDescription: "Hiking group for weekend trips.", inviteCode: "X7K9P2W1")
+    TeamCardView(name: "Alpine Trail Blazers", teamDescription: "Hiking team for weekend trips.", inviteCode: "X7K9P2W1")
         .padding()
         .preferredColorScheme(.light)
 }
 
 #Preview("Dark Mode") {
-    TeamCardView(name: "Alpine Trail Blazers", teamDescription: "Hiking group for weekend trips.", inviteCode: "X7K9P2W1")
+    TeamCardView(name: "Alpine Trail Blazers", teamDescription: "Hiking team for weekend trips.", inviteCode: "X7K9P2W1")
         .padding()
         .preferredColorScheme(.dark)
 }

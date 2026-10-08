@@ -51,7 +51,7 @@ fun ChallengeCard(
     modifier: Modifier = Modifier
 ) {
     val type = ChallengeType.fromValue(challenge.type)
-    val isGroup = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.GROUP
+    val isTeamChallenge = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.TEAM
     val remaining = challengeRemainingText(challenge, status)
     val hero = LocalHeroTransition.current
     val heroKey = challengeBadgeHeroKey(challenge.id)
@@ -96,7 +96,7 @@ fun ChallengeCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -150,7 +150,7 @@ fun ChallengeCard(
                 )
                 CardFact(
                     icon = R.drawable.ic_emoji_events,
-                    text = stringResource(if (isGroup) R.string.challenge_scope_group else R.string.challenge_scope_individual),
+                    text = stringResource(if (isTeamChallenge) R.string.challenge_scope_team else R.string.challenge_scope_individual),
                     modifier = Modifier
                         .fillMaxWidth()
                 )

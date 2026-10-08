@@ -41,8 +41,8 @@ import com.wandr.android.ui.feed.FeedScreen
 import com.wandr.android.ui.notifications.NotificationBellAction
 import com.wandr.android.ui.notifications.NotificationsScreen
 import com.wandr.android.ui.profile.ProfileScreen
-import com.wandr.android.ui.team.GroupsScreen
 import com.wandr.android.ui.team.TeamDetailsScreen
+import com.wandr.android.ui.team.TeamsScreen
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.SocialEntityType
 import com.wandr.presentation.main.MainViewModel
@@ -64,11 +64,11 @@ fun MainScreen(
     var selectedRequested by rememberSaveable { mutableStateOf(MainTab.Feed) }
     LaunchedEffect(Unit) { viewModel.load() }
 
-    // The Groups tab only exists for managers; fall back if the role changes while it is selected.
-    val tabs = MainTab.entries.filter { it != MainTab.Groups || state.isManager }
+    // The Teams tab only exists for managers; fall back if the role changes while it is selected.
+    val tabs = MainTab.entries.filter { it != MainTab.Teams || state.isManager }
     val selectedTab = if (selectedRequested in tabs) selectedRequested else MainTab.Feed
     val userId = state.userId
-    // Group details slide in over the whole main screen, including the tab bar (like a pushed page).
+    // Team details slide in over the whole main screen, including the tab bar (like a pushed page).
     var openTeamId by rememberSaveable { mutableStateOf<String?>(null) }
     var openChallengeId by rememberSaveable { mutableStateOf<String?>(null) }
     var openActivityId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -128,8 +128,12 @@ fun MainScreen(
                         isManager = state.isManager,
                         onOpenChallenge = { openChallengeId = it }
                     )
-                    MainTab.Groups -> GroupsScreen(userId = userId, onOpenTeam = { openTeamId = it })
-                    MainTab.Profile -> ProfileScreen(userId = userId, onLogout = { viewModel.logout(onLogout) })
+                    MainTab.Teams -> TeamsScreen(userId = userId, onOpenTeam = { openTeamId = it })
+                    MainTab.Profile -> ProfileScreen(
+                        userId = userId,
+                        onLogout = { viewModel.logout(onLogout) },
+                        onOpenTeam = { openTeamId = it }
+                    )
                 }
             }
         }
@@ -140,7 +144,11 @@ fun MainScreen(
             HealthAutoSync()
         }
 
-        SlideInOverlay(item = openTeamId.takeIf { userId != null }, onBack = { openTeamId = null }) { teamId ->
+            SlideInOverlay(
+                item = openTeamId.takeIf { userId != null },
+                onBack = { openTeamId = null },
+                onProgress = heroState::onProgress
+            ) { teamId ->
             TeamDetailsScreen(teamId = teamId, userId = userId.orEmpty(), onBack = { openTeamId = null })
         }
             SlideInOverlay(
@@ -220,7 +228,7 @@ private fun MainScreenContent(
 private fun MainContentManagerPreview() {
     WandrTheme {
         MainScreenContent(
-            tabs = MainTab.entries, selectedTab = MainTab.Groups, onSelectTab = {}, isLoading = false
+            tabs = MainTab.entries, selectedTab = MainTab.Teams, onSelectTab = {}, isLoading = false
         ) { tab -> Text(tab.name) }
     }
 }
@@ -231,7 +239,10 @@ private fun MainContentManagerPreview() {
 private fun MainContentMemberPreview() {
     WandrTheme {
         MainScreenContent(
-            tabs = MainTab.entries - MainTab.Groups, selectedTab = MainTab.Feed, onSelectTab = {}, isLoading = false
+            tabs = MainTab.entries - MainTab.Teams,
+            selectedTab = MainTab.Feed,
+            onSelectTab = {},
+            isLoading = false
         ) { tab -> Text(tab.name) }
     }
 }

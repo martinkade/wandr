@@ -302,13 +302,13 @@ class ChallengeViewModelTest {
     }
 
     @Test
-    fun groupChallengeIsCreatedWithoutATeamBecauseTeamsEnrollLater() = runTest {
+    fun teamChallengeIsCreatedWithoutATeamBecauseTeamsEnrollLater() = runTest {
         val repo = FakeChallengeRepository()
         val vm = viewModel(repo, listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
         vm.processIntent(ChallengeIntent.StartCreate)
         vm.processIntent(ChallengeIntent.TitleChanged("Team sprint"))
-        vm.processIntent(ChallengeIntent.ScopeChanged(ChallengeScope.GROUP))
+        vm.processIntent(ChallengeIntent.ScopeChanged(ChallengeScope.TEAM))
         vm.processIntent(ChallengeIntent.RequireAllMembersCompletionChanged(true))
         vm.processIntent(ChallengeIntent.SubmitForm("u1"))
 
@@ -322,7 +322,7 @@ class ChallengeViewModelTest {
     fun switchingBackToIndividualDropsRequireAll() = runTest {
         val vm = viewModel(FakeChallengeRepository(), listOf(team), CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         vm.processIntent(ChallengeIntent.StartCreate)
-        vm.processIntent(ChallengeIntent.ScopeChanged(ChallengeScope.GROUP))
+        vm.processIntent(ChallengeIntent.ScopeChanged(ChallengeScope.TEAM))
         vm.processIntent(ChallengeIntent.RequireAllMembersCompletionChanged(true))
         vm.processIntent(ChallengeIntent.ScopeChanged(ChallengeScope.INDIVIDUAL))
 

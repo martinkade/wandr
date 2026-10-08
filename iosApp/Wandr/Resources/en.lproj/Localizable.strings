@@ -89,34 +89,34 @@
 "permission_camera_message" = "WANDR uses the camera only to take your profile photo. You can crop it before it is uploaded, and nothing is saved to your photo library.";
 "permission_camera_denied" = "Camera access is turned off. Enable it in Settings to take a profile photo, or choose one from your library.";
 
-/* Groups (managers) */
-"tab_groups" = "Groups";
-"groups_empty" = "No groups yet. Create your first group to invite members.";
-"groups_new_button" = "New Group";
-"group_invite_code" = "Invite code: %@";
+/* Teams (managers) */
+"tab_teams" = "Teams";
+"teams_empty" = "No teams yet. Create your first team to invite members.";
+"teams_new_button" = "New Team";
+"team_invite_code" = "Invite code: %@";
 
 /* Profile edit mode */
 "profile_edit_button" = "Edit";
 "profile_saved_message" = "Profile saved";
 "profile_avatar_updated_message" = "Profile photo updated";
 
-/* Group details */
-"team_photo_title" = "Group Photo";
+/* Team details */
+"team_photo_title" = "Team Photo";
 "team_cover_title" = "Cover Photo";
 "team_cover_change" = "Change Cover";
 "team_cover_content_description" = "Cover photo";
 "team_members_count" = "Members (%lld)";
 "team_no_members" = "No members yet.";
-"team_saved_message" = "Group saved";
+"team_saved_message" = "Team saved";
 "team_image_updated_message" = "Image updated";
 "role_admin" = "Admin";
 "role_member" = "Member";
 
 /* Edit sheets */
 "profile_edit_title" = "Edit Profile";
-"team_edit_title" = "Edit Group";
+"team_edit_title" = "Edit Team";
 "empty_value_placeholder" = "—";
-"team_details_title" = "Group Details";
+"team_details_title" = "Team Details";
 
 /* Conflict wizard & watch import */
 "activity_conflict_title" = "Overlapping activities";

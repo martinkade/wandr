@@ -30,7 +30,7 @@ import com.wandr.android.R
 import com.wandr.android.ui.theme.WandrTheme
 
 /**
- * The image area at the top of a challenge or group: the cover photo, or without one a gradient with elevation lines (a different
+ * The image area at the top of a challenge or team: the cover photo, or without one a gradient with elevation lines (a different
  * pattern per [seed]). With [onBack] it carries the back button; with [onPickCover] (the creator) tapping it changes the photo.
  */
 @Composable

@@ -1,8 +1,8 @@
 @preconcurrency import shared
 import SwiftUI
 
-/// "Groups" tab for managers: the list plus a sheet to create a new group, connected to the shared TeamViewModel.
-struct GroupsContainerView: View {
+/// "Teams" tab for managers: the list plus a sheet to create a new team, connected to the shared TeamViewModel.
+struct TeamsContainerView: View {
     let userId: String?
     @StateObject private var observer = TeamObserver()
     @State private var showCreate = false
@@ -18,7 +18,7 @@ struct GroupsContainerView: View {
                     showCreate = true
                 }
             )
-            .navigationTitle(LocalizedStringKey("tab_groups"))
+            .navigationTitle(LocalizedStringKey("tab_teams"))
             .navigationDestination(item: $selectedTeamId) { teamId in
                 if let userId { TeamDetailsContainerView(teamId: teamId, userId: userId) }
             }

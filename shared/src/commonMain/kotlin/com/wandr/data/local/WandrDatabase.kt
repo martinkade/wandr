@@ -1,10 +1,10 @@
 package com.wandr.data.local
 
+import androidx.room3.ColumnTypeConverters
 import androidx.room3.ConstructedBy
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import androidx.room3.RoomDatabaseConstructor
-import androidx.room3.ColumnTypeConverters
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.wandr.data.local.dao.ActivityDao
 import com.wandr.data.local.dao.ChallengeDao
@@ -30,7 +30,7 @@ import kotlinx.coroutines.IO
         ChallengeParticipantEntity::class,
         ActivityEntity::class
     ],
-    version = 5, // 2: challenges lost team_id (teams enroll in group challenges), participants gained team_id; 3: team_members.priority; 4: challenges.activity_types; 5: activities.show_map / polyline
+    version = 5, // 2: challenges lost team_id (teams enroll in team challenges), participants gained team_id; 3: team_members.priority; 4: challenges.activity_types; 5: activities.show_map / polyline
     exportSchema = true
 )
 @ColumnTypeConverters(Converters::class)

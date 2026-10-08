@@ -74,7 +74,7 @@ import org.koin.compose.koinInject
 
 /**
  * Read-only challenge details. The manager who created the challenge can change the cover directly here (tap it)
- * and edit the other fields via the "Edit" button, which opens a bottom sheet. Group challenges show the
+ * and edit the other fields via the "Edit" button, which opens a bottom sheet. Team challenges show the
  * team-vs-team standings and let a team owner / admin enroll a team.
  */
 @Composable
@@ -209,7 +209,7 @@ private fun ChallengeDetailsScreenContent(
         }
     } else {
         val type = ChallengeType.fromValue(challenge.type)
-        val isGroup = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.GROUP
+        val isTeamChallenge = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.TEAM
         val status = state.statuses[challenge.id] ?: ChallengeStatus.ACTIVE
         val remaining = challengeRemainingText(challenge, status)
 
@@ -272,14 +272,14 @@ private fun ChallengeDetailsScreenContent(
                 ) {
                     Text(
                         text = challenge.title,
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         textAlign = TextAlign.Center
                     )
                     if (status == ChallengeStatus.DRAFT) {
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = stringResource(R.string.challenge_draft_hint),
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.tertiary
                         )
                     }
@@ -319,21 +319,21 @@ private fun ChallengeDetailsScreenContent(
                         )
                         ChallengeInfoRow(
                             icon = R.drawable.ic_emoji_events,
-                            text = stringResource(if (isGroup) R.string.challenge_scope_group else R.string.challenge_scope_individual),
-                            secondaryText = if (isGroup && challenge.requireAllMembersCompletion) stringResource(
+                            text = stringResource(if (isTeamChallenge) R.string.challenge_scope_team else R.string.challenge_scope_individual),
+                            secondaryText = if (isTeamChallenge && challenge.requireAllMembersCompletion) stringResource(
                                 R.string.require_all_members_label
                             ) else null
                         )
                     }
 
                     Spacer(Modifier.height(24.dp))
-                    // Join / leave (individual) or enroll / withdraw a team (group); none for drafts and finished challenges.
+                    // Join / leave (individual) or enroll / withdraw a team; none for drafts and finished challenges.
                     val participation = state.participations[challenge.id]
-                    // Group challenges are about teams: only their owners / admins can enroll or withdraw one.
+                    // Team challenges are about teams: only their owners / admins can enroll or withdraw one.
                     // The standings tell which teams are enrolled, so wait for them to avoid a flickering button.
                     val adminTeamIds = state.adminTeams.map { it.id }.toSet()
                     val enrolledTeamIds = state.standings.map { it.teamId }.toSet()
-                    val action = if (isGroup && state.isLoading) null
+                    val action = if (isTeamChallenge && state.isLoading) null
                     else availableChallengeAction(
                         challenge,
                         status,
@@ -357,7 +357,7 @@ private fun ChallengeDetailsScreenContent(
                         )
                     }
 
-                    if (isGroup) {
+                    if (isTeamChallenge) {
                         Spacer(Modifier.height(32.dp))
                         Text(
                             text = stringResource(R.string.challenge_standings_title),
@@ -391,11 +391,11 @@ private fun ChallengeDetailsScreenContent(
                         }
                     }
 
-                    // Who is ahead: everybody in an individual challenge, your own team in a group challenge.
+                    // Who is ahead: everybody in an individual challenge, your own team in a team challenge.
                     if (state.leaderboard.isNotEmpty()) {
                         Spacer(Modifier.height(32.dp))
                         Text(
-                            text = stringResource(if (isGroup) R.string.challenge_team_ranking_title else R.string.challenge_ranking_title),
+                            text = stringResource(if (isTeamChallenge) R.string.challenge_team_ranking_title else R.string.challenge_ranking_title),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -421,7 +421,8 @@ private fun ChallengeDetailsScreenContent(
                         likedByMe = socialState.summary.likedByMe,
                         commentCount = socialState.comments.size,
                         onToggleLike = { onSocialIntent(SocialIntent.ToggleLike) },
-                        onOpenComments = { showComments = true }
+                        onOpenComments = { showComments = true },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
@@ -516,9 +517,9 @@ private val previewGroupChallenge = Challenge(
     updatedAt = 0L
 )
 
-@Preview(name = "Group, creator", showBackground = true, heightDp = 1100)
+@Preview(name = "Team challenge, creator", showBackground = true, heightDp = 1100)
 @Preview(
-    name = "Group Dark",
+    name = "Team Dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     showBackground = true,
     heightDp = 1100

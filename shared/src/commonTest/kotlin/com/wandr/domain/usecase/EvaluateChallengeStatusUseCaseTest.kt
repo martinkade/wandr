@@ -9,10 +9,10 @@ class EvaluateChallengeStatusUseCaseTest {
 
     private val evaluator = EvaluateChallengeStatusUseCase()
 
-    private val groupChallenge = Challenge(
+    private val teamChallenge = Challenge(
         id = "c1",
         title = "100km Hike",
-        description = "Group challenge",
+        description = "Team challenge",
         coverUrl = null,
         scope = "group",
         type = "distance",
@@ -25,11 +25,12 @@ class EvaluateChallengeStatusUseCaseTest {
         updatedAt = 1000L
     )
 
-    private val openChallenge = groupChallenge.copy(scope = "individual", requireAllMembersCompletion = false)
+    private val openChallenge =
+        teamChallenge.copy(scope = "individual", requireAllMembersCompletion = false)
 
     @Test
     fun draft_whenNotPublished_regardlessOfTheDates() {
-        val draft = groupChallenge.copy(isActive = false)
+        val draft = teamChallenge.copy(isActive = false)
         assertEquals(ChallengeStatus.DRAFT, evaluator(draft, currentTimeMillis = 999L))
         assertEquals(ChallengeStatus.DRAFT, evaluator(draft, currentTimeMillis = 3000L))
         assertEquals(ChallengeStatus.DRAFT, evaluator(draft, currentTimeMillis = 9000L))
@@ -37,29 +38,39 @@ class EvaluateChallengeStatusUseCaseTest {
 
     @Test
     fun planned_whenPublishedButNotStartedYet() {
-        assertEquals(ChallengeStatus.PLANNED, evaluator(groupChallenge, currentTimeMillis = 999L))
+        assertEquals(ChallengeStatus.PLANNED, evaluator(teamChallenge, currentTimeMillis = 999L))
     }
 
     @Test
     fun active_betweenStartAndEndWithoutParticipantData() {
-        assertEquals(ChallengeStatus.ACTIVE, evaluator(groupChallenge, currentTimeMillis = 1000L))
-        assertEquals(ChallengeStatus.ACTIVE, evaluator(groupChallenge, currentTimeMillis = 5000L))
+        assertEquals(ChallengeStatus.ACTIVE, evaluator(teamChallenge, currentTimeMillis = 1000L))
+        assertEquals(ChallengeStatus.ACTIVE, evaluator(teamChallenge, currentTimeMillis = 5000L))
     }
 
     @Test
     fun expired_afterEndDateWithoutCompletion() {
-        assertEquals(ChallengeStatus.EXPIRED, evaluator(groupChallenge, currentTimeMillis = 5001L))
+        assertEquals(ChallengeStatus.EXPIRED, evaluator(teamChallenge, currentTimeMillis = 5001L))
     }
 
     @Test
     fun allMembersRequired_completedOnlyWhenAllFinish() {
         assertEquals(
             ChallengeStatus.ACTIVE,
-            evaluator(groupChallenge, totalParticipantsCount = 3, completedParticipantsCount = 2, currentTimeMillis = 3000L)
+            evaluator(
+                teamChallenge,
+                totalParticipantsCount = 3,
+                completedParticipantsCount = 2,
+                currentTimeMillis = 3000L
+            )
         )
         assertEquals(
             ChallengeStatus.COMPLETED,
-            evaluator(groupChallenge, totalParticipantsCount = 3, completedParticipantsCount = 3, currentTimeMillis = 3000L)
+            evaluator(
+                teamChallenge,
+                totalParticipantsCount = 3,
+                completedParticipantsCount = 3,
+                currentTimeMillis = 3000L
+            )
         )
     }
 
@@ -67,7 +78,12 @@ class EvaluateChallengeStatusUseCaseTest {
     fun allMembersRequired_expiresIfOneFails() {
         assertEquals(
             ChallengeStatus.EXPIRED,
-            evaluator(groupChallenge, totalParticipantsCount = 3, completedParticipantsCount = 2, currentTimeMillis = 6000L)
+            evaluator(
+                teamChallenge,
+                totalParticipantsCount = 3,
+                completedParticipantsCount = 2,
+                currentTimeMillis = 6000L
+            )
         )
     }
 

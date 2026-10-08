@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 interface ChallengeRepository {
     fun getChallengeById(challengeId: String): Flow<Challenge?>
 
-    /** Every challenge visible to the user: open (individual) ones and group ones teams can enroll in. */
+    /** Every challenge visible to the user: open (individual) ones and team ones teams can enroll in. */
     fun getChallenges(): Flow<List<Challenge>>
 
     /**
@@ -27,7 +27,7 @@ interface ChallengeRepository {
     /** The ranking of the members in the challenge, from the server (it decides who may see whom). */
     suspend fun getMemberRanking(challengeId: String): Result<List<LeaderboardEntry>>
 
-    /** Team vs. team ranking of a group challenge; aggregates only, computed on the server. */
+    /** Team vs. team ranking of a team challenge; aggregates only, computed on the server. */
     suspend fun getTeamStandings(challengeId: String): Result<List<TeamStanding>>
 
     suspend fun createChallenge(challenge: Challenge): Result<Challenge>
@@ -42,15 +42,15 @@ interface ChallengeRepository {
     suspend fun removeChallengeCover(challengeId: String): Result<Challenge>
 
 
-    /** Joins an individual challenge for [userId]. Group challenges are joined by enrolling a team. */
+    /** Joins an individual challenge for [userId]. Team challenges are joined by enrolling a team. */
     suspend fun joinChallenge(challengeId: String, userId: String): Result<Unit>
 
     /** Leaves an individual challenge. */
     suspend fun leaveChallenge(challengeId: String, userId: String): Result<Unit>
 
-    /** Withdraws [teamId] from a group challenge (team owner / admin only, enforced by the server). */
+    /** Withdraws [teamId] from a team challenge (team owner / admin only, enforced by the server). */
     suspend fun withdrawTeam(challengeId: String, teamId: String): Result<Unit>
 
-    /** Enrolls [teamId] in a group challenge; all its members then contribute to the team's result. */
+    /** Enrolls [teamId] in a team challenge; all its members then contribute to the team's result. */
     suspend fun enrollTeam(challengeId: String, teamId: String, enrolledBy: String): Result<Unit>
 }

@@ -9,7 +9,7 @@ interface TeamRepository {
     fun getTeamById(teamId: String): Flow<Team?>
     fun getUserTeams(userId: String): Flow<List<Team>>
 
-    /** The teams [userId] administers (owner or admin): only these can be enrolled in group challenges. */
+    /** The teams [userId] administers (owner or admin): only these can be enrolled in team challenges. */
     fun getAdminTeams(userId: String): Flow<List<Team>>
 
     /** Pulls the teams (and the user's memberships) visible to [userId] from Supabase into the local cache. */
@@ -31,7 +31,7 @@ interface TeamRepository {
 
     /**
      * Saves the priority order of the user's teams (first = highest). Needs the server, because it decides for which
-     * team the user contributes to group challenges; the local cache follows once the server accepted the order.
+     * team the user contributes to team challenges; the local cache follows once the server accepted the order.
      */
     suspend fun reorderTeams(userId: String, orderedTeamIds: List<String>): Result<Unit>
 

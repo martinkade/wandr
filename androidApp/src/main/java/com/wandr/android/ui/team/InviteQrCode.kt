@@ -23,7 +23,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.wandr.android.ui.theme.WandrTheme
 
 /**
- * A QR code of [content] (the invite code of a group; the scanner of "join a group" reads it back as the code). Always
+ * A QR code of [content] (the invite code of a team; the scanner of "join a team" reads it back as the code). Always
  * black on white with a quiet zone around it, also in dark mode: scanners need that contrast.
  *
  * @param size the edge of the whole square, quiet zone included

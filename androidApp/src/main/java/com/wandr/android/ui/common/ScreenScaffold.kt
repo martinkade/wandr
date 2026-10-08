@@ -83,7 +83,7 @@ fun ScreenScaffold(
 private fun ScreenScaffoldPreview() {
     WandrTheme {
         ScreenScaffold(
-            title = "Group Details",
+            title = "Team Details",
             onBack = {},
             actions = { TextButton(onClick = {}) { Text("Edit") } }
         ) { padding ->

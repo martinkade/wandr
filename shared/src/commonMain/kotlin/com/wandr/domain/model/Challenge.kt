@@ -5,7 +5,7 @@ data class Challenge(
     val title: String,
     val description: String?,
     val coverUrl: String?,
-    val scope: String, // group, individual
+    val scope: String, // "group" (team challenge; the stored value), "individual"
     val type: String, // distance, elevation, time
     val targetValue: Double,
     val requireAllMembersCompletion: Boolean = false,

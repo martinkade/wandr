@@ -49,6 +49,7 @@ import com.wandr.android.ui.common.OverflowMenu
 import com.wandr.android.ui.common.OverflowMenuItem
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.common.SheetOverlap
+import com.wandr.android.ui.common.heroTarget
 import com.wandr.android.ui.common.rememberImagePickerFlow
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
@@ -90,7 +91,7 @@ fun TeamDetailsScreen(
 }
 
 /**
- * Read-only group details with the member list. Owners and admins get an "Edit" button that opens
+ * Read-only team details with the member list. Owners and admins get an "Edit" button that opens
  * [TeamEditScreen] in a bottom sheet; saving closes the sheet. Results (saved / image updated / error) are
  * reported in a snackbar (on the sheet while it is open).
  */
@@ -181,7 +182,7 @@ private fun TeamDetailsScreenContent(
             onRemove = { onIntent(TeamDetailsIntent.RemoveAvatar) }
         )
 
-        // The cover scrolls away with a parallax effect; the top bar turns solid and shows the group's name.
+        // The cover scrolls away with a parallax effect; the top bar turns solid and shows the team's name.
         CollapsingHeaderScaffold(
             title = team.name,
             onBack = onBack,
@@ -237,20 +238,19 @@ private fun TeamDetailsScreenContent(
                 ) {
                     Text(
                         text = team.name,
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         textAlign = TextAlign.Center
                     )
                     team.description?.takeIf { it.isNotBlank() }?.let {
                         Spacer(Modifier.height(12.dp))
                         Text(
                             text = it,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
                     }
 
-                    // The invite sheet shows a QR code that others scan to join the group.
+                    // The invite sheet shows a QR code that others scan to join the team.
                     Spacer(Modifier.height(16.dp))
                     FilledTonalButton(onClick = { showInvite = true }) {
                         Text(stringResource(R.string.team_invite_button))
@@ -302,6 +302,7 @@ private fun TeamDetailsScreenContent(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .offset(y = -SheetOverlap - AvatarSize / 2)
+                        .heroTarget(teamAvatarHeroKey(team.id))
                 )
             }
         }
@@ -350,7 +351,7 @@ private val AvatarSize = 96.dp
 private val previewTeam = Team(
     id = "t1",
     name = "Alpine Trail Blazers",
-    description = "Hiking group for weekend trips.",
+    description = "Hiking team for weekend trips.",
     avatarUrl = null,
     coverUrl = null,
     inviteCode = "X7K9P2W1",

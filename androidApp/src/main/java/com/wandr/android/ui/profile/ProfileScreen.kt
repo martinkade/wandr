@@ -56,6 +56,7 @@ import org.koin.compose.koinInject
 fun ProfileScreen(
     userId: String,
     onLogout: () -> Unit,
+    onOpenTeam: (teamId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = koinInject()
 ) {
@@ -65,6 +66,7 @@ fun ProfileScreen(
         state = state,
         onIntent = viewModel::processIntent,
         onLogout = onLogout,
+        onOpenTeam = onOpenTeam,
         modifier = modifier
     )
 }
@@ -79,6 +81,7 @@ private fun ProfileScreenContent(
     state: ProfileState,
     onIntent: (ProfileIntent) -> Unit,
     onLogout: () -> Unit,
+    onOpenTeam: (teamId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isEditing by rememberSaveable { mutableStateOf(false) }
@@ -203,6 +206,7 @@ private fun ProfileScreenContent(
 
                     TeamMembershipsSection(
                         userId = profile.id,
+                        onOpenTeam = onOpenTeam,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp, vertical = 16.dp)

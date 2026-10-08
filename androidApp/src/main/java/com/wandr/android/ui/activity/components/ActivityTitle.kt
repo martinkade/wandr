@@ -11,7 +11,7 @@ import com.wandr.domain.model.Activity
 fun ActivityTitle(activity: Activity, modifier: Modifier = Modifier) {
     Text(
         text = activity.title,
-        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
         modifier = modifier
     )
     if (!activity.description.isNullOrBlank()) {

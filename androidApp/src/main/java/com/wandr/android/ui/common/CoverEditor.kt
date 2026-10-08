@@ -8,7 +8,7 @@ import com.wandr.presentation.imagecrop.CoverImageSpec
 
 /**
  * Cover image with its whole edit flow: source selection (library / camera / remove) -> 4:3 crop ->
- * [onCoverReady] with a JPEG already scaled to [CoverImageSpec.MAX_EDGE_PX]. Used for groups and challenges.
+ * [onCoverReady] with a JPEG already scaled to [CoverImageSpec.MAX_EDGE_PX]. Used for teams and challenges.
  */
 @Composable
 fun CoverEditor(

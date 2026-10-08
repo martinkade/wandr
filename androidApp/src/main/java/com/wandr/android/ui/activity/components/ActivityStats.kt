@@ -31,6 +31,11 @@ fun ActivityStats(activity: Activity, modifier: Modifier = Modifier) {
             value = "${ActivityFormat.distanceKm(activity.distanceMeters)} km",
             modifier = Modifier.weight(1f)
         )
+        LabeledValue(
+            label = stringResource(R.string.activity_stat_time),
+            value = ActivityFormat.duration(activity.durationSeconds),
+            modifier = Modifier.weight(1f)
+        )
         if (pace != null) {
             LabeledValue(
                 label = stringResource(if (isCycling) R.string.activity_stat_speed else R.string.activity_stat_pace),
@@ -38,12 +43,7 @@ fun ActivityStats(activity: Activity, modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f)
             )
         }
-        LabeledValue(
-            label = stringResource(R.string.activity_stat_time),
-            value = ActivityFormat.duration(activity.durationSeconds),
-            modifier = Modifier.weight(1f)
-        )
-        if (activity.elevationGainMeters >= 1) {
+        if (activity.elevationGainMeters > 0) {
             LabeledValue(
                 label = stringResource(R.string.activity_stat_elevation),
                 value = "${activity.elevationGainMeters.toInt()} m",

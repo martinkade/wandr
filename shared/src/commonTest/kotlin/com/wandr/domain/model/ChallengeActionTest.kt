@@ -9,7 +9,7 @@ class ChallengeActionTest {
     private val individual = Challenge(
         "c1", "Open", null, null, "individual", "distance", 100_000.0, false, 0L, 1000L, "u1", 0L, 0L
     )
-    private val group = individual.copy(id = "c2", scope = "group")
+    private val teamChallenge = individual.copy(id = "c2", scope = "group")
 
     private val joined = ChallengeParticipation("c1", teamId = null)
     private val enrolledTeam = ChallengeParticipation("c2", teamId = "t1")
@@ -53,26 +53,26 @@ class ChallengeActionTest {
     }
 
     @Test
-    fun groupChallengesOfferEnrollingOnlyToTeamAdmins() {
+    fun teamChallengesOfferEnrollingOnlyToTeamAdmins() {
         assertEquals(
             ChallengeAction.ENROLL_TEAM,
-            action(group, ChallengeStatus.ACTIVE, admin = setOf("t1"))
+            action(teamChallenge, ChallengeStatus.ACTIVE, admin = setOf("t1"))
         )
         assertEquals(
             ChallengeAction.ENROLL_TEAM,
-            action(group, ChallengeStatus.PLANNED, admin = setOf("t1"))
+            action(teamChallenge, ChallengeStatus.PLANNED, admin = setOf("t1"))
         )
         // a default member (no administered team) sees no button
-        assertNull(action(group, ChallengeStatus.ACTIVE, admin = emptySet()))
-        assertNull(action(group, ChallengeStatus.DRAFT, admin = setOf("t1")))
-        assertNull(action(group, ChallengeStatus.EXPIRED, admin = setOf("t1")))
+        assertNull(action(teamChallenge, ChallengeStatus.ACTIVE, admin = emptySet()))
+        assertNull(action(teamChallenge, ChallengeStatus.DRAFT, admin = setOf("t1")))
+        assertNull(action(teamChallenge, ChallengeStatus.EXPIRED, admin = setOf("t1")))
     }
 
     @Test
     fun aTeamThatIsEnrolledAlreadyIsNotOfferedAgain() {
         assertNull(
             action(
-                group,
+                teamChallenge,
                 ChallengeStatus.ACTIVE,
                 admin = setOf("t1"),
                 enrolled = setOf("t1")
@@ -80,7 +80,12 @@ class ChallengeActionTest {
         // an admin of two teams can still enroll the second one
         assertEquals(
             ChallengeAction.WITHDRAW_TEAM,
-            action(group, ChallengeStatus.ACTIVE, admin = setOf("t1", "t2"), enrolled = setOf("t1"))
+            action(
+                teamChallenge,
+                ChallengeStatus.ACTIVE,
+                admin = setOf("t1", "t2"),
+                enrolled = setOf("t1")
+            )
         )
     }
 
@@ -88,15 +93,25 @@ class ChallengeActionTest {
     fun onlyAdminsMayWithdrawAnEnrolledTeamAndOnlyUntilItIsOver() {
         assertEquals(
             ChallengeAction.WITHDRAW_TEAM,
-            action(group, ChallengeStatus.ACTIVE, admin = setOf("t1"), enrolled = setOf("t1"))
+            action(
+                teamChallenge,
+                ChallengeStatus.ACTIVE,
+                admin = setOf("t1"),
+                enrolled = setOf("t1")
+            )
         )
         assertEquals(
             ChallengeAction.WITHDRAW_TEAM,
-            action(group, ChallengeStatus.PLANNED, admin = setOf("t1"), enrolled = setOf("t1"))
+            action(
+                teamChallenge,
+                ChallengeStatus.PLANNED,
+                admin = setOf("t1"),
+                enrolled = setOf("t1")
+            )
         )
         assertNull(
             action(
-                group,
+                teamChallenge,
                 ChallengeStatus.COMPLETED,
                 admin = setOf("t1"),
                 enrolled = setOf("t1")
@@ -105,7 +120,7 @@ class ChallengeActionTest {
         // a default member of the enrolled team (participates, but does not administer it) sees nothing
         assertNull(
             action(
-                group,
+                teamChallenge,
                 ChallengeStatus.ACTIVE,
                 enrolledTeam,
                 admin = emptySet(),
@@ -115,7 +130,12 @@ class ChallengeActionTest {
         // an admin of another team cannot withdraw a team they do not administer
         assertEquals(
             ChallengeAction.ENROLL_TEAM,
-            action(group, ChallengeStatus.ACTIVE, admin = setOf("t9"), enrolled = setOf("t1"))
+            action(
+                teamChallenge,
+                ChallengeStatus.ACTIVE,
+                admin = setOf("t9"),
+                enrolled = setOf("t1")
+            )
         )
     }
 }

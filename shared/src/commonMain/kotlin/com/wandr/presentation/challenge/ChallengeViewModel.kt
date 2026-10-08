@@ -87,7 +87,7 @@ class ChallengeViewModel(
             is ChallengeIntent.ScopeChanged -> updateForm { form ->
                 form.copy(
                     scope = intent.scope,
-                    requireAllMembersCompletion = form.requireAllMembersCompletion && intent.scope == ChallengeScope.GROUP
+                    requireAllMembersCompletion = form.requireAllMembersCompletion && intent.scope == ChallengeScope.TEAM
                 )
             }
             is ChallengeIntent.ActivityTypeToggled -> updateForm { form ->
@@ -135,7 +135,7 @@ class ChallengeViewModel(
                 }
             }
             launch {
-                // The first team by priority is the only one that counts for group challenges.
+                // The first team by priority is the only one that counts for team challenges.
                 getUserTeamsUseCase(userId).collect { teams ->
                     _uiState.update { it.copy(primaryTeamId = teams.firstOrNull()?.id) }
                 }
@@ -267,7 +267,7 @@ class ChallengeViewModel(
             scope = form.scope.value,
             type = form.type.value,
             targetValue = form.targetValue,
-            requireAllMembersCompletion = form.scope == ChallengeScope.GROUP && form.requireAllMembersCompletion,
+            requireAllMembersCompletion = form.scope == ChallengeScope.TEAM && form.requireAllMembersCompletion,
             activityTypes = form.activityTypes.toList(),
             startDate = form.startDate,
             endDate = form.endDate,

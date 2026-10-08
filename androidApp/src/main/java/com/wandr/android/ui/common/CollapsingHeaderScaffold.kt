@@ -175,7 +175,7 @@ fun CollapsingHeaderScaffold(
 private fun CollapsingHeaderScaffoldPreview() {
     WandrTheme {
         CollapsingHeaderScaffold(
-            title = "Group Details",
+            title = "Team Details",
             onBack = {},
             headerHeight = 220.dp,
             header = {

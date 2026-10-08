@@ -123,7 +123,12 @@ This document serves as the master implementation plan and roadmap for **WANDR**
     `TeamInviteQRCodeView` (iOS).
   - Ensure 1 UI component per file with Dark Mode previews and localization (EN & DE).
 - [x] **Step 4.4: Team memberships, priority & joining by invite (profile)**
-  - The profile lists the user's groups (`TeamMembershipList`), reorderable by drag and drop (`team_members.priority`, saved via `set_team_priorities`), with a trailing item to join a group by typing the invite code or scanning its QR code (Google code scanner, no camera permission). Joining goes through `join_team_by_invite` (a non-member cannot read a team, so the previous client-side lookup could not work). The highest-priority group is the user's primary group (also used as the team for new activities).
+    - The profile lists the user's teams (`TeamMembershipList`), reorderable by drag and drop
+      (`team_members.priority`, saved via `set_team_priorities`), with a trailing item to join a
+      group by typing the invite code or scanning its QR code (Google code scanner, no camera
+      permission). Joining goes through `join_team_by_invite` (a non-member cannot read a team, so
+      the previous client-side lookup could not work). The highest-priority group is the user's
+      primary group (also used as the team for new activities).
 
 ---
 
@@ -177,6 +182,11 @@ This document serves as the master implementation plan and roadmap for **WANDR**
     white with quiet zone in both themes) and the written code, for others to scan with "join a
     group". While the sheet is open the screen is a bit brighter (`BoostScreenBrightness`: the app
     window only, restored on dismiss). iOS not yet.
+  - Naming: "group" is now "team" everywhere: visible texts (Android, iOS; en / de) and code names
+    (`TeamsScreen`, `TeamsContainerView`, `MainTab.Teams`, `ChallengeScope.TEAM`, string keys
+    `tab_teams`, `teams_empty`, `team_invite_code`, `challenge_scope_team` …). Only stored / wire
+    values keep "group" (the `challenge_scope` database enum and `challenges.scope`;
+    `ChallengeScope.TEAM` maps to "group"), as does the historic text of older entries.
 - [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
   - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).

@@ -40,8 +40,8 @@ import com.wandr.android.ui.common.DateTimePickerField
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeType
-import com.wandr.presentation.challenge.ChallengeForm
 import com.wandr.presentation.activity.ActivityTypes
+import com.wandr.presentation.challenge.ChallengeForm
 import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeUnits
 import java.util.Locale
@@ -92,11 +92,15 @@ fun ChallengeEditScreen(
             value = form.description,
             onValueChange = { onIntent(ChallengeIntent.DescriptionChanged(it)) },
             label = { Text(stringResource(R.string.challenge_description_label)) },
-            modifier = Modifier.fillMaxWidth().height(100.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
         )
 
         SectionLabel(R.string.challenge_type_label)
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ChallengeType.entries.forEach { type ->
                 FilterChip(
                     selected = form.type == type,
@@ -137,7 +141,9 @@ fun ChallengeEditScreen(
         )
 
         SectionLabel(R.string.challenge_activity_types_label)
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ActivityTypes.all.forEach { type ->
                 FilterChip(
                     selected = type in form.activityTypes,
@@ -150,7 +156,9 @@ fun ChallengeEditScreen(
             text = stringResource(R.string.challenge_activity_types_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp)
         )
 
         SectionLabel(R.string.challenge_scope_label)
@@ -161,25 +169,29 @@ fun ChallengeEditScreen(
                 label = { Text(stringResource(R.string.challenge_scope_individual)) }
             )
             FilterChip(
-                selected = form.scope == ChallengeScope.GROUP,
-                onClick = { onIntent(ChallengeIntent.ScopeChanged(ChallengeScope.GROUP)) },
-                label = { Text(stringResource(R.string.challenge_scope_group)) }
+                selected = form.scope == ChallengeScope.TEAM,
+                onClick = { onIntent(ChallengeIntent.ScopeChanged(ChallengeScope.TEAM)) },
+                label = { Text(stringResource(R.string.challenge_scope_team)) }
             )
         }
 
-        if (form.scope == ChallengeScope.GROUP) {
+        if (form.scope == ChallengeScope.TEAM) {
             Text(
-                text = stringResource(R.string.challenge_scope_group_hint),
+                text = stringResource(R.string.challenge_scope_team_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             )
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(R.string.require_all_members_label),
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f).padding(end = 12.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 12.dp)
                 )
                 Switch(
                     checked = form.requireAllMembersCompletion,
@@ -190,7 +202,9 @@ fun ChallengeEditScreen(
 
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f).padding(end = 12.dp)) {
+            Column(Modifier
+                .weight(1f)
+                .padding(end = 12.dp)) {
                 Text(stringResource(R.string.challenge_active_label), style = MaterialTheme.typography.bodyMedium)
                 Text(
                     text = stringResource(R.string.challenge_active_hint),
@@ -203,10 +217,14 @@ fun ChallengeEditScreen(
 
         Spacer(Modifier.height(24.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onCancel, enabled = !isSaving, modifier = Modifier.weight(1f).height(50.dp)) {
+            OutlinedButton(onClick = onCancel, enabled = !isSaving, modifier = Modifier
+                .weight(1f)
+                .height(50.dp)) {
                 Text(stringResource(R.string.cancel_button))
             }
-            Button(onClick = onSave, enabled = !isSaving, modifier = Modifier.weight(1f).height(50.dp)) {
+            Button(onClick = onSave, enabled = !isSaving, modifier = Modifier
+                .weight(1f)
+                .height(50.dp)) {
                 if (isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.height(24.dp),
@@ -230,7 +248,9 @@ private fun SectionLabel(textRes: Int) {
         text = stringResource(textRes),
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 4.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp, bottom = 4.dp)
     )
 }
 
@@ -264,8 +284,13 @@ private fun ChallengeEditScreenPreview() {
     }
 }
 
-@Preview(name = "Edit group challenge", showBackground = true, heightDp = 900)
-@Preview(name = "Edit group Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 900)
+@Preview(name = "Edit team challenge", showBackground = true, heightDp = 900)
+@Preview(
+    name = "Edit team Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    heightDp = 900
+)
 @Preview(name = "Tablet", widthDp = 840, heightDp = 900, showBackground = true)
 @Composable
 private fun ChallengeEditScreenGroupPreview() {
@@ -273,7 +298,7 @@ private fun ChallengeEditScreenGroupPreview() {
         ChallengeEditScreen(
             form = ChallengeForm(
                 challengeId = "c1", title = "Team sprint", description = "Everybody finishes.",
-                type = ChallengeType.ELEVATION, targetValue = 5000.0, scope = ChallengeScope.GROUP,
+                type = ChallengeType.ELEVATION, targetValue = 5000.0, scope = ChallengeScope.TEAM,
                 startDate = 1_768_435_200_000L, endDate = 1_771_027_200_000L,
                 requireAllMembersCompletion = true, isActive = true
             ),

@@ -56,11 +56,11 @@ private struct RouteShape: View {
                     }
                 }
                 path.stroke(Color.white, style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
-                path.stroke(Color.wandrAccentText, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+                path.stroke(Color.wandrRoute, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
                 marker(points[0], color: .green)
                 marker(points[points.count - 1], color: .red)
             } else if let only = points.first {
-                marker(only, color: .wandrAccentText)
+                marker(only, color: .wandrRoute)
             }
         }
     }

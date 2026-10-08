@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
- * All challenges the user can see: open ones (for everyone), their own and those of their groups.
+ * All challenges the user can see: open ones (for everyone), their own and those of their teams.
  * Managers can create challenges and edit their own via a bottom sheet.
  */
 @Composable

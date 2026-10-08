@@ -11,6 +11,8 @@ extension Color {
     static let wandrOnPrimary = Color("OnBrandPrimary")
     static let wandrSecondary = Color("BrandSecondary")
     static let wandrAccentText = Color.accentColor
+    /// The route line on maps: a strong royal blue, the complement of the brand gold (same value as on Android).
+    static let wandrRoute = Color(red: 0x1F / 255, green: 0x5F / 255, blue: 0xD6 / 255)
 }
 
 #Preview("Palette Light") { WandrPalettePreview().preferredColorScheme(.light) }

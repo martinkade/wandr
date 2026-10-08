@@ -16,7 +16,7 @@ interface ChallengeDao {
     @Query("SELECT * FROM challenges WHERE id = :id")
     suspend fun getChallengeOnce(id: String): ChallengeEntity?
 
-    /** All challenges are visible to every signed-in user (individual ones and group ones teams can enroll in). */
+    /** All challenges are visible to every signed-in user (individual ones and team ones teams can enroll in). */
     @Query("SELECT * FROM challenges ORDER BY start_date ASC")
     fun getAllChallenges(): Flow<List<ChallengeEntity>>
 

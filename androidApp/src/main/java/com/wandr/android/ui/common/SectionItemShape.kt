@@ -5,7 +5,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * The shape of an item in a list of connected cards: the first item has round top corners, the last one round bottom
- * corners, the corners in between are only slightly rounded (profile's groups, notifications).
+ * corners, the corners in between are only slightly rounded (profile's teams, notifications).
  */
 fun sectionItemShape(isFirstItemInSection: Boolean, isLastItemInSection: Boolean) =
     RoundedCornerShape(

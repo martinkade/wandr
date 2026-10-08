@@ -1,7 +1,7 @@
 package com.wandr.domain.model
 
 /**
- * One team in a group challenge. Only aggregates are exposed: the progress of single members of *other* teams
+ * One team in a team challenge. Only aggregates are exposed: the progress of single members of *other* teams
  * stays private (see `challenge_team_standings` in SUPABASE.md).
  */
 data class TeamStanding(

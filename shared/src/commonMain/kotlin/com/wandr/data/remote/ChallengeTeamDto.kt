@@ -12,7 +12,7 @@ data class ChallengeTeamInsertDto(
     @SerialName("enrolled_by") val enrolledBy: String
 )
 
-/** Insert payload for `public.challenge_participants` (individual challenges only; group rows come from triggers). */
+/** Insert payload for `public.challenge_participants` (individual challenges only; team rows come from triggers). */
 @Serializable
 data class ChallengeParticipantInsertDto(
     val id: String,

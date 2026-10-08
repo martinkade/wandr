@@ -23,7 +23,7 @@ data class ChallengeForm(
     /** Epoch milliseconds; challenges can be planned for the future. */
     val startDate: Long = 0L,
     val endDate: Long = 0L,
-    /** GROUP = teams compete against other teams; there is no team on the challenge itself. */
+    /** TEAM = teams compete against other teams; there is no team on the challenge itself. */
     val scope: ChallengeScope = ChallengeScope.INDIVIDUAL,
     val requireAllMembersCompletion: Boolean = false,
     /** Activity types that count; empty = every type counts. */
@@ -40,16 +40,16 @@ data class ChallengeState(
     val statuses: Map<String, ChallengeStatus> = emptyMap(),
     /** The user's participations by challenge id; absent = not taking part. See [availableChallengeAction]. */
     val participations: Map<String, ChallengeParticipation> = emptyMap(),
-    /** Teams the user owns or administers: only they can be enrolled in a group challenge (or withdrawn). */
+    /** Teams the user owns or administers: only they can be enrolled in a team challenge (or withdrawn). */
     val adminTeams: List<Team> = emptyList(),
-    /** The user's highest-priority team: the only one that counts for group challenges. */
+    /** The user's highest-priority team: the only one that counts for team challenges. */
     val primaryTeamId: String? = null,
     val selectedChallenge: Challenge? = null,
     /** Only the creator (owner) of the selected challenge may edit it and change its cover. */
     val canEdit: Boolean = false,
-    /** Team vs. team ranking of the selected group challenge. */
+    /** Team vs. team ranking of the selected team challenge. */
     val standings: List<TeamStanding> = emptyList(),
-    /** Progress of the user's own team members in the selected group challenge. */
+    /** Progress of the user's own team members in the selected team challenge. */
     val leaderboard: List<LeaderboardEntry> = emptyList(),
     /** Non-null while the create / edit sheet is open. */
     val form: ChallengeForm? = null,

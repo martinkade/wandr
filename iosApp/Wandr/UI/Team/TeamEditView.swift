@@ -1,7 +1,7 @@
 @preconcurrency import shared
 import SwiftUI
 
-/// Edit screen shown in the group's sheet: cover (4:3), avatar (1:1), name, description, Cancel / Save.
+/// Edit screen shown in the team's sheet: cover (4:3), avatar (1:1), name, description, Cancel / Save.
 struct TeamEditView: View {
     @Binding var name: String
     @Binding var teamDescription: String
@@ -96,7 +96,7 @@ struct TeamEditView: View {
 }
 
 #Preview("Light Mode") {
-    TeamEditView(name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking group for weekend trips."),
+    TeamEditView(name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking team for weekend trips."),
                  snackbar: .constant(nil))
 }
 

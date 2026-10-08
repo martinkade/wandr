@@ -126,7 +126,7 @@ private fun SlideInOverlayPreview() {
     WandrTheme {
         Box(Modifier.fillMaxSize()) {
             Text("Underlying screen", modifier = Modifier.align(Alignment.Center))
-            SlideInOverlay(item = "Group Details", onBack = {}) { title ->
+            SlideInOverlay(item = "Team Details", onBack = {}) { title ->
                 Box(Modifier
                     .fillMaxSize()
                     .padding(24.dp), contentAlignment = Alignment.Center) { Text(title) }

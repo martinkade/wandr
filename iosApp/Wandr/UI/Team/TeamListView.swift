@@ -1,7 +1,7 @@
 @preconcurrency import shared
 import SwiftUI
 
-/// Groups the signed-in manager belongs to, with a button to create a new one.
+/// Teams the signed-in manager belongs to, with a button to create a new one.
 struct TeamListView: View {
     let teams: [Team]
     var onSelectTeam: (Team) -> Void = { _ in }
@@ -10,7 +10,7 @@ struct TeamListView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             if teams.isEmpty {
-                Text(LocalizedStringKey("groups_empty"))
+                Text(LocalizedStringKey("teams_empty"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -34,7 +34,7 @@ struct TeamListView: View {
             }
 
             Button(action: onCreateTeam) {
-                Label(LocalizedStringKey("groups_new_button"), systemImage: "plus")
+                Label(LocalizedStringKey("teams_new_button"), systemImage: "plus")
                     .font(.headline)
                     .foregroundColor(.wandrOnPrimary)
                     .padding(.horizontal, 20)

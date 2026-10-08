@@ -89,19 +89,19 @@
     <string name="permission_location_message">WANDR records the route, distance and elevation of your activity using your precise location, including while the screen is off. Your location is only collected while a recording is running.\n\nOn the next screen you may also be asked to allow notifications, which show that a recording is active.</string>
     <string name="permission_location_denied">Location access is turned off. Enable it in the app settings to record GPS activities.</string>
 
-    <!-- Groups (managers) -->
-    <string name="tab_groups">Groups</string>
-    <string name="groups_empty">No groups yet. Create your first group to invite members.</string>
-    <string name="groups_new_button">New Group</string>
-    <string name="group_invite_code">Invite code: %1$s</string>
+    <!-- Teams (managers) -->
+    <string name="tab_teams">Teams</string>
+    <string name="teams_empty">No teams yet. Create your first team to invite members.</string>
+    <string name="teams_new_button">New Team</string>
+    <string name="team_invite_code">Invite code: %1$s</string>
 
     <!-- Profile edit mode -->
     <string name="profile_edit_button">Edit</string>
     <string name="profile_saved_message">Profile saved</string>
     <string name="profile_avatar_updated_message">Profile photo updated</string>
 
-    <!-- Group details -->
-    <string name="team_photo_title">Group Photo</string>
+    <!-- Team details -->
+    <string name="team_photo_title">Team Photo</string>
     <string name="team_cover_title">Cover Photo</string>
     <string name="team_cover_change">Change Cover</string>
     <string name="team_cover_content_description">Cover photo</string>
@@ -110,7 +110,7 @@
         <item quantity="other">%d Members</item>
     </plurals>
     <string name="team_no_members">No members yet.</string>
-    <string name="team_saved_message">Group saved</string>
+    <string name="team_saved_message">Team saved</string>
     <string name="team_image_updated_message">Image updated</string>
     <string name="role_admin">Admin</string>
     <string name="role_member">Member</string>
@@ -118,10 +118,10 @@
 
     <!-- Edit sheets -->
     <string name="profile_edit_title">Edit Profile</string>
-    <string name="team_edit_title">Edit Group</string>
+    <string name="team_edit_title">Edit Team</string>
     <string name="empty_value_placeholder">—</string>
 
-    <string name="team_details_title">Group Details</string>
+    <string name="team_details_title">Team Details</string>
 
     <!-- Profile stats -->
     <string name="profile_stats_activities">Activities</string>
@@ -141,14 +141,14 @@
     <string name="challenge_unit_time">h</string>
     <string name="challenge_scope_label">Mode</string>
     <string name="challenge_scope_individual">Everyone (individual)</string>
-    <string name="challenge_scope_group">Teams (team vs. team)</string>
+    <string name="challenge_scope_team">Teams (team vs. team)</string>
     <string name="challenge_created_message">Challenge created</string>
     <string name="challenge_updated_message">Challenge saved</string>
     <string name="challenge_joined_message">Joined challenge</string>
     <string name="challenges_empty">No challenges yet.</string>
 
-    <string name="challenge_scope_group_hint">Teams enroll and compete against other teams. Members of one team do not compete against each other, they all contribute to their team.</string>
-    <string name="challenge_group_card_hint">Teams compete against each other</string>
+    <string name="challenge_scope_team_hint">Teams enroll and compete against other teams. Members of one team do not compete against each other, they all contribute to their team.</string>
+    <string name="challenge_team_card_hint">Teams compete against each other</string>
     <string name="challenge_enroll_team_button">Enroll Team</string>
     <string name="challenge_enroll_dialog_title">Enroll a team</string>
     <string name="challenge_enroll_dialog_hint">Only the owner or an admin of a team can enroll it. All members then contribute to the team\'s result.</string>
@@ -270,7 +270,8 @@
     <string name="social_delete">Delete</string>
     <string name="social_more_options">More options</string>
     <string name="more_options">More options</string>
-    <string name="team_change_photo">Change group photo</string>
+    <string name="close_button">Close</string>
+    <string name="team_change_photo">Change team photo</string>
     <string name="social_save">Save</string>
     <string name="social_add_reaction">Add reaction</string>
     <string name="social_unknown_author">Someone</string>
@@ -295,16 +296,17 @@
     <string name="health_stats_title">Today</string>
     <string name="health_stats_steps">Steps</string>
     <string name="health_stats_floors">Floors climbed</string>
-    <string name="memberships_title">My groups</string>
-    <string name="memberships_hint">Drag to change the priority. Only your first group counts for group challenges.</string>
-    <string name="memberships_primary">Counts for group challenges</string>
+    <string name="memberships_title">My teams</string>
+    <string name="memberships_hint">Drag to change the priority. Only your first team counts for team challenges.</string>
+    <string name="memberships_primary">Counts for team challenges</string>
     <string name="memberships_reorder">Reorder</string>
-    <string name="memberships_join_item">Join a group</string>
-    <string name="join_team_hint">Enter the invite code or scan the QR code of the group.</string>
+    <string name="memberships_join_item">Join a team</string>
+    <string name="join_team_hint">Enter the invite code or scan the QR code of the team.</string>
     <string name="join_team_code_label">Invite code</string>
     <string name="join_team_scan">Scan QR code</string>
+    <string name="join_team_or">or</string>
     <string name="join_team_scan_failed">The QR code could not be scanned.</string>
-    <string name="join_team_success">You joined the group.</string>
+    <string name="join_team_success">You joined the team.</string>
     <string name="challenge_activity_types_label">Counting activities</string>
     <string name="challenge_activity_types_hint">Select the activity types that count. If none is selected, all activity types count.</string>
     <string name="challenge_activity_types_all">All activity types</string>
@@ -340,13 +342,13 @@
     <string name="recording_continue_button">Continue</string>
     <string name="recording_waiting_for_gps">Waiting for GPS signal…</string>
     <string name="recording_type_label">Sport</string>
-    <string name="save_team_button">Save Group</string>
+    <string name="save_team_button">Save Team</string>
     <string name="save_challenge_button">Save Challenge</string>
     <string name="activity_delete_button">Delete activity</string>
     <string name="activity_delete_confirm_title">Delete this activity?</string>
     <string name="activity_delete_confirm_message">The activity is removed for everyone, together with its likes and comments, and no longer counts for challenges. This cannot be undone.</string>
     <string name="challenge_ranking_title">Ranking</string>
-    <string name="challenge_team_ranking_title">Ranking in your group</string>
+    <string name="challenge_team_ranking_title">Ranking in your team</string>
     <string name="challenge_ranking_you">You</string>
     <string name="error_invalid_email">Please enter a valid email address.</string>
     <string name="error_password_too_short">The password needs at least %d characters.</string>

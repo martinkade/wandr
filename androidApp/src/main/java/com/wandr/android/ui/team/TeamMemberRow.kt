@@ -27,7 +27,7 @@ import com.wandr.domain.model.TeamMember
 import com.wandr.domain.model.TeamRole
 
 /**
- * A member as a card of a list of connected cards, like the groups in the profile: [isFirstItemInSection] /
+ * A member as a card of a list of connected cards, like the teams in the profile: [isFirstItemInSection] /
  * [isLastItemInSection] round the corners at the ends of the list.
  */
 @Composable
@@ -71,7 +71,9 @@ fun TeamMemberRow(
                 )
             }
         }
-        RoleChip(role = member.role)
+        if (member.role != TeamRole.MEMBER) {
+            RoleChip(role = member.role)
+        }
     }
 }
 

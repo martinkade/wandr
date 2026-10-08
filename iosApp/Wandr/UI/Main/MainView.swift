@@ -67,8 +67,10 @@ struct MainView: View {
 
             if viewModel.isManager {
                 // Owns its NavigationStack (list -> details).
-                GroupsContainerView(userId: viewModel.userId)
-                    .tabItem { Label(LocalizedStringKey("tab_groups"), systemImage: "person.3") }
+                TeamsContainerView(userId: viewModel.userId)
+                .tabItem {
+                    Label(LocalizedStringKey("tab_teams"), systemImage: "person.3")
+                }
                     .tag(2)
             }
 

@@ -42,12 +42,12 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
- * Groups tab for managers: the list and a bottom sheet to create a group (the same sheet as for editing one).
- * Opening a group is reported via [onOpenTeam]; the details page is shown by the main screen, above the tab bar.
+ * Teams tab for managers: the list and a bottom sheet to create a team (the same sheet as for editing one).
+ * Opening a team is reported via [onOpenTeam]; the details page is shown by the main screen, above the tab bar.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupsScreen(
+fun TeamsScreen(
     userId: String,
     onOpenTeam: (teamId: String) -> Unit,
     modifier: Modifier = Modifier,
@@ -77,7 +77,7 @@ fun GroupsScreen(
         }
     }
 
-    // A created group closes the sheet; errors show in the sheet.
+    // A created team closes the sheet; errors show in the sheet.
     val errorText = state.error?.userMessage()
     LaunchedEffect(state.successMessage, state.error) {
         if (showCreate && state.successMessage != null) {
@@ -123,7 +123,7 @@ fun GroupsScreen(
     }
 }
 
-/** Groups the signed-in manager belongs to, with a button to create a new one. */
+/** Teams the signed-in manager belongs to, with a button to create a new one. */
 @Composable
 private fun GroupList(
     teams: List<Team>,
@@ -132,11 +132,11 @@ private fun GroupList(
     modifier: Modifier = Modifier
 ) {
     ScreenScaffold(
-        title = stringResource(R.string.tab_groups),
+        title = stringResource(R.string.tab_teams),
         modifier = modifier,
         floatingActionButton = {
             ExtendedFloatingActionButton(onClick = onCreateTeam) {
-                Text(stringResource(R.string.groups_new_button))
+                Text(stringResource(R.string.teams_new_button))
             }
         }
     ) { padding ->
@@ -145,7 +145,7 @@ private fun GroupList(
         .padding(padding)) {
         if (teams.isEmpty()) {
             Text(
-                text = stringResource(R.string.groups_empty),
+                text = stringResource(R.string.teams_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -170,7 +170,17 @@ private fun GroupList(
 }
 
 private fun sampleTeams() = listOf(
-    Team("t1", "Alpine Trail Blazers", "Hiking group for weekend trips.", null, null, "X7K9P2W1", "u1", 0L, 0L),
+    Team(
+        "t1",
+        "Alpine Trail Blazers",
+        "Hiking team for weekend trips.",
+        null,
+        null,
+        "X7K9P2W1",
+        "u1",
+        0L,
+        0L
+    ),
     Team("t2", "City Runners", null, null, null, "Q3M8D5LA", "u1", 0L, 0L)
 )
 

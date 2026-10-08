@@ -25,7 +25,7 @@ import com.wandr.domain.model.ChallengeType
 import com.wandr.domain.model.TeamStanding
 
 /**
- * One team in the team-vs-team ranking of a group challenge, a card of a list of connected cards
+ * One team in the team-vs-team ranking of a team challenge, a card of a list of connected cards
  * ([isFirstItemInSection] / [isLastItemInSection] round the ends). The user's own team ([isMine]) is highlighted, so it is
  * easy to compare it with the other teams.
  *

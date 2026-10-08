@@ -5,7 +5,8 @@ import com.wandr.domain.model.ChallengeType
 
 sealed interface ChallengeIntent {
     data class LoadChallenges(val userId: String) : ChallengeIntent
-    /** Loads the team standings (group challenges) and the member ranking the user may see. */
+
+    /** Loads the team standings (team challenges) and the member ranking the user may see. */
     data class SelectChallenge(val challengeId: String) : ChallengeIntent
 
     /** Opens an empty form (create). Managers only; the server enforces it too. */
@@ -44,10 +45,10 @@ sealed interface ChallengeIntent {
     /** Individual challenges: leaves a challenge the user has joined. */
     data class LeaveChallenge(val challengeId: String, val userId: String) : ChallengeIntent
 
-    /** Group challenges: withdraws the enrolled team (owner / admin only, enforced by the server). */
+    /** Team challenges: withdraws the enrolled team (owner / admin only, enforced by the server). */
     data class WithdrawTeam(val challengeId: String, val teamId: String) : ChallengeIntent
 
-    /** Group challenges: enrolls one of the user's teams (owner / admin only, enforced by the server). */
+    /** Team challenges: enrolls one of the user's teams (owner / admin only, enforced by the server). */
     data class EnrollTeam(val challengeId: String, val teamId: String, val userId: String) : ChallengeIntent
     data object ClearMessages : ChallengeIntent
 }

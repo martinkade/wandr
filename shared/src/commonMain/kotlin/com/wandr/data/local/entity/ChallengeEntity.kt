@@ -19,7 +19,7 @@ data class ChallengeEntity(
     val coverUrl: String?,
     
     @ColumnInfo(name = "scope")
-    val scope: String, // group, individual
+    val scope: String, // "group" (team challenge; the stored value), "individual"
     
     @ColumnInfo(name = "type")
     val type: String, // distance, elevation, time
