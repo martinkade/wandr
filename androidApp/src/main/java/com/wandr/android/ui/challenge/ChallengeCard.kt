@@ -32,11 +32,13 @@ import com.wandr.android.R
 import com.wandr.android.ui.common.CoverHero
 import com.wandr.android.ui.common.LocalHeroTransition
 import com.wandr.android.ui.common.heroSource
+import com.wandr.android.ui.social.SocialBar
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.ChallengeType
+import com.wandr.domain.model.SocialCounts
 
 /**
  * A challenge in the list, built like the details screen: cover (or elevation lines) with the emblem on its edge, then
@@ -48,7 +50,11 @@ fun ChallengeCard(
     /** Derived at runtime from the dates, never stored (see `EvaluateChallengeStatusUseCase`). */
     status: ChallengeStatus,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    counts: SocialCounts = SocialCounts(),
+    onLikeClick: () -> Unit = {},
+    /** The comments live on the details; by default a tap on their button opens them like a tap on the card. */
+    onCommentsClick: () -> Unit = onClick
 ) {
     val type = ChallengeType.fromValue(challenge.type)
     val isTeamChallenge = ChallengeScope.fromValue(challenge.scope) == ChallengeScope.TEAM
@@ -68,94 +74,102 @@ fun ChallengeCard(
                 onClick()
             }
             .clip(RoundedCornerShape(16.dp)),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(Modifier.fillMaxWidth()) {
-                CoverHero(
-                    coverUrl = challenge.coverUrl,
-                    seed = challenge.id.hashCode(),
-                    height = 128.dp
-                )
-                Surface(
-                    shape = CircleShape,
-                    color = Color.Black.copy(alpha = 0.5f),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(statusLabel(status)).uppercase(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            Row(
+        Box(Modifier.fillMaxWidth()) {
+            CoverHero(
+                coverUrl = challenge.coverUrl,
+                seed = challenge.id.hashCode(),
+                height = 128.dp
+            )
+            Surface(
+                shape = CircleShape,
+                color = Color.Black.copy(alpha = 0.5f),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
             ) {
-                ChallengeBadge(type = type, size = 64.dp, modifier = Modifier.heroSource(heroKey))
-                Column(modifier = Modifier.weight(1.0f)) {
-                    Text(
-                        text = challenge.title,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = listOfNotNull(
-                            challengeLengthText(challenge),
-                            remaining
-                        ).joinToString(" · "),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-
-            challenge.description?.takeIf { it.isNotBlank() }?.let {
                 Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-            ) {
-                CardFact(
-                    icon = R.drawable.ic_flag,
-                    text = stringResource(
-                        R.string.challenge_goal_text,
-                        stringResource(typeLabel(type)),
-                        challengeValueText(type, challenge.targetValue)
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-                CardFact(
-                    icon = R.drawable.ic_emoji_events,
-                    text = stringResource(if (isTeamChallenge) R.string.challenge_scope_team else R.string.challenge_scope_individual),
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    text = stringResource(statusLabel(status)).uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
             }
         }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ChallengeBadge(type = type, size = 64.dp, modifier = Modifier.heroSource(heroKey))
+            Column(modifier = Modifier.weight(1.0f)) {
+                Text(
+                    text = challenge.title,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = listOfNotNull(
+                        challengeLengthText(challenge),
+                        remaining
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+
+        challenge.description?.takeIf { it.isNotBlank() }?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp)
+        ) {
+            CardFact(
+                icon = R.drawable.ic_flag,
+                text = stringResource(
+                    R.string.challenge_goal_text,
+                    stringResource(typeLabel(type)),
+                    challengeValueText(type, challenge.targetValue)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            CardFact(
+                icon = R.drawable.ic_emoji_events,
+                text = stringResource(if (isTeamChallenge) R.string.challenge_scope_team else R.string.challenge_scope_individual),
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        }
+
+        SocialBar(
+            likeCount = counts.likeCount,
+            likedByMe = counts.likedByMe,
+            commentCount = counts.commentCount,
+            onToggleLike = onLikeClick,
+            onOpenComments = onCommentsClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp)
+        )
     }
 }
 
@@ -220,7 +234,9 @@ private fun ChallengeCardPreview() {
             ChallengeCard(
                 previewChallenge,
                 ChallengeStatus.ACTIVE,
-                onClick = {})
+                onClick = {},
+                counts = SocialCounts(likeCount = 12, commentCount = 4, likedByMe = true)
+            )
         }
     }
 }

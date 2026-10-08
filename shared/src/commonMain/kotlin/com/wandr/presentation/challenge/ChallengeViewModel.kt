@@ -5,6 +5,8 @@ import com.wandr.domain.error.asAppError
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeType
+import com.wandr.domain.model.SocialCounts
+import com.wandr.domain.model.SocialEntityType
 import com.wandr.domain.usecase.CreateChallengeUseCase
 import com.wandr.domain.usecase.EnrollTeamInChallengeUseCase
 import com.wandr.domain.usecase.EvaluateChallengeStatusUseCase
@@ -13,6 +15,7 @@ import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
 import com.wandr.domain.usecase.GetChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
 import com.wandr.domain.usecase.GetMemberRankingUseCase
+import com.wandr.domain.usecase.GetSocialCountsUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
@@ -20,6 +23,7 @@ import com.wandr.domain.usecase.LeaveChallengeUseCase
 import com.wandr.domain.usecase.RefreshChallengesUseCase
 import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
 import com.wandr.domain.usecase.SetChallengeCoverUseCase
+import com.wandr.domain.usecase.SetLikeUseCase
 import com.wandr.domain.usecase.UpdateChallengeUseCase
 import com.wandr.domain.usecase.WithdrawTeamFromChallengeUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -53,6 +57,8 @@ class ChallengeViewModel(
     private val getTeamStandingsUseCase: GetTeamStandingsUseCase,
     private val enrollTeamInChallengeUseCase: EnrollTeamInChallengeUseCase,
     private val joinChallengeUseCase: JoinChallengeUseCase,
+    private val getSocialCountsUseCase: GetSocialCountsUseCase,
+    private val setLikeUseCase: SetLikeUseCase,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
     private val _uiState = MutableStateFlow(ChallengeState())
@@ -61,6 +67,7 @@ class ChallengeViewModel(
     private var observeJob: Job? = null
     private var selectJob: Job? = null
     private var currentUserId: String? = null
+    private var countedIds: List<String> = emptyList()
 
     fun processIntent(intent: ChallengeIntent) {
         when (intent) {
@@ -102,6 +109,7 @@ class ChallengeViewModel(
             is ChallengeIntent.EnrollTeam -> enrollTeam(intent.challengeId, intent.teamId, intent.userId)
             is ChallengeIntent.LeaveChallenge -> leaveChallenge(intent.challengeId, intent.userId)
             is ChallengeIntent.WithdrawTeam -> withdrawTeam(intent.challengeId, intent.teamId)
+            is ChallengeIntent.ToggleChallengeLike -> toggleChallengeLike(intent.challengeId)
             is ChallengeIntent.ClearMessages -> _uiState.update {
                 it.copy(
                     error = null,
@@ -144,6 +152,43 @@ class ChallengeViewModel(
                 val now = Clock.System.now().toEpochMilliseconds()
                 val statuses = challenges.associate { it.id to evaluateChallengeStatusUseCase(it, currentTimeMillis = now) }
                 _uiState.update { it.copy(challenges = challenges, statuses = statuses, isLoading = false) }
+                fetchSocialCounts(challenges.map { it.id })
+            }
+        }
+    }
+
+    /** Likes and comments of all cards in one call; only when the list has other items than before. */
+    private fun fetchSocialCounts(ids: List<String>) {
+        if (ids == countedIds) return
+        countedIds = ids
+        scope.launch {
+            getSocialCountsUseCase(SocialEntityType.CHALLENGE, ids)
+                .onSuccess { counts -> _uiState.update { it.copy(socialCounts = it.socialCounts + counts) } }
+        }
+    }
+
+    private fun toggleChallengeLike(challengeId: String) {
+        val userId = currentUserId ?: return
+        val before = _uiState.value.socialCounts[challengeId] ?: SocialCounts()
+        val liked = !before.likedByMe
+        val after = before.copy(
+            likeCount = (before.likeCount + if (liked) 1 else -1).coerceAtLeast(0),
+            likedByMe = liked
+        )
+        _uiState.update { it.copy(socialCounts = it.socialCounts + (challengeId to after)) }
+        scope.launch {
+            setLikeUseCase(
+                SocialEntityType.CHALLENGE,
+                challengeId,
+                userId,
+                liked
+            ).onFailure { error ->
+                _uiState.update {
+                    it.copy(
+                        socialCounts = it.socialCounts + (challengeId to before),
+                        error = error.asAppError()
+                    )
+                }
             }
         }
     }

@@ -50,5 +50,8 @@ sealed interface ChallengeIntent {
 
     /** Team challenges: enrolls one of the user's teams (owner / admin only, enforced by the server). */
     data class EnrollTeam(val challengeId: String, val teamId: String, val userId: String) : ChallengeIntent
+
+    /** Likes or unlikes a challenge from its card (optimistic; reverted when the server rejects it). */
+    data class ToggleChallengeLike(val challengeId: String) : ChallengeIntent
     data object ClearMessages : ChallengeIntent
 }

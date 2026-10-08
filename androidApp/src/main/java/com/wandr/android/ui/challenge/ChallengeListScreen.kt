@@ -39,6 +39,7 @@ import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.Challenge
 import com.wandr.domain.model.ChallengeParticipation
 import com.wandr.domain.model.ChallengeStatus
+import com.wandr.domain.model.SocialCounts
 import com.wandr.domain.model.isVisibleTo
 import com.wandr.presentation.challenge.ChallengeIntent
 import com.wandr.presentation.challenge.ChallengeState
@@ -181,7 +182,9 @@ private fun ChallengeListScreenContent(
                         ChallengeCard(
                             challenge = challenge,
                             status = status,
-                            onClick = { onOpenChallenge(challenge.id) }
+                            onClick = { onOpenChallenge(challenge.id) },
+                            counts = state.socialCounts[challenge.id] ?: SocialCounts(),
+                            onLikeClick = { onIntent(ChallengeIntent.ToggleChallengeLike(challenge.id)) }
                         )
                     }
                 }

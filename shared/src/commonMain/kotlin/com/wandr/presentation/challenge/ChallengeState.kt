@@ -7,6 +7,7 @@ import com.wandr.domain.model.ChallengeScope
 import com.wandr.domain.model.ChallengeStatus
 import com.wandr.domain.model.ChallengeType
 import com.wandr.domain.model.LeaderboardEntry
+import com.wandr.domain.model.SocialCounts
 import com.wandr.domain.model.Team
 import com.wandr.domain.model.TeamStanding
 
@@ -44,6 +45,8 @@ data class ChallengeState(
     val adminTeams: List<Team> = emptyList(),
     /** The user's highest-priority team: the only one that counts for team challenges. */
     val primaryTeamId: String? = null,
+    /** Likes and comments per challenge id, fetched for the whole list in one call (for the cards). */
+    val socialCounts: Map<String, SocialCounts> = emptyMap(),
     val selectedChallenge: Challenge? = null,
     /** Only the creator (owner) of the selected challenge may edit it and change its cover. */
     val canEdit: Boolean = false,

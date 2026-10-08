@@ -83,10 +83,9 @@ fun TeamsScreen(
         if (showCreate && state.successMessage != null) {
             closeSheet()
         } else if (errorText != null) {
-            val message = errorText
             scope.launch {
                 snackbarHostState.currentSnackbarData?.dismiss()
-                snackbarHostState.showSnackbar(message)
+                snackbarHostState.showSnackbar(errorText)
             }
             viewModel.processIntent(TeamIntent.ClearMessages)
         }

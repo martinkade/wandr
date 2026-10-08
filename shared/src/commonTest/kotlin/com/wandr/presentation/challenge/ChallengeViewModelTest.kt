@@ -23,6 +23,7 @@ import com.wandr.domain.usecase.GetChallengeParticipationsUseCase
 import com.wandr.domain.usecase.GetChallengeUseCase
 import com.wandr.domain.usecase.GetChallengesUseCase
 import com.wandr.domain.usecase.GetMemberRankingUseCase
+import com.wandr.domain.usecase.GetSocialCountsUseCase
 import com.wandr.domain.usecase.GetTeamStandingsUseCase
 import com.wandr.domain.usecase.GetUserTeamsUseCase
 import com.wandr.domain.usecase.JoinChallengeUseCase
@@ -30,6 +31,7 @@ import com.wandr.domain.usecase.LeaveChallengeUseCase
 import com.wandr.domain.usecase.RefreshChallengesUseCase
 import com.wandr.domain.usecase.RemoveChallengeCoverUseCase
 import com.wandr.domain.usecase.SetChallengeCoverUseCase
+import com.wandr.domain.usecase.SetLikeUseCase
 import com.wandr.domain.usecase.UpdateChallengeUseCase
 import com.wandr.domain.usecase.WithdrawTeamFromChallengeUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -143,7 +145,8 @@ class ChallengeViewModelTest {
     private fun viewModel(
         repo: FakeChallengeRepository,
         teams: List<Team>,
-        scope: CoroutineScope
+        scope: CoroutineScope,
+        social: FakeChallengeSocial = FakeChallengeSocial()
     ) = ChallengeViewModel(
         GetChallengesUseCase(repo), GetChallengeParticipationsUseCase(repo), LeaveChallengeUseCase(repo),
         WithdrawTeamFromChallengeUseCase(repo), GetChallengeUseCase(repo), SetChallengeCoverUseCase(repo), RemoveChallengeCoverUseCase(repo),
@@ -153,8 +156,53 @@ class ChallengeViewModelTest {
         GetUserTeamsUseCase(FakeTeamRepository(teams)),
         CreateChallengeUseCase(repo), UpdateChallengeUseCase(repo),
         GetMemberRankingUseCase(repo), GetTeamStandingsUseCase(repo), EnrollTeamInChallengeUseCase(repo),
-        JoinChallengeUseCase(repo), scope
+        JoinChallengeUseCase(repo),
+        GetSocialCountsUseCase(social),
+        SetLikeUseCase(social),
+        scope
     )
+
+    @Test
+    fun cardsGetTheirLikeAndCommentCountsInOneCall() = runTest {
+        val social = FakeChallengeSocial().apply {
+            counts = mapOf(
+                open.id to com.wandr.domain.model.SocialCounts(
+                    likeCount = 3,
+                    commentCount = 2,
+                    likedByMe = false
+                )
+            )
+        }
+        val vm = viewModel(
+            FakeChallengeRepository(listOf(open)),
+            listOf(team),
+            CoroutineScope(UnconfinedTestDispatcher(testScheduler)),
+            social
+        )
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        assertEquals(3, vm.uiState.value.socialCounts.getValue(open.id).likeCount)
+        assertEquals(2, vm.uiState.value.socialCounts.getValue(open.id).commentCount)
+    }
+
+    @Test
+    fun likingACardIsAppliedAtOnceAndRevertedWhenTheServerRejectsIt() = runTest {
+        val social = FakeChallengeSocial()
+        val vm = viewModel(
+            FakeChallengeRepository(listOf(open)),
+            listOf(team),
+            CoroutineScope(UnconfinedTestDispatcher(testScheduler)),
+            social
+        )
+        vm.processIntent(ChallengeIntent.LoadChallenges("u1"))
+        vm.processIntent(ChallengeIntent.ToggleChallengeLike(open.id))
+        assertEquals(true, vm.uiState.value.socialCounts.getValue(open.id).likedByMe)
+        assertEquals(listOf(open.id to true), social.likes)
+
+        social.failLike = true
+        vm.processIntent(ChallengeIntent.ToggleChallengeLike(open.id)) // unlike fails -> back to liked
+        assertEquals(true, vm.uiState.value.socialCounts.getValue(open.id).likedByMe)
+        assertEquals(1, vm.uiState.value.socialCounts.getValue(open.id).likeCount)
+    }
 
     @Test
     fun loadShowsChallengesAdminTeamsAndRefreshes() = runTest {
@@ -586,3 +634,62 @@ class ChallengeViewModelTest {
         assertIs<AppError.PermissionDenied>(vm.uiState.value.error)
     }
 }
+
+/** Likes and comments of the challenge cards. */
+class FakeChallengeSocial : com.wandr.domain.repository.SocialRepository {
+    var failLike = false
+    var counts: Map<String, com.wandr.domain.model.SocialCounts> = emptyMap()
+    val likes = mutableListOf<Pair<String, Boolean>>()
+
+    override suspend fun getCounts(
+        type: com.wandr.domain.model.SocialEntityType,
+        entityIds: List<String>
+    ) =
+        Result.success(entityIds.associateWith {
+            counts[it] ?: com.wandr.domain.model.SocialCounts()
+        })
+
+    override suspend fun setLike(
+        type: com.wandr.domain.model.SocialEntityType,
+        entityId: String,
+        userId: String,
+        liked: Boolean
+    ): Result<Unit> {
+        if (failLike) return Result.failure(IllegalStateException("offline"))
+        likes += entityId to liked
+        return Result.success(Unit)
+    }
+
+    override suspend fun getSummary(
+        type: com.wandr.domain.model.SocialEntityType,
+        entityId: String,
+        userId: String
+    ) = Result.failure<com.wandr.domain.model.SocialSummary>(UnsupportedOperationException())
+
+    override suspend fun getComments(
+        type: com.wandr.domain.model.SocialEntityType,
+        entityId: String,
+        userId: String
+    ) = Result.failure<List<com.wandr.domain.model.Comment>>(UnsupportedOperationException())
+
+    override suspend fun addComment(
+        type: com.wandr.domain.model.SocialEntityType,
+        entityId: String,
+        userId: String,
+        content: String
+    ) = Result.failure<com.wandr.domain.model.Comment>(UnsupportedOperationException())
+
+    override suspend fun updateComment(commentId: String, content: String) =
+        Result.failure<com.wandr.domain.model.Comment>(UnsupportedOperationException())
+
+    override suspend fun deleteComment(commentId: String) =
+        Result.failure<Unit>(UnsupportedOperationException())
+
+    override suspend fun setReaction(
+        commentId: String,
+        userId: String,
+        emoji: String,
+        reacted: Boolean
+    ) = Result.failure<Unit>(UnsupportedOperationException())
+}
+

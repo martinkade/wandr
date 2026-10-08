@@ -187,6 +187,10 @@ This document serves as the master implementation plan and roadmap for **WANDR**
     `tab_teams`, `teams_empty`, `team_invite_code`, `challenge_scope_team` …). Only stored / wire
     values keep "group" (the `challenge_scope` database enum and `challenges.scope`;
     `ChallengeScope.TEAM` maps to "group"), as does the historic text of older entries.
+  - Android: the challenge cards end with the `SocialBar` like the feed cards: like button
+    (optimistic, reverted on error) and the comment count; the counts of all cards come in one call
+    (`ChallengeState.socialCounts`, `ChallengeIntent.ToggleChallengeLike`). The comment button opens
+    the details. iOS not yet.
 - [x] **Step 5.3: Team-vs-Team Standings (Privacy-First)**
   - Rank **teams** against each other by the sum of their members' progress (`challenge_team_standings`, aggregates only). Other teams never see individual members; the members of a team see each other's progress within their own team.
   - Compute percentage progress towards target values (e.g. 100km, 5000m, 5h).

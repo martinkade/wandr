@@ -73,7 +73,8 @@ fun ActivityCard(
             activity = activity,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            maxDescriptionLines = 2
         )
 
         ActivityStats(
