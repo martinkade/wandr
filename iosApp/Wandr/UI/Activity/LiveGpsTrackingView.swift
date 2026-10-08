@@ -23,7 +23,8 @@ struct LiveGpsTrackingView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-                TrackMapView(trackpoints: mapPoints, height: 280)
+                // Drag and pinch; it follows the position until the user moves it (then a button brings it back).
+                InteractiveMapView(route: state.isTracking ? state.liveTrackpoints : [], position: mapPosition, height: 280)
 
                 gpsStatusRow
 
@@ -90,10 +91,9 @@ struct LiveGpsTrackingView: View {
         }
     }
 
-    /// The points the map shows: the route while recording, otherwise the current position.
-    private var mapPoints: [GpsTrackpoint] {
-        if state.isTracking { return state.liveTrackpoints }
-        return locationTracker.currentTrackpoint.map { [$0] } ?? []
+    /// Where the user is: the latest point of the recording, before the start the current GPS position.
+    private var mapPosition: GpsTrackpoint? {
+        state.isTracking ? state.liveTrackpoints.last : locationTracker.currentTrackpoint
     }
 
     private var gpsStatusRow: some View {

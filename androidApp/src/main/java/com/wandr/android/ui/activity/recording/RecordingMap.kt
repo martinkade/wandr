@@ -8,16 +8,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.wandr.android.R
-import com.wandr.android.ui.activity.OsmTrackMap
+import com.wandr.android.ui.activity.InteractiveOsmMap
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.model.GpsTrackpoint
 
 /**
- * The full-screen backdrop of the recording: the route so far on an OpenStreetMap background. It is shown once the GPS is connected
+ * The full-screen backdrop of the recording: the route so far on an OpenStreetMap background that can be dragged and zoomed. It is shown once the GPS is connected
  * ([isGpsConnected]); until then only a hint is shown.
  */
 @Composable
@@ -28,11 +27,8 @@ fun RecordingMap(
 ) {
     Box(modifier.fillMaxSize()) {
         if (isGpsConnected) {
-            OsmTrackMap(
-                trackpoints = route,
-                modifier = Modifier.fillMaxSize(),
-                shape = RectangleShape
-            )
+            // Drag and pinch; it follows the current position until the user moves it (then a button brings it back).
+            InteractiveOsmMap(route = route, position = route.lastOrNull(), modifier = Modifier.fillMaxSize())
         }
         if (!isGpsConnected || route.isEmpty()) {
             Text(

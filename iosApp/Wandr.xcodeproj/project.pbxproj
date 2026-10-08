@@ -96,6 +96,7 @@
 		E40D747A29C5214058251086 /* WandrWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493839A62A15D2B9998C3AF7 /* WandrWidgets.swift */; };
 		E4DBE66F9CC3B2BD68AAEBFB /* TeamCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052F351F50B69C25F4EACC19 /* TeamCardView.swift */; };
 		E52F96EE21035B80EB925116 /* WorkoutSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CDE9170DDAB2D190FD5E07 /* WorkoutSummaryView.swift */; };
+		E56C2383D1E5243F62BC861F /* InteractiveMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 889CC961E79A7695C6C568C1 /* InteractiveMapView.swift */; };
 		E87E13069E65E069C7A03EBB /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5619383385D8D00B5FD7FABC /* RegisterView.swift */; };
 		E91012B339F24FEA8101929E /* ReactionChipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34601CF0F11076210BD324B3 /* ReactionChipView.swift */; };
 		EB1FC819251A35923C6B2B27 /* RecordingLockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A78C7596ABC16F66896B733 /* RecordingLockScreenView.swift */; };
@@ -226,6 +227,7 @@
 		830456A8D90F27D7B2909FF5 /* WatchWorkoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWorkoutTests.swift; sourceTree = "<group>"; };
 		8395BB0E436E0ABA2D07CE76 /* WatchImportObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchImportObserver.swift; sourceTree = "<group>"; };
 		86CDE9170DDAB2D190FD5E07 /* WorkoutSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSummaryView.swift; sourceTree = "<group>"; };
+		889CC961E79A7695C6C568C1 /* InteractiveMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveMapView.swift; sourceTree = "<group>"; };
 		8CE7B904ED87066EC2CDF53A /* LocationTrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTrackingManager.swift; sourceTree = "<group>"; };
 		8F8BBAFE852C9E2A4CD85657 /* TeamObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamObserver.swift; sourceTree = "<group>"; };
 		91E44C9A43FEFC228879856C /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
@@ -368,6 +370,7 @@
 				4B7779D495C80ACD2BAC579A /* ActivityConflictView.swift */,
 				D505906CFB45A43FCB1D6927 /* ActivityDetailView.swift */,
 				2361883567F0ADB94F46528A /* FeedView.swift */,
+				889CC961E79A7695C6C568C1 /* InteractiveMapView.swift */,
 				A8266FE8D7D0B2B308C644A0 /* LiveGpsTrackingView.swift */,
 				1623640DB7D65D94B734A80A /* ManualActivityEntryView.swift */,
 				1677174E725ACC2C452EF7A6 /* OsmTileCache.swift */,
@@ -822,6 +825,7 @@
 				27DCDFB4ABFA0301E95753B9 /* ImagePickerFlow.swift in Sources */,
 				FAE069674DEF9E6E64EB88C8 /* ImagePipeline.swift in Sources */,
 				B5EEFCBBA1510081592EDAA8 /* InitView.swift in Sources */,
+				E56C2383D1E5243F62BC861F /* InteractiveMapView.swift in Sources */,
 				EB47F711C1BCDD7D40F7621C /* LabeledValueView.swift in Sources */,
 				29A98F5C8B25168B3748A904 /* LeaderboardRowView.swift in Sources */,
 				26707DF661ED5C5E4FBBC469 /* LiveGpsTrackingView.swift in Sources */,

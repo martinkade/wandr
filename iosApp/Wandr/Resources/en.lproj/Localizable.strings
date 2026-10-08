@@ -234,3 +234,4 @@
 "recording_gps_searching" = "GPS locating…";
 "recording_gps_weak" = "GPS signal weak";
 "recording_gps_good" = "GPS signal good";
+"recording_recenter" = "Center on my position";

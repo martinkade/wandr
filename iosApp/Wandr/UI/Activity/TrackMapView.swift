@@ -42,8 +42,8 @@ struct TrackMapView: View {
     }
 }
 
-/// The route as a line with a white outline, a green start and a red end (a single position is just a dot).
-private struct RouteShape: View {
+/// The route as a smooth line with a white outline, a green start and a red end (a single position is just a dot).
+struct RouteShape: View {
     let points: [CGPoint]
 
     var body: some View {
@@ -75,7 +75,7 @@ private struct RouteShape: View {
 }
 
 /// One OSM tile, loaded through the tile cache (see `OsmTileCache`).
-private struct OsmTileView: View {
+struct OsmTileView: View {
     let url: String
     @State private var image: UIImage?
 

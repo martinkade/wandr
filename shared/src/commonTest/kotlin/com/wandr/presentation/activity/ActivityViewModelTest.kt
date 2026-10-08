@@ -113,13 +113,15 @@ class ActivityViewModelTest {
         scope: CoroutineScope,
         social: CountingSocialRepository = CountingSocialRepository(),
         authors: FakeAuthors = FakeAuthors(),
-        clock: () -> Long = { System0.now() }
+        clock: () -> Long = { System0.now() },
+        // Exact positions in, exact track out (the filter has its own tests).
+        trackFilter: com.wandr.domain.geo.TrackFilter = com.wandr.domain.geo.TrackFilter(Float.MAX_VALUE, windowSize = 1, minStepMeters = 0.0, stepPerAccuracy = 0.0)
     ) = ActivityViewModel(
         GetUserActivitiesUseCase(repo), GetTeamActivitiesUseCase(repo), GetActivityUseCase(repo),
         GetActivityTrackUseCase(repo), CreateManualActivityUseCase(repo), UpdateActivityUseCase(repo),
         RecordGpsActivityUseCase(repo), DeleteActivityUseCase(repo), RefreshActivitiesUseCase(NoFeed),
         com.wandr.domain.usecase.GetSocialCountsUseCase(social), com.wandr.domain.usecase.SetLikeUseCase(social),
-        com.wandr.domain.usecase.GetProfilesUseCase(authors), scope, clock
+        com.wandr.domain.usecase.GetProfilesUseCase(authors), scope, clock, trackFilter
     )
 
     @Test
@@ -619,5 +621,25 @@ class ActivityViewModelTest {
         cycling.processIntent(ActivityIntent.StartGpsTracking("cycling"))
         points(9).forEach { cycling.processIntent(ActivityIntent.AddTrackpoint(it)) }
         assertEquals(10, cycling.uiState().liveTrackpoints.size)
+    }
+
+    @Test
+    fun gpsJitterWhileStandingStillAddsNeitherPointsNorDistance() = runTest {
+        var now = 0L
+        // The real filter, as in the app.
+        val vm = viewModel(
+            FakeActivityRepository(), CoroutineScope(UnconfinedTestDispatcher(testScheduler)), clock = { now },
+            trackFilter = com.wandr.domain.geo.TrackFilter()
+        )
+        vm.processIntent(ActivityIntent.StartGpsTracking("hiking"))
+        repeat(40) { i ->
+            now += 3_000
+            vm.processIntent(ActivityIntent.GpsFixChanged(6f))
+            // About +-2 m of wobble around one spot.
+            val wobble = if (i % 2 == 0) 0.000018 else -0.000018
+            vm.processIntent(ActivityIntent.AddTrackpoint(GpsTrackpoint(47.0 + wobble, 8.0, 400.0, now)))
+        }
+        assertTrue(vm.uiState().liveDistanceMeters < 10.0, "walked ${vm.uiState().liveDistanceMeters} m while standing")
+        assertTrue(vm.uiState().liveTrackpoints.size <= 2, "${vm.uiState().liveTrackpoints.size} points")
     }
 }

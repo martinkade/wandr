@@ -86,7 +86,7 @@ fun OsmTrackMap(
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .onSizeChanged { size = it }
     ) {
-        layout?.tiles?.forEach { tile -> key(tile.zoom, tile.x, tile.y) { MapTileImage(tile) } }
+        layout?.tiles?.forEach { tile -> key(tile.zoom, tile.x, tile.y) { OsmTileImage(tile, StaticMapLayout.TILE_SIZE.toFloat()) } }
 
         Canvas(Modifier.fillMaxSize()) {
             layout ?: return@Canvas
@@ -100,13 +100,7 @@ fun OsmTrackMap(
                 drawCircle(routeColor, radius = 11f, center = points.first())
                 return@Canvas
             }
-            val path = Path()
-            points.forEachIndexed { index, o ->
-                if (index == 0) path.moveTo(
-                    o.x,
-                    o.y
-                ) else path.lineTo(o.x, o.y)
-            }
+            val path = smoothedPath(points)
             // A white outline keeps the route readable on every map color.
             drawPath(
                 path,
@@ -136,22 +130,6 @@ fun OsmTrackMap(
             )
         }
     }
-}
-
-@Composable
-private fun MapTileImage(tile: MapTile) {
-    val density = LocalDensity.current
-    val tileDp = with(density) { StaticMapLayout.TILE_SIZE.toDp() }
-    val context = LocalContext.current
-    AsyncImage(
-        model = tile.url,
-        imageLoader = OsmTiles.loader(context),
-        contentDescription = null,
-        contentScale = ContentScale.FillBounds,
-        modifier = Modifier
-            .offset { IntOffset(tile.left.roundToInt(), tile.top.roundToInt()) }
-            .size(tileDp)
-    )
 }
 
 @Preview(name = "Light Mode", showBackground = true)

@@ -6,6 +6,7 @@ import com.wandr.domain.geo.ElevationGainTracker
 import com.wandr.domain.geo.GeoMath
 import com.wandr.domain.geo.RecordingMetrics
 import com.wandr.domain.geo.RecordingPolicy
+import com.wandr.domain.geo.TrackFilter
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.ActivityConflictException
 import com.wandr.domain.model.ConflictResolution
@@ -50,7 +51,9 @@ class ActivityViewModel(
     private val getProfilesUseCase: GetProfilesUseCase,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
     /** The clock of the recording (milliseconds); replaced in tests. The recording clock itself is advanced by [ActivityIntent.Tick]. */
-    private val nowMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() }
+    private val nowMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() },
+    /** Cleans the GPS fixes before they become the track; replaced in tests that feed exact positions. */
+    private val trackFilter: TrackFilter = TrackFilter()
 ) {
     private val _state = MutableStateFlow(ActivityState())
     val state: StateFlow<ActivityState> = _state.asStateFlow()
@@ -106,6 +109,7 @@ class ActivityViewModel(
             is ActivityIntent.ResumeGpsTracking -> if (_state.value.isTracking && _state.value.isPaused) {
                 // The first point after a break is far from the last one; the way in between is not part of the activity.
                 skipDistanceOfNextPoint = true
+                trackFilter.reset() // the way during the break must not be averaged into the track
                 _state.update { it.copy(isPaused = false) }
             }
             is ActivityIntent.StopAndSaveGpsTracking -> stopAndSaveGpsTracking(intent.userId, intent.teamId, intent.title)
@@ -391,6 +395,7 @@ class ActivityViewModel(
         lastTickAt = trackingStartTime
         lastSplitSeconds = 0.0
         skipDistanceOfNextPoint = false
+        trackFilter.reset()
         elevationTracker.reset()
         _state.update {
             it.copy(
@@ -416,9 +421,12 @@ class ActivityViewModel(
         _state.update { it.copy(liveDurationSeconds = it.liveDurationSeconds + delta / 1000.0) }
     }
 
-    private fun addTrackpoint(trackpoint: GpsTrackpoint) {
+    private fun addTrackpoint(rawTrackpoint: GpsTrackpoint) {
         val s = _state.value
         if (!s.isTracking || s.isPaused) return
+        // GPS jitter makes a wiggly track and phantom distance: poor fixes are dropped, the rest is averaged, and standing
+        // still adds nothing.
+        val trackpoint = trackFilter.accept(rawTrackpoint, s.gpsAccuracyMeters) ?: return
         val last = s.liveTrackpoints.lastOrNull()
         // Fast sports record every second, hiking every 3 seconds; providers may deliver more often than requested.
         if (last != null && trackpoint.timestamp - last.timestamp < RecordingPolicy.minGapMillis(s.trackingActivityType)) return

@@ -341,6 +341,7 @@
     <string name="recording_discard_button">Verwerfen</string>
     <string name="recording_continue_button">Weiter</string>
     <string name="recording_waiting_for_gps">Warte auf GPS-Signal…</string>
+    <string name="recording_recenter">Auf meine Position zentrieren</string>
     <string name="recording_type_label">Sportart</string>
     <string name="save_team_button">Team speichern</string>
     <string name="save_challenge_button">Challenge speichern</string>

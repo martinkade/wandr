@@ -103,13 +103,8 @@ class StaticMapLayout private constructor(
             )
         }
 
-        /** Pixel position on the whole world map at [zoom]. */
-        private fun worldX(longitude: Double, zoom: Int): Double =
-            TILE_SIZE * 2.0.pow(zoom) * ((longitude + 180.0) / 360.0)
+        private fun worldX(longitude: Double, zoom: Int): Double = WebMercator.worldX(longitude, zoom)
 
-        private fun worldY(latitude: Double, zoom: Int): Double {
-            val lat = latitude.coerceIn(-85.0511, 85.0511) * PI / 180.0
-            return TILE_SIZE * 2.0.pow(zoom) * (0.5 - ln(tan(PI / 4 + lat / 2)) / (2 * PI))
-        }
+        private fun worldY(latitude: Double, zoom: Int): Double = WebMercator.worldY(latitude, zoom)
     }
 }
