@@ -10,8 +10,10 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.time.Duration.Companion.milliseconds
 
 class AuthRepositoryImpl(
     private val supabase: SupabaseClient
@@ -32,8 +34,14 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun hasActiveSession(): Boolean {
-        supabase.auth.awaitInitialization()
-        return supabase.auth.currentSessionOrNull() != null
+        return try {
+            withTimeoutOrNull(5_000L.milliseconds) {
+                supabase.auth.awaitInitialization()
+            }
+            supabase.auth.currentSessionOrNull() != null
+        } catch (e: Throwable) {
+            false
+        }
     }
 
     override suspend fun login(email: String, password: String): Result<AuthSession> =

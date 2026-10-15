@@ -11,10 +11,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.wandr.domain.watch.WatchWorkoutInbox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.compose.koinInject
 
 /**
- * Reads new workouts from Health Connect whenever the app is resumed, as long as the connection is enabled (available
+ * Reads new workouts from Health Connect whenever the app is resumed (if last sync was at least 1 hour ago), as long as the connection is enabled (available
  * and permitted). Silent: the import reports its own result, and overlaps open the conflict wizard.
  */
 @Composable
@@ -27,11 +28,17 @@ fun HealthAutoSync(inbox: WatchWorkoutInbox = koinInject()) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                // Off the main thread: the import reads and maps a month of workouts the first time.
+                // Off the main thread: the import reads and maps workouts if at least an hour has passed.
                 scope.launch(Dispatchers.Default) {
                     val recentlyRead = System.currentTimeMillis() - importer.lastReadAt < MIN_INTERVAL_MILLIS
                     if (!recentlyRead && importer.isAvailable) {
-                        runCatching { if (importer.hasPermissions()) importer.readWorkouts().forEach(inbox::offer) }
+                        runCatching {
+                            withTimeoutOrNull(10_000L) {
+                                if (importer.hasPermissions()) {
+                                    importer.readWorkouts().forEach(inbox::offer)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -41,5 +48,5 @@ fun HealthAutoSync(inbox: WatchWorkoutInbox = koinInject()) {
     }
 }
 
-/** Quick app switches should not hit Health Connect every time. */
-private const val MIN_INTERVAL_MILLIS = 60_000L
+/** Autosync only when last sync was at least an hour ago. */
+private const val MIN_INTERVAL_MILLIS = 3_600_000L

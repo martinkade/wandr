@@ -4,7 +4,9 @@ import com.wandr.domain.error.AppError
 import com.wandr.domain.error.asAppError
 import com.wandr.domain.repository.AppStorageRepository
 import com.wandr.domain.repository.AuthRepository
+import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * App start-up work: prepare local storage (database migrations), then evaluate the stored session.
@@ -22,10 +24,17 @@ class InitializeAppUseCase(
         } catch (error: Throwable) {
             throw AppError.LocalStorage(error)
         }
-        Result.success(authRepository.hasActiveSession())
+        val hasSession = withTimeout(INITIALIZATION_TIMEOUT_MS.milliseconds) {
+            authRepository.hasActiveSession()
+        }
+        Result.success(hasSession)
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (error: Throwable) {
         Result.failure(error.asAppError())
+    }
+
+    private companion object {
+        const val INITIALIZATION_TIMEOUT_MS = 8_000L
     }
 }

@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedButton
@@ -34,11 +37,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandr.android.R
+import com.wandr.android.health.HealthConnectImporter
 import com.wandr.android.ui.activity.ActivityCard
 import com.wandr.android.ui.activity.ActivityConflictSheet
 import com.wandr.android.ui.activity.ActivityEditScreen
@@ -46,12 +52,16 @@ import com.wandr.android.ui.activity.ActivityFabMenu
 import com.wandr.android.ui.common.ScreenScaffold
 import com.wandr.android.ui.common.userMessage
 import com.wandr.android.ui.theme.WandrTheme
+import com.wandr.data.sync.SyncManager
+import com.wandr.data.sync.SyncState
 import com.wandr.domain.model.Activity
 import com.wandr.domain.model.SocialCounts
+import com.wandr.domain.watch.WatchWorkoutInbox
 import com.wandr.presentation.activity.ActivityIntent
 import com.wandr.presentation.activity.ActivityState
 import com.wandr.presentation.activity.ActivitySuccess
 import com.wandr.presentation.activity.ActivityViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -70,9 +80,16 @@ fun FeedScreen(
     onRecord: () -> Unit,
     modifier: Modifier = Modifier,
     actions: @Composable () -> Unit = {},
-    viewModel: ActivityViewModel = koinInject()
+    viewModel: ActivityViewModel = koinInject(),
+    syncManager: SyncManager = koinInject(),
+    inbox: WatchWorkoutInbox = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
+    val syncState by syncManager.syncState.collectAsState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var isManualSyncing by remember { mutableStateOf(false) }
+
     var feed by rememberSaveable { mutableStateOf(FeedScope.Mine) }
     // The team feed shows what all members of the team recorded.
     // Keyed by the team only while the team feed is shown: the team arriving after the start must not reload "mine".
@@ -84,6 +101,26 @@ fun FeedScreen(
             viewModel.processIntent(ActivityIntent.LoadUserActivities(userId))
         }
     }
+
+    fun onSync() {
+        syncManager.triggerSync()
+        scope.launch(Dispatchers.Default) {
+            isManualSyncing = true
+            runCatching {
+                val importer = HealthConnectImporter(context)
+                if (importer.isAvailable && importer.hasPermissions()) {
+                    importer.readWorkouts().forEach(inbox::offer)
+                }
+            }
+            isManualSyncing = false
+        }
+        if (teamFeedId != null) {
+            viewModel.processIntent(ActivityIntent.LoadTeamActivities(teamFeedId, userId))
+        } else {
+            viewModel.processIntent(ActivityIntent.LoadUserActivities(userId))
+        }
+    }
+
     FeedScreenContent(
         state = state,
         userId = userId,
@@ -94,6 +131,8 @@ fun FeedScreen(
         modifier = modifier,
         feed = feed,
         onFeedChange = { feed = it },
+        isSyncing = syncState is SyncState.Syncing || isManualSyncing,
+        onSync = ::onSync,
         actions = actions
     )
 }
@@ -110,6 +149,8 @@ private fun FeedScreenContent(
     modifier: Modifier = Modifier,
     feed: FeedScope = FeedScope.Mine,
     onFeedChange: (FeedScope) -> Unit = {},
+    isSyncing: Boolean = false,
+    onSync: () -> Unit = {},
     actions: @Composable () -> Unit = {}
 ) {
     var isCreating by rememberSaveable { mutableStateOf(false) }
@@ -176,21 +217,51 @@ private fun FeedScreenContent(
         Column(Modifier
             .fillMaxSize()
             .padding(padding)) {
-            if (teamId != null) {
-                SingleChoiceSegmentedButtonRow(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+            val visibleScopes = remember(teamId) {
+                if (teamId != null) FeedScope.entries else listOf(FeedScope.Mine)
+            }
+            val totalItems = visibleScopes.size + 1
+
+            SingleChoiceSegmentedButtonRow(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                visibleScopes.forEachIndexed { index, option ->
+                    SegmentedButton(
+                        selected = feed == option,
+                        onClick = { onFeedChange(option) },
+                        shape = SegmentedButtonDefaults.itemShape(index, totalItems)
+                    ) { Text(stringResource(option.labelRes)) }
+                }
+                SegmentedButton(
+                    selected = false,
+                    onClick = onSync,
+                    shape = SegmentedButtonDefaults.itemShape(visibleScopes.size, totalItems),
+                    icon = { }
                 ) {
-                    FeedScope.entries.forEachIndexed { index, option ->
-                        SegmentedButton(
-                            selected = feed == option,
-                            onClick = { onFeedChange(option) },
-                            shape = SegmentedButtonDefaults.itemShape(index, FeedScope.entries.size)
-                        ) { Text(stringResource(option.labelRes)) }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        if (isSyncing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_sync),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Text(stringResource(R.string.activity_feed_sync))
                     }
                 }
             }
+
             Box(Modifier
                 .fillMaxWidth()
                 .weight(1f)) {

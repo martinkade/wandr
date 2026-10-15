@@ -287,6 +287,7 @@
     <string name="notification_generic">Neue Benachrichtigung</string>
     <string name="activity_feed_mine">Meine</string>
     <string name="activity_feed_team">Team</string>
+    <string name="activity_feed_sync">Synchronisieren</string>
     <string name="health_card_title">Health Connect</string>
     <string name="health_card_description">Gesundheits- und Fitnessdaten zwischen WANDR und anderen Apps teilen.</string>
     <string name="health_today_title">Heute</string>

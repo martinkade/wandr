@@ -15,10 +15,12 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import com.wandr.domain.watch.ExternalWorkoutId
 import com.wandr.domain.watch.WatchWorkout
 import com.wandr.domain.watch.WorkoutSource
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 /** Today's steps and floors climbed; a value is null when its permission was not granted. */
 data class DailyHealthSummary(val steps: Long?, val floors: Double?)
@@ -48,20 +50,37 @@ class HealthConnectImporter(private val context: Context) {
     val lastReadAt: Long get() = prefs.getLong(KEY_LAST_READ, 0L)
 
     val isAvailable: Boolean
-        get() = HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE
+        get() = try {
+            HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE
+        } catch (e: Throwable) {
+            false
+        }
 
     private val client by lazy { HealthConnectClient.getOrCreate(context) }
 
     /** True if workouts can be read (steps and floors are optional). */
-    suspend fun hasPermissions(): Boolean = client.permissionController.getGrantedPermissions().containsAll(workoutPermissions)
+    suspend fun hasPermissions(): Boolean = try {
+        withTimeoutOrNull(5_000L.milliseconds) {
+            client.permissionController.getGrantedPermissions().containsAll(workoutPermissions)
+        } ?: false
+    } catch (e: Throwable) {
+        false
+    }
 
     /**
      * Whether the permission request should be shown: workouts cannot be read yet, or steps/floors were never asked
      * for (e.g. by an earlier version). A user who declined steps/floors is not asked again on every tap.
      */
-    suspend fun shouldRequestPermissions(): Boolean {
-        val granted = client.permissionController.getGrantedPermissions()
-        return !granted.containsAll(workoutPermissions) || (!granted.containsAll(permissions) && !prefs.getBoolean(KEY_ASKED_ALL, false))
+    suspend fun shouldRequestPermissions(): Boolean = try {
+        withTimeoutOrNull(5_000L.milliseconds) {
+            val granted = client.permissionController.getGrantedPermissions()
+            !granted.containsAll(workoutPermissions) || (!granted.containsAll(permissions) && !prefs.getBoolean(
+                KEY_ASKED_ALL,
+                false
+            ))
+        } ?: false
+    } catch (e: Throwable) {
+        false
     }
 
     fun markRequested() = prefs.edit { putBoolean(KEY_ASKED_ALL, true) }
@@ -70,45 +89,62 @@ class HealthConnectImporter(private val context: Context) {
      * Steps and floors climbed since midnight (local time), or null if neither may be read. Aggregated by Health
      * Connect, which already de-duplicates data written by several apps.
      */
-    suspend fun readToday(now: Instant = Instant.now(), zone: ZoneId = ZoneId.systemDefault()): DailyHealthSummary? {
-        val granted = client.permissionController.getGrantedPermissions()
-        val canReadSteps = stepsPermission in granted
-        val canReadFloors = floorsPermission in granted
-        if (!canReadSteps && !canReadFloors) return null
+    suspend fun readToday(
+        now: Instant = Instant.now(),
+        zone: ZoneId = ZoneId.systemDefault()
+    ): DailyHealthSummary? = try {
+        withTimeoutOrNull(10_000L.milliseconds) {
+            val granted = client.permissionController.getGrantedPermissions()
+            val canReadSteps = stepsPermission in granted
+            val canReadFloors = floorsPermission in granted
+            if (!canReadSteps && !canReadFloors) return@withTimeoutOrNull null
 
-        val midnight = LocalDate.now(zone).atStartOfDay(zone).toInstant()
-        val metrics = buildSet {
-            if (canReadSteps) add(StepsRecord.COUNT_TOTAL)
-            if (canReadFloors) add(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL)
+            val midnight = LocalDate.now(zone).atStartOfDay(zone).toInstant()
+            val metrics = buildSet {
+                if (canReadSteps) add(StepsRecord.COUNT_TOTAL)
+                if (canReadFloors) add(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL)
+            }
+            val totals =
+                client.aggregate(AggregateRequest(metrics, TimeRangeFilter.between(midnight, now)))
+            DailyHealthSummary(
+                steps = if (canReadSteps) totals[StepsRecord.COUNT_TOTAL] ?: 0L else null,
+                floors = if (canReadFloors) totals[FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL]
+                    ?: 0.0 else null
+            )
         }
-        val totals = client.aggregate(AggregateRequest(metrics, TimeRangeFilter.between(midnight, now)))
-        return DailyHealthSummary(
-            steps = if (canReadSteps) totals[StepsRecord.COUNT_TOTAL] ?: 0L else null,
-            floors = if (canReadFloors) totals[FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL] ?: 0.0 else null
-        )
+    } catch (e: Throwable) {
+        null
     }
 
     /**
      * Workouts since the last successful read (the first read looks back 30 days). Reading the same workout twice is
      * harmless: its id is derived from the Health Connect record id and the import skips known ids.
      */
-    suspend fun readWorkouts(now: Instant = Instant.now()): List<WatchWorkout> {
-        val since = prefs.getLong(KEY_LAST_READ, 0L).takeIf { it > 0 }
-            ?.let { Instant.ofEpochMilli(it).minus(1, ChronoUnit.DAYS) } // late-synced records
-            ?: now.minus(INITIAL_LOOKBACK_DAYS, ChronoUnit.DAYS)
+    suspend fun readWorkouts(now: Instant = Instant.now()): List<WatchWorkout> = try {
+        withTimeoutOrNull(10_000L.milliseconds) {
+            val since = prefs.getLong(KEY_LAST_READ, 0L).takeIf { it > 0 }
+                ?.let { Instant.ofEpochMilli(it).minus(1, ChronoUnit.DAYS) } // late-synced records
+                ?: now.minus(INITIAL_LOOKBACK_DAYS, ChronoUnit.DAYS)
 
-        val workouts = mutableListOf<WatchWorkout>()
-        var pageToken: String? = null
-        do {
-            val response = client.readRecords(
-                ReadRecordsRequest(ExerciseSessionRecord::class, TimeRangeFilter.between(since, now), pageToken = pageToken)
-            )
-            response.records.forEach { session -> toWorkout(session)?.let(workouts::add) }
-            pageToken = response.pageToken
-        } while (pageToken != null)
+            val workouts = mutableListOf<WatchWorkout>()
+            var pageToken: String? = null
+            do {
+                val response = client.readRecords(
+                    ReadRecordsRequest(
+                        ExerciseSessionRecord::class,
+                        TimeRangeFilter.between(since, now),
+                        pageToken = pageToken
+                    )
+                )
+                response.records.forEach { session -> toWorkout(session)?.let(workouts::add) }
+                pageToken = response.pageToken
+            } while (pageToken != null)
 
-        prefs.edit { putLong(KEY_LAST_READ, now.toEpochMilli()) }
-        return workouts
+            prefs.edit { putLong(KEY_LAST_READ, now.toEpochMilli()) }
+            workouts
+        } ?: emptyList()
+    } catch (e: Throwable) {
+        emptyList()
     }
 
     private suspend fun toWorkout(session: ExerciseSessionRecord): WatchWorkout? {
