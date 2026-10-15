@@ -36,14 +36,18 @@ import com.wandr.presentation.activity.ActivityState
 @Composable
 fun RecordingOverlay(state: ActivityState, onCollapse: () -> Unit, modifier: Modifier = Modifier) {
     val isCycling = state.trackingActivityType == "cycling"
-    Column(modifier = modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)) {
-        Box(Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primary)
-            .statusBarsPadding()
-            .padding(bottom = 16.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .statusBarsPadding()
+                .padding(bottom = 16.dp)
+        ) {
             IconButton(onClick = onCollapse, modifier = Modifier.align(Alignment.TopStart)) {
                 Icon(
                     painterResource(R.drawable.ic_close_fullscreen),
@@ -51,13 +55,22 @@ fun RecordingOverlay(state: ActivityState, onCollapse: () -> Unit, modifier: Mod
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
-            Column(Modifier
-                .align(Alignment.Center)
-                .padding(top = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(stringResource(state.gpsStatus.labelRes()), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onPrimary)
+            Column(
+                Modifier
+                    .align(Alignment.Center)
+                    .padding(top = 8.dp), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    stringResource(state.gpsStatus.labelRes()),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
                 Text(
                     text = ActivityFormat.clock(state.liveDurationSeconds),
-                    style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Bold, fontSize = 56.sp),
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 56.sp
+                    ),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -66,7 +79,9 @@ fun RecordingOverlay(state: ActivityState, onCollapse: () -> Unit, modifier: Mod
         // Compass bar showing moving direction right below the yellow header
         CompassBar(
             heading = state.liveTrackpoints.movingHeading(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         )
 
         Column(
@@ -77,10 +92,15 @@ fun RecordingOverlay(state: ActivityState, onCollapse: () -> Unit, modifier: Mod
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             BigFigure(
-                value = if (isCycling) ActivityFormat.speedFromPace(state.liveCurrentPaceSecondsPerKm) else ActivityFormat.paceOrDash(state.liveCurrentPaceSecondsPerKm),
+                value = if (isCycling) ActivityFormat.speedFromPace(state.liveCurrentPaceSecondsPerKm) else ActivityFormat.paceOrDash(
+                    state.liveCurrentPaceSecondsPerKm
+                ),
                 label = stringResource(if (isCycling) R.string.recording_speed_label else R.string.recording_pace_label)
             )
-            BigFigure(ActivityFormat.distanceKm(state.liveDistanceMeters), stringResource(R.string.recording_distance_label))
+            BigFigure(
+                ActivityFormat.distanceKm(state.liveDistanceMeters),
+                stringResource(R.string.recording_distance_label)
+            )
         }
     }
 }
@@ -88,13 +108,29 @@ fun RecordingOverlay(state: ActivityState, onCollapse: () -> Unit, modifier: Mod
 @Composable
 private fun BigFigure(value: String, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Bold, fontSize = 72.sp))
-        Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+        Text(
+            value,
+            style = MaterialTheme.typography.displayLarge.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 72.sp
+            )
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
 @Preview(name = "Light Mode", showBackground = true, heightDp = 700)
-@Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 700)
+@Preview(
+    name = "Dark Mode",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    heightDp = 700
+)
 @Preview(name = "Font Scale 1.5x", fontScale = 1.5f, showBackground = true, heightDp = 900)
 @Composable
 private fun RecordingOverlayPreview() {
