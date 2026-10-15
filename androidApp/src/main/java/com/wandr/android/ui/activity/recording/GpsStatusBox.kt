@@ -27,24 +27,36 @@ import androidx.compose.ui.unit.dp
 import com.wandr.android.R
 import com.wandr.android.ui.activity.ActivityFormat
 import com.wandr.android.ui.theme.WandrTheme
+import com.wandr.domain.geo.movingHeading
 import com.wandr.presentation.activity.ActivityState
-import com.wandr.presentation.activity.GpsStatus
 
 /**
- * The collapsed data box over the map: GPS status with a button that expands to the full-screen data overlay, and the
+ * The collapsed data box over the map: GPS status with a button that expands to the full-screen data overlay, the animated compass bar, and the
  * three key figures (time, pace or speed, distance).
  */
 @Composable
 fun GpsStatusBox(state: ActivityState, onExpand: () -> Unit, modifier: Modifier = Modifier) {
     val isCycling = state.trackingActivityType == "cycling"
-    Card(modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
         Column {
             Row(
-                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(start = 16.dp, end = 4.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(start = 16.dp, end = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(painterResource(R.drawable.ic_gps_fixed), contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                Icon(
+                    painterResource(R.drawable.ic_gps_fixed),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
                 Text(
                     text = stringResource(state.gpsStatus.labelRes()),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
@@ -52,10 +64,26 @@ fun GpsStatusBox(state: ActivityState, onExpand: () -> Unit, modifier: Modifier 
                     modifier = Modifier.weight(1f)
                 )
                 IconButton(onClick = onExpand) {
-                    Icon(painterResource(R.drawable.ic_open_in_full), contentDescription = stringResource(R.string.recording_expand), tint = MaterialTheme.colorScheme.onPrimary)
+                    Icon(
+                        painterResource(R.drawable.ic_open_in_full),
+                        contentDescription = stringResource(R.string.recording_expand),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
-            Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+
+            // Compass bar showing live moving direction right below the yellow header
+            CompassBar(
+                heading = state.liveTrackpoints.movingHeading(),
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            )
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
                 Figure(ActivityFormat.clock(state.liveDurationSeconds), stringResource(R.string.recording_time_label))
                 Figure(
                     value = if (isCycling) ActivityFormat.speedFromPace(state.liveCurrentPaceSecondsPerKm) else ActivityFormat.paceOrDash(state.liveCurrentPaceSecondsPerKm),

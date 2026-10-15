@@ -1,6 +1,8 @@
 package com.wandr.android.ui.activity
 
 import android.content.res.Configuration
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -26,9 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
@@ -40,13 +45,14 @@ import com.wandr.android.R
 import com.wandr.android.ui.theme.WandrRouteBlue
 import com.wandr.android.ui.theme.WandrTheme
 import com.wandr.domain.geo.MapViewport
+import com.wandr.domain.geo.movingHeading
 import com.wandr.domain.model.GpsTrackpoint
 import kotlin.math.abs
 
 /**
  * An OpenStreetMap the user can move: drag with one finger, pinch with two. It follows the current [position] with the
- * route so far drawn on it, until the user moves or zooms it; then a button brings it back to the position and the
- * default zoom.
+ * route so far drawn on it. While recording, it rotates according to moving direction unless moved or rotated manually;
+ * a button resets position, zoom, and rotation.
  *
  * @param route the track so far (already smoothed by the recording)
  * @param position where the user is now, or null while unknown
@@ -63,13 +69,26 @@ fun InteractiveOsmMap(
     var zoom by remember { mutableDoubleStateOf(DEFAULT_ZOOM) }
     var following by remember { mutableStateOf(true) }
 
-    // While following, the map is centered on the position (every new fix moves it).
-    LaunchedEffect(position, following) {
-        if (following && position != null) {
-            centerLatitude = position.latitude
-            centerLongitude = position.longitude
+    var autoBearing by remember { mutableFloatStateOf(0f) }
+    var manualRotation by remember { mutableFloatStateOf(0f) }
+
+    // While following, the map is centered on position and rotates to face the direction of travel.
+    LaunchedEffect(position, route, following) {
+        if (following) {
+            position?.let {
+                centerLatitude = it.latitude
+                centerLongitude = it.longitude
+            }
+            autoBearing = route.movingHeading()
         }
     }
+
+    val targetRotation = if (following) -autoBearing + manualRotation else manualRotation
+    val animatedRotation by animateFloatAsState(
+        targetValue = targetRotation,
+        animationSpec = tween(durationMillis = 300),
+        label = "mapRotation"
+    )
 
     val viewport = if (size.width > 0 && size.height > 0) {
         MapViewport(centerLatitude, centerLongitude, zoom, size.width.toDouble(), size.height.toDouble())
@@ -83,41 +102,82 @@ fun InteractiveOsmMap(
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .onSizeChanged { size = it }
             .pointerInput(Unit) {
-                detectTransformGestures { centroid, pan, pinch, _ ->
+                detectTransformGestures { centroid, pan, pinch, gestureRotation ->
                     val view = currentViewport ?: return@detectTransformGestures
-                    // The user takes over: the map stops following the position.
+                    // The user takes over: the map stops following the position and auto-rotation.
                     following = false
                     var next = view
                     if (pinch != 1f) {
-                        next = next.zoomedAround(MapViewport.zoomAfterPinch(view.zoom, pinch.toDouble()), centroid.x.toDouble(), centroid.y.toDouble())
+                        next = next.zoomedAround(
+                            MapViewport.zoomAfterPinch(view.zoom, pinch.toDouble()),
+                            centroid.x.toDouble(),
+                            centroid.y.toDouble()
+                        )
                     }
                     next = next.panned(pan.x.toDouble(), pan.y.toDouble())
                     centerLatitude = next.centerLatitude
                     centerLongitude = next.centerLongitude
                     zoom = next.zoom
+                    manualRotation += gestureRotation
                 }
             }
     ) {
         if (viewport != null) {
-            viewport.tiles.forEach { tile ->
-                androidx.compose.runtime.key(tile.zoom, tile.x, tile.y) { OsmTileImage(tile, viewport.tileSizePx.toFloat()) }
-            }
-
-            Canvas(Modifier.fillMaxSize()) {
-                val points = route.map { p -> viewport.project(p.latitude, p.longitude).let { (x, y) -> Offset(x.toFloat(), y.toFloat()) } }
-                if (points.size >= 2) {
-                    val path = smoothedPath(points)
-                    // A white outline keeps the route readable on every map color.
-                    drawPath(path, Color.White, style = Stroke(width = 13f, cap = StrokeCap.Round, join = StrokeJoin.Round))
-                    drawPath(path, WandrRouteBlue, style = Stroke(width = 8f, cap = StrokeCap.Round, join = StrokeJoin.Round))
-                    drawCircle(Color.White, radius = 15f, center = points.first())
-                    drawCircle(startColor, radius = 11f, center = points.first())
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        rotationZ = animatedRotation
+                    }
+            ) {
+                viewport.tiles.forEach { tile ->
+                    androidx.compose.runtime.key(tile.zoom, tile.x, tile.y) {
+                        OsmTileImage(tile, viewport.tileSizePx.toFloat())
+                    }
                 }
-                position?.let {
-                    val (x, y) = viewport.project(it.latitude, it.longitude)
-                    val center = Offset(x.toFloat(), y.toFloat())
-                    drawCircle(Color.White, radius = 18f, center = center)
-                    drawCircle(WandrRouteBlue, radius = 13f, center = center)
+
+                Canvas(Modifier.fillMaxSize()) {
+                    val points = route.map { p ->
+                        viewport.project(p.latitude, p.longitude)
+                            .let { (x, y) -> Offset(x.toFloat(), y.toFloat()) }
+                    }
+                    if (points.size >= 2) {
+                        val path = smoothedPath(points)
+                        // A white outline keeps the route readable on every map color.
+                        drawPath(
+                            path,
+                            Color.White,
+                            style = Stroke(
+                                width = 13f,
+                                cap = StrokeCap.Round,
+                                join = StrokeJoin.Round
+                            )
+                        )
+                        drawPath(
+                            path,
+                            WandrRouteBlue,
+                            style = Stroke(
+                                width = 8f,
+                                cap = StrokeCap.Round,
+                                join = StrokeJoin.Round
+                            )
+                        )
+                        drawCircle(Color.White, radius = 15f, center = points.first())
+                        drawCircle(startColor, radius = 11f, center = points.first())
+                    }
+                    position?.let {
+                        val (x, y) = viewport.project(it.latitude, it.longitude)
+                        val center = Offset(x.toFloat(), y.toFloat())
+                        drawCircle(Color.White, radius = 18f, center = center)
+                        drawCircle(WandrRouteBlue, radius = 13f, center = center)
+                        val arrowPath = Path().apply {
+                            moveTo(center.x, center.y - 24f)
+                            lineTo(center.x - 7f, center.y - 12f)
+                            lineTo(center.x + 7f, center.y - 12f)
+                            close()
+                        }
+                        drawPath(arrowPath, WandrRouteBlue)
+                    }
                 }
             }
 
@@ -134,12 +194,13 @@ fun InteractiveOsmMap(
             )
         }
 
-        // Back to the position and the default zoom, once the user has moved or zoomed the map.
-        if (!following || abs(zoom - DEFAULT_ZOOM) > ZOOM_EPSILON) {
+        // Back to position, default zoom, and reset manual rotation when pressed.
+        if (!following || abs(zoom - DEFAULT_ZOOM) > ZOOM_EPSILON || abs(manualRotation) > 1.0f) {
             IconButton(
                 onClick = {
                     following = true
                     zoom = DEFAULT_ZOOM
+                    manualRotation = 0f
                     position?.let {
                         centerLatitude = it.latitude
                         centerLongitude = it.longitude
@@ -152,14 +213,17 @@ fun InteractiveOsmMap(
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surface)
             ) {
-                Icon(painterResource(R.drawable.ic_my_location), contentDescription = stringResource(R.string.recording_recenter))
+                Icon(
+                    painterResource(R.drawable.ic_my_location),
+                    contentDescription = stringResource(R.string.recording_recenter)
+                )
             }
         }
     }
 }
 
-/** Street level: about 1 km of the surroundings on a phone. */
-private const val DEFAULT_ZOOM = 16.5
+/** Closer street/trail view: increased from 16.5 to 17.8 for active activity tracking. */
+private const val DEFAULT_ZOOM = 17.8
 private const val ZOOM_EPSILON = 0.05
 
 @Preview(name = "Light Mode", showBackground = true, heightDp = 500)
@@ -173,7 +237,6 @@ private fun InteractiveOsmMapPreview() {
         GpsTrackpoint(47.3786, 8.5441, 400.0, 0L)
     )
     WandrTheme {
-        // Previews have no network: the route shows on the plain background.
         InteractiveOsmMap(route = route, position = route.last(), modifier = Modifier.fillMaxSize())
     }
 }
