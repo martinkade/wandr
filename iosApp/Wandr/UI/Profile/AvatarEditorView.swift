@@ -32,3 +32,4 @@ struct AvatarEditorView: View {
 
 #Preview("With initials") { AvatarEditorView(displayName: "Martin Kade") }
 #Preview("Dark, busy") { AvatarEditorView(displayName: "Martin Kade", isBusy: true).preferredColorScheme(.dark) }
+#Preview("Large text") { AvatarEditorView(displayName: "Martin Kade").dynamicTypeSize(.accessibility2) }

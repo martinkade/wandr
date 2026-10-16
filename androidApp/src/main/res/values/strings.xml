@@ -416,4 +416,14 @@
     <string name="challenge_change_cover">Change cover photo</string>
     <string name="challenge_more_options">More options</string>
     <string name="challenge_goal_text">%1$s: %2$s</string>
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_open">Settings</string>
+    <string name="settings_notifications_section">Notifications</string>
+    <string name="settings_push_title">Push notifications</string>
+    <string name="settings_push_description">Likes, comments and reactions on your activities and challenges, on this device.</string>
+    <string name="settings_push_blocked">Notifications are blocked for WANDR in the system settings.</string>
+    <string name="settings_open_system">Open</string>
+    <string name="settings_about_section">About</string>
+    <string name="settings_version">Version</string>
 </resources>

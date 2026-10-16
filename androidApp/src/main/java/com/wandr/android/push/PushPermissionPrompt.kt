@@ -18,8 +18,10 @@ private const val KEY_ASKED = "notifications_asked"
  * does nothing when already granted, already asked, or below API 33.
  */
 @Composable
-fun PushPermissionPrompt() {
+fun PushPermissionPrompt(settings: com.wandr.domain.settings.AppSettings = org.koin.compose.koinInject()) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+    // Switched off in the settings: no reason to ask.
+    if (!settings.pushNotificationsEnabled) return
     val context = LocalContext.current
     val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     val gate = rememberPermissionGate(

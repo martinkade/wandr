@@ -21,7 +21,7 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>NSCameraUsageDescription</key>
-	<string>WANDR uses the camera to take your profile photo.</string>
+	<string>WANDR uses the camera to take your profile photo and to scan team QR codes.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>WANDR reads your workouts, steps and floors climbed from Apple Health so that activities recorded with other apps appear in your history. Access is read-only.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

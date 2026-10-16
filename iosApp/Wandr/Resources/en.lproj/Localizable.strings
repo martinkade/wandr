@@ -33,7 +33,7 @@
 "create_challenge_title" = "Create Challenge";
 "challenge_title_label" = "Challenge Title";
 "challenge_target_label" = "Target Value";
-"require_all_members_label" = "Require All Members to Complete (All-or-Nothing)";
+"require_all_members_label" = "Every member of a team must complete the target";
 "leaderboard_title" = "Team Leaderboard";
 "join_challenge_button" = "Join Challenge";
 
@@ -105,7 +105,6 @@
 "team_cover_title" = "Cover Photo";
 "team_cover_change" = "Change Cover";
 "team_cover_content_description" = "Cover photo";
-"team_members_count" = "Members (%lld)";
 "team_no_members" = "No members yet.";
 "team_saved_message" = "Team saved";
 "team_image_updated_message" = "Image updated";
@@ -151,7 +150,7 @@
 "comment_delete" = "Delete";
 "comment_add_reaction" = "Add reaction";
 "notifications_title" = "Notifications";
-"notifications_empty" = "No notifications yet.";
+"notifications_empty" = "Nothing new yet. Likes and comments on your activities show up here.";
 "notifications_loading" = "Loading...";
 "notifications_close" = "Close";
 "notifications_mark_all_read" = "Mark all read";
@@ -235,3 +234,131 @@
 "recording_gps_weak" = "GPS signal weak";
 "recording_gps_good" = "GPS signal good";
 "recording_recenter" = "Center on my position";
+
+/* Settings */
+"settings_title" = "Settings";
+"settings_open" = "Settings";
+"settings_notifications_section" = "Notifications";
+"settings_push_title" = "Push notifications";
+"settings_push_description" = "Likes, comments and reactions on your activities and challenges, on this device.";
+"settings_push_blocked" = "Notifications are blocked for WANDR in the system settings.";
+"settings_open_system" = "Open";
+"settings_about_section" = "About";
+"settings_version" = "Version";
+
+/* Common */
+"social_unknown_author" = "Unknown";
+"more_options" = "More options";
+"close_button" = "Close";
+
+/* Feed & activities */
+"activity_feed_mine" = "Mine";
+"activity_feed_team" = "Team";
+"activities_empty" = "No activities recorded yet.";
+"activity_fab_open" = "Add activity";
+"activity_fab_create" = "Log manually";
+"activity_created_message" = "Activity saved";
+"activity_updated_message" = "Activity updated";
+"activity_deleted_message" = "Activity deleted";
+"activity_merged_message" = "Activities merged";
+"activity_trimmed_message" = "Activity trimmed and saved";
+"activity_discarded_message" = "Activity discarded, existing activities kept";
+"activity_map_hidden_hint" = "Only you see this route.";
+"activity_track_local_hint" = "The recorded track is only stored on the device that recorded it.";
+"activity_stat_distance" = "Distance";
+"activity_stat_time" = "Time";
+"activity_stat_pace" = "Pace";
+"activity_stat_speed" = "Speed";
+"activity_stat_elevation" = "Elevation";
+"activity_source_label" = "Source";
+"activity_details_title" = "Activity Details";
+"activity_delete_button" = "Delete activity";
+"activity_delete_confirm_title" = "Delete this activity?";
+"activity_delete_confirm_message" = "The activity is removed for everyone, together with its likes and comments, and no longer counts for challenges. This cannot be undone.";
+"social_delete" = "Delete";
+"activity_edit_title" = "Edit Activity";
+"activity_new_title" = "New Activity";
+"activity_title_label" = "Title";
+"activity_description_label" = "Description";
+"activity_type_label" = "Type";
+"activity_start_label" = "Start";
+"activity_measured_hint" = "The measured values of a recorded activity cannot be changed.";
+"activity_show_map_label" = "Show route to others";
+"activity_show_map_hint" = "Other users can see the route of this activity on the map. You always see it yourself.";
+
+/* Challenges */
+"challenge_new_button" = "New Challenge";
+"challenge_edit_title" = "Edit Challenge";
+"challenge_description_label" = "Description";
+"challenge_type_label" = "Type";
+"challenge_type_distance" = "Distance";
+"challenge_type_elevation" = "Elevation";
+"challenge_type_time" = "Time";
+"challenge_unit_distance" = "km";
+"challenge_unit_elevation" = "m";
+"challenge_unit_time" = "h";
+"challenge_scope_label" = "Mode";
+"challenge_scope_individual" = "Everyone (individual)";
+"challenge_scope_team" = "Team (team vs. team)";
+"challenge_scope_team_hint" = "Teams enroll and compete against other teams. Members of one team do not compete against each other, they all contribute to their team.";
+"challenge_created_message" = "Challenge created";
+"challenge_updated_message" = "Challenge saved";
+"challenge_joined_message" = "Joined challenge";
+"challenge_left_message" = "Left challenge";
+"challenge_team_enrolled_message" = "Team enrolled";
+"challenge_team_withdrawn_message" = "Team withdrawn";
+"challenge_image_updated_message" = "Cover updated";
+"challenges_empty" = "No challenges yet.";
+"challenges_empty_hint" = "New challenges will show up here.";
+"challenge_enroll_team_button" = "Enroll Team";
+"challenge_enroll_dialog_title" = "Enroll a team";
+"challenge_enroll_dialog_hint" = "Only the owner or an admin of a team can enroll it. All members then contribute to the team's result.";
+"challenge_withdraw_team_button" = "Withdraw Team";
+"leave_challenge_button" = "Leave Challenge";
+"challenge_status_draft" = "Draft";
+"challenge_status_planned" = "Upcoming";
+"challenge_status_active" = "Active";
+"challenge_status_completed" = "Completed";
+"challenge_status_expired" = "Ended";
+"challenge_period_label" = "Period";
+"challenge_start_label" = "Start";
+"challenge_end_label" = "End";
+"challenge_active_label" = "Active";
+"challenge_active_hint" = "Off: draft, only visible to you. On: published for everyone.";
+"challenge_standings_title" = "Team standings";
+"challenge_standings_empty" = "No teams enrolled yet.";
+"challenge_activity_types_label" = "Counting activities";
+"challenge_activity_types_hint" = "Select the activity types that count. If none is selected, all activity types count.";
+"challenge_activity_types_all" = "All activity types";
+"save_challenge_button" = "Save Challenge";
+"challenge_ranking_title" = "Ranking";
+"challenge_team_ranking_title" = "Ranking in your team";
+"challenge_ranking_you" = "You";
+"challenge_ended" = "Ended";
+"challenge_draft_hint" = "Draft · only you can see it";
+"challenge_change_cover" = "Change cover photo";
+"challenge_more_options" = "More options";
+"challenge_goal_text" = "%@: %@";
+"memberships_primary" = "Counts for team challenges";
+
+/* Teams & profile */
+"memberships_title" = "My teams";
+"memberships_hint" = "Tap \"Reorder\" and drag to change the priority. Only your first team counts for team challenges.";
+"memberships_reorder" = "Reorder";
+"memberships_reorder_done" = "Done";
+"memberships_join_item" = "Join a team";
+"join_team_hint" = "Enter the invite code or scan the QR code of the team.";
+"join_team_code_label" = "Invite code";
+"join_team_or" = "or";
+"join_team_scan" = "Scan QR code";
+"join_team_scan_hint" = "Point the camera at the team's QR code.";
+"join_team_scan_unavailable" = "QR code scanning is not available on this device. Enter the invite code instead.";
+"join_team_success" = "You joined the team.";
+"team_invite_button" = "Invite";
+"team_change_cover" = "Change cover photo";
+"team_change_photo" = "Change team photo";
+"team_more_actions" = "More actions";
+"profile_stats_member_since" = "Active since";
+"profile_stats_activities" = "Activities";
+"permission_camera_qr_message" = "WANDR uses the camera only to scan a team's QR code so you can join it. No photo is taken or saved.";
+"permission_camera_qr_denied" = "Camera access is turned off. Enable it in Settings to scan a QR code, or enter the invite code.";

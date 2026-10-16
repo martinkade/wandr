@@ -30,4 +30,7 @@ object IosDependencies {
     fun socialViewModel(): SocialViewModel = KoinPlatform.getKoin().get()
     fun notificationsViewModel(): NotificationsViewModel = KoinPlatform.getKoin().get()
     fun pushTokenManager(): PushTokenManager = KoinPlatform.getKoin().get()
+    fun appSettings(): com.wandr.domain.settings.AppSettings = KoinPlatform.getKoin().get()
+    fun settingsViewModel(): com.wandr.presentation.settings.SettingsViewModel = KoinPlatform.getKoin().get()
+    fun challengeViewModel(): com.wandr.presentation.challenge.ChallengeViewModel = KoinPlatform.getKoin().get()
 }

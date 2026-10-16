@@ -6,6 +6,7 @@ final class NotificationsObserver: ObservableObject {
     @Published var notifications: [AppNotification] = []
     @Published var unreadCount = 0
     @Published var isLoading = false
+    @Published var errorMessage: String?
 
     private let viewModel = IosDependencies.shared.notificationsViewModel()
     nonisolated(unsafe) private var job: (any Kotlinx_coroutines_coreJob)?
@@ -21,6 +22,7 @@ final class NotificationsObserver: ObservableObject {
                 self?.notifications = state.notifications
                 self?.unreadCount = Int(state.unreadCount)
                 self?.isLoading = state.isLoading
+                self?.errorMessage = state.error?.userMessage
             }
         }
         viewModel.processIntent(intent: NotificationsIntentRefreshBadge(userId: userId))
@@ -38,6 +40,7 @@ final class NotificationsObserver: ObservableObject {
 
     func markRead(_ id: String) { viewModel.processIntent(intent: NotificationsIntentMarkRead(id: id)) }
     func markAllRead() { viewModel.processIntent(intent: NotificationsIntentMarkAllRead.shared) }
+    func clearError() { viewModel.processIntent(intent: NotificationsIntentClearMessages.shared) }
 
     deinit { job?.cancel(cause: nil) }
 }

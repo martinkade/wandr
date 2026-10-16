@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -58,6 +61,7 @@ fun ProfileScreen(
     onLogout: () -> Unit,
     onOpenTeam: (teamId: String) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {},
     viewModel: ProfileViewModel = koinInject()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -67,6 +71,7 @@ fun ProfileScreen(
         onIntent = viewModel::processIntent,
         onLogout = onLogout,
         onOpenTeam = onOpenTeam,
+        onOpenSettings = onOpenSettings,
         modifier = modifier
     )
 }
@@ -82,7 +87,8 @@ private fun ProfileScreenContent(
     onIntent: (ProfileIntent) -> Unit,
     onLogout: () -> Unit,
     onOpenTeam: (teamId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {}
 ) {
     var isEditing by rememberSaveable { mutableStateOf(false) }
     // Only a save started from the sheet may close it (not, e.g., a photo update).
@@ -124,6 +130,9 @@ private fun ProfileScreenContent(
         title = stringResource(R.string.user_profile_title),
         modifier = modifier,
         actions = {
+            IconButton(onClick = onOpenSettings) {
+                Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.settings_open))
+            }
             Button(onClick = onLogout) { Text(stringResource(R.string.logout_button)) }
         },
         // While the sheet is open, its own host shows the messages.

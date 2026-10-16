@@ -10,6 +10,7 @@ import platform.Foundation.NSUserDomainMask
 
 actual val platformModule = module {
     single { DatabaseBuilderFactory() }
+    single<com.wandr.domain.settings.PreferenceStore> { com.wandr.data.settings.UserDefaultsStore() }
     // App-private folder; recorded FIT files stay on this device.
     single {
         val support = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, true)

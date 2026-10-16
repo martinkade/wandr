@@ -68,7 +68,11 @@ val domainModule = module {
     factory { com.wandr.domain.usecase.MarkNotificationsReadUseCase(get()) }
     factory { com.wandr.domain.usecase.RegisterPushTokenUseCase(get()) }
     factory { com.wandr.domain.usecase.UnregisterPushTokenUseCase(get()) }
-    single { com.wandr.domain.push.PushTokenManager(get(), get()) }
+    single { com.wandr.domain.settings.AppSettings(get()) }
+    single {
+        val settings = get<com.wandr.domain.settings.AppSettings>()
+        com.wandr.domain.push.PushTokenManager(get(), get(), isPushEnabled = { settings.pushNotificationsEnabled })
+    }
     factory { com.wandr.domain.usecase.GetSocialCountsUseCase(get()) }
     factory { com.wandr.domain.usecase.GetProfilesUseCase(get()) }
     factory { com.wandr.domain.usecase.RefreshActivitiesUseCase(get()) }

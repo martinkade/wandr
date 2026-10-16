@@ -1,66 +1,73 @@
-@preconcurrency import shared
 import SwiftUI
 
+/// A member as one card of a list of connected cards; admins get a role chip.
 struct TeamMemberRowView: View {
     let displayName: String
     let username: String
     var avatarUrl: String? = nil
     let isAdmin: Bool
+    var isFirst: Bool = true
+    var isLast: Bool = true
 
     var body: some View {
         let name = displayName.isEmpty ? username : displayName
-        HStack(spacing: 12) {
-            ZStack {
-                Circle().fill(Color.wandrPrimary.opacity(0.25))
-                if let avatarUrl, let url = URL(string: avatarUrl) {
-                    AsyncImage(url: url) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                    .clipShape(Circle())
-                } else {
-                    Text(String(name.prefix(2)).uppercased())
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(.primary)
-                }
-            }
-            .frame(width: 44, height: 44)
+        HStack(spacing: 16) {
+            AvatarView(url: avatarUrl, name: name, size: 40)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(name).font(.body).foregroundColor(.primary)
+                Text(name)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
                 if !username.isEmpty {
-                    Text("@\(username)").font(.caption).foregroundColor(.secondary)
+                    Text("@\(username)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
 
-            Text(LocalizedStringKey(isAdmin ? "role_admin" : "role_member"))
-                .font(.caption.weight(.semibold))
-                .foregroundColor(isAdmin ? .wandrOnPrimary : .secondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(isAdmin ? Color.wandrPrimary : Color.secondary.opacity(0.15))
-                .clipShape(Capsule())
+            if isAdmin {
+                Text(LocalizedStringKey("role_admin"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.wandrOnPrimary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.wandrPrimary, in: Capsule())
+            }
         }
-        .padding(.vertical, 6)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .wandrSectionItem(isFirst: isFirst, isLast: isLast)
+        .accessibilityElement(children: .combine)
     }
 }
 
 #Preview("Light Mode") {
-    VStack {
-        TeamMemberRowView(displayName: "Martin Kade", username: "martinkade", isAdmin: true)
-        TeamMemberRowView(displayName: "Alex Runner", username: "runner99", isAdmin: false)
+    VStack(spacing: 2) {
+        TeamMemberRowView(displayName: "Martin Kade", username: "martinkade", isAdmin: true, isLast: false)
+        TeamMemberRowView(displayName: "Alex Runner", username: "runner99", isAdmin: false, isFirst: false)
     }
     .padding()
+    .background(Color(.systemGroupedBackground))
+    .preferredColorScheme(.light)
 }
 
 #Preview("Dark Mode") {
-    VStack {
-        TeamMemberRowView(displayName: "Martin Kade", username: "martinkade", isAdmin: true)
-        TeamMemberRowView(displayName: "Alex Runner", username: "runner99", isAdmin: false)
+    VStack(spacing: 2) {
+        TeamMemberRowView(displayName: "Martin Kade", username: "martinkade", isAdmin: true, isLast: false)
+        TeamMemberRowView(displayName: "", username: "runner99", isAdmin: false, isFirst: false)
     }
     .padding()
+    .background(Color(.systemGroupedBackground))
     .preferredColorScheme(.dark)
+}
+
+#Preview("Large text") {
+    TeamMemberRowView(displayName: "Sophie Hiker", username: "sophie", isAdmin: true)
+        .padding()
+        .background(Color(.systemGroupedBackground))
+        .dynamicTypeSize(.accessibility2)
 }

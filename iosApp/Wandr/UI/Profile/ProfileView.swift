@@ -1,11 +1,16 @@
+@preconcurrency import shared
 import SwiftUI
 
-/// Read-only profile. "Edit" opens `ProfileEditView` in a sheet; saving closes it.
+/// The profile: header (avatar changeable by tap), stats with "Edit" (opens `ProfileEditView` in a sheet), the Apple
+/// Health cards and "My teams" in priority order. Teams are reordered by dragging (after "Reorder"); only the first
+/// counts for team challenges. A team pushes `TeamRoute`; the trailing row starts joining another team.
 /// Results (saved / photo updated / error) are reported in a snackbar (on the sheet while it is open).
 struct ProfileView: View {
     @Binding var displayName: String
     @Binding var bio: String
     var avatarUrl: String? = nil
+    var memberSince: Date? = nil
+    var activityCount: Int = 0
     var isSaving: Bool = false
     var isAvatarUpdating: Bool = false
     /// Increments after each successful save; closes the sheet.
@@ -18,52 +23,72 @@ struct ProfileView: View {
     var onLogout: () -> Void = {}
     var healthSummary: DailyHealthSummary? = nil
     var onHealthSettings: () -> Void = {}
+    /// The user's teams, highest priority first.
+    var teams: [Team] = []
+    /// The new priority order (team ids, highest first).
+    var onReorderTeams: ([String]) -> Void = { _ in }
+    var onJoinTeam: () -> Void = {}
     /// Only for previews.
     var startEditing: Bool = false
 
     @State private var isEditing = false
+    @State private var editMode: EditMode = .inactive
+    /// Follows `teams`, but moves at once while dragging (the view model's answer arrives a moment later).
+    @State private var orderedTeams: [Team] = []
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                AvatarPickerView(displayName: displayName, avatarUrl: avatarUrl, isBusy: isAvatarUpdating, isEnabled: false)
+        List {
+            Section {
+                ProfileHeaderView(
+                    displayName: displayName,
+                    bio: bio,
+                    avatarUrl: avatarUrl,
+                    isAvatarUpdating: isAvatarUpdating,
+                    onAvatarReady: onAvatarReady,
+                    onRemoveAvatar: onRemoveAvatar
+                )
+                .padding(.top, 8)
+                .clearListRow()
 
-                VStack(spacing: 8) {
-                    LabeledValueView(label: "display_name_label", value: displayName)
-                    LabeledValueView(label: "bio_label", value: bio)
-                }
+                ProfileStatsRowView(memberSince: memberSince, activityCount: activityCount, onEdit: { isEditing = true })
+                    .clearListRow()
+            }
 
+            Section {
                 // Cards side by side; the stats card only appears once Apple Health is connected.
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
                         HealthImportCardView(onSettings: onHealthSettings)
-                            .frame(width: 300, height: 240)
+                            .frame(width: 280, height: 220)
                         if let healthSummary {
                             HealthStatsCardView(summary: healthSummary)
-                                .frame(width: 300, height: 240)
+                                .frame(width: 280, height: 220)
                         }
                     }
-                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, -24) // let the cards scroll edge to edge inside the padded column
+                .scrollClipDisabled()
+                .clearListRow()
+            } header: {
+                Text(LocalizedStringKey("health_card_title_apple")).textCase(nil)
             }
-            .padding(24)
+
+            teamsSection
         }
-        .background(
-            LinearGradient(
-                colors: [Color.wandrPrimary.opacity(0.08), Color.wandrSecondary.opacity(0.05)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-        )
+        .listStyle(.insetGrouped)
+        .listSectionSpacing(.compact)
+        .environment(\.editMode, $editMode)
         .navigationTitle(LocalizedStringKey("user_profile_title"))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(LocalizedStringKey("logout_button"), role: .destructive, action: onLogout)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button(LocalizedStringKey("profile_edit_button")) { isEditing = true }
+                NavigationLink {
+                    SettingsView()
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .accessibilityLabel(Text(LocalizedStringKey("settings_open")))
             }
         }
         .snackbar($snackbar)
@@ -85,73 +110,96 @@ struct ProfileView: View {
             .interactiveDismissDisabled(isSaving)
         }
         .onChange(of: saveCompletedCount) { _, _ in isEditing = false }
-        .onAppear { if startEditing { isEditing = true } }
-    }
-}
-
-/// Connects `ProfileView` to the shared `ProfileViewModel` for a signed-in user.
-struct ProfileContainerView: View {
-    let userId: String?
-    /// Owned by the main view, which also syncs it when the app becomes active.
-    @ObservedObject var healthImport: HealthKitImporter
-    var onLogout: () -> Void = {}
-    @StateObject private var observer = ProfileObserver()
-
-    var body: some View {
-        ProfileView(
-            displayName: Binding(get: { observer.displayName }, set: observer.setDisplayName),
-            bio: Binding(get: { observer.bio }, set: observer.setBio),
-            avatarUrl: observer.avatarUrl,
-            isSaving: observer.isSaving,
-            isAvatarUpdating: observer.isAvatarUpdating,
-            saveCompletedCount: observer.saveCompletedCount,
-            snackbar: $observer.snackbar,
-            onSave: observer.save,
-            onCancel: observer.discard,
-            onAvatarReady: observer.uploadAvatar,
-            onRemoveAvatar: observer.removeAvatar,
-            onLogout: onLogout,
-            healthSummary: healthImport.isEnabled ? healthImport.summary : nil,
-            onHealthSettings: healthImport.openSettingsOrConnect
-        )
-        .permissionDisclosure(
-            isPresented: $healthImport.showDisclosure,
-            title: "healthkit_disclosure_title",
-            message: "healthkit_disclosure_message"
-        ) { healthImport.disclosureConfirmed() }
-        .alert(
-            healthImport.message.map { String(localized: $0) } ?? "",
-            isPresented: Binding(get: { healthImport.message != nil }, set: { if !$0 { healthImport.message = nil } })
-        ) { Button("OK", role: .cancel) {} }
-        .task(id: userId) {
-            if let userId { observer.load(userId: userId) }
+        .onAppear {
+            orderedTeams = teams
+            if startEditing { isEditing = true }
+        }
+        .onChange(of: teams) { _, newTeams in
+            orderedTeams = newTeams
+            if newTeams.count < 2 { editMode = .inactive }
         }
     }
-}
 
-#Preview("Read-only") {
-    NavigationStack {
-        ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."), snackbar: .constant(nil))
+    private var teamsSection: some View {
+        Section {
+            ForEach(Array(orderedTeams.enumerated()), id: \.element.id) { index, team in
+                NavigationLink(value: TeamRoute(teamId: team.id)) {
+                    TeamMembershipRowView(name: team.name, avatarUrl: team.avatarUrl, isPrimary: index == 0)
+                }
+                .deleteDisabled(true)
+            }
+            .onMove(perform: moveTeams)
+
+            if !editMode.isEditing {
+                JoinTeamRowView(onJoin: onJoinTeam)
+            }
+        } header: {
+            HStack {
+                Text(LocalizedStringKey("memberships_title"))
+                Spacer()
+                if teams.count > 1 {
+                    Button(LocalizedStringKey(editMode.isEditing ? "memberships_reorder_done" : "memberships_reorder")) {
+                        withAnimation { editMode = editMode.isEditing ? .inactive : .active }
+                    }
+                    .font(.subheadline.weight(.semibold))
+                }
+            }
+            .textCase(nil)
+        } footer: {
+            if teams.count > 1 {
+                Text(LocalizedStringKey("memberships_hint"))
+            }
+        }
+    }
+
+    private func moveTeams(from source: IndexSet, to destination: Int) {
+        orderedTeams.move(fromOffsets: source, toOffset: destination)
+        let ids = orderedTeams.map(\.id)
+        if ids != teams.map(\.id) { onReorderTeams(ids) }
     }
 }
 
-#Preview("Read-only Dark") {
+private extension View {
+    /// A list row without its own background or insets, for content that brings its own card.
+    func clearListRow() -> some View {
+        listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+    }
+}
+
+#Preview("Light Mode") {
     NavigationStack {
-        ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."), snackbar: .constant(nil))
+        ProfileView(
+            displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."),
+            memberSince: Date(timeIntervalSince1970: 1_768_435_200), activityCount: 42,
+            snackbar: .constant(nil), teams: TeamPreviewData.teams
+        )
+    }
+    .preferredColorScheme(.light)
+}
+
+#Preview("Dark Mode, health") {
+    NavigationStack {
+        ProfileView(
+            displayName: .constant("Martin Kade"), bio: .constant(""), snackbar: .constant(nil),
+            healthSummary: DailyHealthSummary(steps: 8432, floors: 12), teams: Array(TeamPreviewData.teams.prefix(1))
+        )
     }
     .preferredColorScheme(.dark)
+}
+
+#Preview("Large text, no teams") {
+    NavigationStack {
+        ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."),
+                    snackbar: .constant(SnackbarMessage(text: "Profile saved")))
+    }
+    .dynamicTypeSize(.accessibility2)
 }
 
 #Preview("With edit sheet") {
     NavigationStack {
         ProfileView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."),
                     snackbar: .constant(nil), startEditing: true)
-    }
-}
-
-#Preview("iPad, snackbar", traits: .fixedLayout(width: 820, height: 1000)) {
-    NavigationStack {
-        ProfileView(displayName: .constant("Martin Kade"), bio: .constant(""),
-                    snackbar: .constant(SnackbarMessage(text: "Profile saved")))
     }
 }

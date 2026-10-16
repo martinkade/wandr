@@ -1,111 +1,70 @@
-@preconcurrency import shared
 import SwiftUI
 
-/// Edit screen shown in the team's sheet: cover (4:3), avatar (1:1), name, description, Cancel / Save.
+/// Name and description of a team in a sheet, used to create a team and to edit one (cover and photo are changed
+/// from the details menu). Cancel / save live in the sheet's toolbar.
 struct TeamEditView: View {
+    var title: LocalizedStringKey = "team_edit_title"
+    var saveTitle: LocalizedStringKey = "save_profile_button"
     @Binding var name: String
     @Binding var teamDescription: String
-    var avatarUrl: String? = nil
-    var coverUrl: String? = nil
     var isSaving: Bool = false
-    var isImageUpdating: Bool = false
     @Binding var snackbar: SnackbarMessage?
     var onSave: () -> Void = {}
     var onCancel: () -> Void = {}
-    var onAvatarReady: (Data) -> Void = { _ in }
-    var onRemoveAvatar: () -> Void = {}
-    var onCoverReady: (Data) -> Void = { _ in }
-    var onRemoveCover: () -> Void = {}
+
+    @FocusState private var nameFocused: Bool
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                Text(LocalizedStringKey("team_edit_title"))
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.wandrAccentText)
-                    .padding(.top, 8)
-
-                TeamCoverView(
-                    coverUrl: coverUrl,
-                    isEditing: true,
-                    isBusy: isImageUpdating,
-                    onImageReady: onCoverReady,
-                    onRemove: onRemoveCover
-                )
-
-                AvatarEditorView(
-                    displayName: name,
-                    avatarUrl: avatarUrl,
-                    isBusy: isImageUpdating,
-                    title: "team_photo_title",
-                    onAvatarReady: onAvatarReady,
-                    onRemoveAvatar: onRemoveAvatar
-                )
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(LocalizedStringKey("team_name_label")).font(.caption).foregroundColor(.secondary)
+        NavigationStack {
+            Form {
+                Section(LocalizedStringKey("team_name_label")) {
                     TextField(LocalizedStringKey("team_name_label"), text: $name)
-                        .textFieldStyle(.plain)
-                        .padding()
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(12)
+                        .focused($nameFocused)
+                        .submitLabel(.next)
                 }
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(LocalizedStringKey("team_description_label")).font(.caption).foregroundColor(.secondary)
-                    TextEditor(text: $teamDescription)
-                        .frame(height: 100)
-                        .padding(8)
-                        .scrollContentBackground(.hidden)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(12)
-                }
-
-                HStack(spacing: 12) {
-                    Button(action: onCancel) {
-                        Text(LocalizedStringKey("cancel_button"))
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.5)))
-                    }
-                    .disabled(isSaving)
-
-                    Button(action: onSave) {
-                        Group {
-                            if isSaving {
-                                ProgressView().tint(.wandrOnPrimary)
-                            } else {
-                                Text(LocalizedStringKey("save_profile_button")).font(.headline)
-                            }
-                        }
-                        .foregroundColor(.wandrOnPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.wandrPrimary)
-                        .cornerRadius(12)
-                    }
-                    .disabled(isSaving)
+                Section(LocalizedStringKey("team_description_label")) {
+                    TextField(LocalizedStringKey("team_description_label"), text: $teamDescription, axis: .vertical)
+                        .lineLimit(3...8)
                 }
             }
-            .padding(24)
+            .disabled(isSaving)
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(LocalizedStringKey("cancel_button"), action: onCancel)
+                        .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Button(saveTitle, action: onSave)
+                            .fontWeight(.semibold)
+                            .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+            }
         }
-        .background(Color(.systemBackground).ignoresSafeArea())
-        .snackbar($snackbar) // messages while the sheet is open (e.g. image updated, errors)
+        .snackbar($snackbar) // messages while the sheet is open (errors)
+        .onAppear { if name.isEmpty { nameFocused = true } }
     }
 }
 
-#Preview("Light Mode") {
+#Preview("Edit, Light") {
     TeamEditView(name: .constant("Alpine Trail Blazers"), teamDescription: .constant("Hiking team for weekend trips."),
                  snackbar: .constant(nil))
+        .preferredColorScheme(.light)
 }
 
-#Preview("Dark Mode") {
-    TeamEditView(name: .constant("Alpine Trail Blazers"), teamDescription: .constant(""), snackbar: .constant(nil))
+#Preview("Create, Dark") {
+    TeamEditView(title: "create_team_title", saveTitle: "create_team_button",
+                 name: .constant(""), teamDescription: .constant(""), snackbar: .constant(nil))
         .preferredColorScheme(.dark)
 }
 
-#Preview("iPad, saving", traits: .fixedLayout(width: 700, height: 1000)) {
+#Preview("Saving, large text") {
     TeamEditView(name: .constant("Alpine Trail Blazers"), teamDescription: .constant(""), isSaving: true,
                  snackbar: .constant(SnackbarMessage(text: "Save failed", isError: true)))
+        .dynamicTypeSize(.accessibility2)
 }

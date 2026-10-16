@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Edit screen shown in the profile's sheet: photo, name, bio and Cancel / Save.
+/// Edit screen shown in the profile's sheet: photo, name, bio; Cancel / Save in the sheet's toolbar.
 struct ProfileEditView: View {
     @Binding var displayName: String
     @Binding var bio: String
@@ -14,76 +14,55 @@ struct ProfileEditView: View {
     var onRemoveAvatar: () -> Void = {}
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Text(LocalizedStringKey("profile_edit_title"))
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.wandrAccentText)
-                    .padding(.top, 8)
+        NavigationStack {
+            Form {
+                Section {
+                    AvatarEditorView(
+                        displayName: displayName,
+                        avatarUrl: avatarUrl,
+                        isBusy: isAvatarUpdating,
+                        onAvatarReady: onAvatarReady,
+                        onRemoveAvatar: onRemoveAvatar
+                    )
+                    .frame(maxWidth: .infinity)
+                    .listRowBackground(Color.clear)
+                }
 
-                AvatarEditorView(
-                    displayName: displayName,
-                    avatarUrl: avatarUrl,
-                    isBusy: isAvatarUpdating,
-                    onAvatarReady: onAvatarReady,
-                    onRemoveAvatar: onRemoveAvatar
-                )
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(LocalizedStringKey("display_name_label")).font(.caption).foregroundColor(.secondary)
+                Section(LocalizedStringKey("display_name_label")) {
                     TextField(LocalizedStringKey("display_name_label"), text: $displayName)
-                        .textFieldStyle(.plain)
-                        .padding()
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(12)
+                        .textContentType(.name)
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(LocalizedStringKey("bio_label")).font(.caption).foregroundColor(.secondary)
-                    TextEditor(text: $bio)
-                        .frame(height: 100)
-                        .padding(8)
-                        .scrollContentBackground(.hidden)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(12)
-                }
-
-                HStack(spacing: 12) {
-                    Button(action: onCancel) {
-                        Text(LocalizedStringKey("cancel_button"))
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.5)))
-                    }
-                    .disabled(isSaving)
-
-                    Button(action: onSave) {
-                        Group {
-                            if isSaving {
-                                ProgressView().tint(.wandrOnPrimary)
-                            } else {
-                                Text(LocalizedStringKey("save_profile_button")).font(.headline)
-                            }
-                        }
-                        .foregroundColor(.wandrOnPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.wandrPrimary)
-                        .cornerRadius(12)
-                    }
-                    .disabled(isSaving)
+                Section(LocalizedStringKey("bio_label")) {
+                    TextField(LocalizedStringKey("bio_label"), text: $bio, axis: .vertical)
+                        .lineLimit(3...8)
                 }
             }
-            .padding(24)
+            .disabled(isSaving)
+            .navigationTitle(LocalizedStringKey("profile_edit_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(LocalizedStringKey("cancel_button"), action: onCancel)
+                        .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Button(LocalizedStringKey("save_profile_button"), action: onSave)
+                            .fontWeight(.semibold)
+                    }
+                }
+            }
         }
-        .background(Color(.systemBackground).ignoresSafeArea())
         .snackbar($snackbar) // messages while the sheet is open (e.g. photo updated, errors)
     }
 }
 
 #Preview("Light Mode") {
     ProfileEditView(displayName: .constant("Martin Kade"), bio: .constant("Outdoor hiker & developer."), snackbar: .constant(nil))
+        .preferredColorScheme(.light)
 }
 
 #Preview("Dark Mode") {

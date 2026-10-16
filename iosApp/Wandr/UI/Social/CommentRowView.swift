@@ -1,6 +1,7 @@
 import SwiftUI
 @preconcurrency import shared
 
+/// One comment: author with avatar and time, the text, its reactions and (author / owner) an overflow menu to edit or delete.
 struct CommentRowView: View {
     let comment: Comment
     let allowedReactions: [String]
@@ -11,43 +12,52 @@ struct CommentRowView: View {
     var onDelete: () -> Void = {}
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Text(comment.authorName).font(.subheadline).fontWeight(.semibold)
-                Text(Date(timeIntervalSince1970: Double(comment.createdAt) / 1000), style: .relative)
-                    .font(.caption).foregroundColor(.secondary)
-                if comment.isEdited {
-                    Text(LocalizedStringKey("comment_edited")).font(.caption).foregroundColor(.secondary)
-                }
-            }
-            Text(comment.content).font(.body)
-            HStack(spacing: 6) {
-                ForEach(comment.reactions, id: \.emoji) { reaction in
-                    ReactionChipView(emoji: reaction.emoji, count: Int(reaction.count), isSelected: reaction.reactedByMe) {
-                        onToggleReaction(reaction.emoji)
+        HStack(alignment: .top, spacing: 12) {
+            AvatarView(url: comment.authorAvatarUrl, name: comment.authorName, size: 36)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 6) {
+                    Text(comment.authorName.isEmpty ? String(localized: "social_unknown_author") : comment.authorName)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
+                    Text(Date(timeIntervalSince1970: Double(comment.createdAt) / 1000), style: .relative)
+                        .font(.caption).foregroundStyle(.secondary)
+                    if comment.isEdited {
+                        Text(LocalizedStringKey("comment_edited")).font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    if canEdit || canDelete {
+                        Menu {
+                            if canEdit {
+                                Button(action: onEdit) { Label(LocalizedStringKey("comment_edit"), systemImage: "pencil") }
+                            }
+                            if canDelete {
+                                Button(role: .destructive, action: onDelete) { Label(LocalizedStringKey("comment_delete"), systemImage: "trash") }
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis").frame(width: 28, height: 28)
+                        }
+                        .accessibilityLabel(Text(LocalizedStringKey("more_options")))
                     }
                 }
-                Menu {
-                    ForEach(allowedReactions, id: \.self) { emoji in
-                        Button(emoji) { onToggleReaction(emoji) }
+                Text(comment.content).font(.body)
+                HStack(spacing: 6) {
+                    ForEach(comment.reactions, id: \.emoji) { reaction in
+                        ReactionChipView(emoji: reaction.emoji, count: Int(reaction.count), isSelected: reaction.reactedByMe) {
+                            onToggleReaction(reaction.emoji)
+                        }
                     }
-                } label: {
-                    Image(systemName: "face.smiling").font(.subheadline).foregroundColor(.wandrAccentText)
+                    Menu {
+                        ForEach(allowedReactions, id: \.self) { emoji in
+                            Button(emoji) { onToggleReaction(emoji) }
+                        }
+                    } label: {
+                        Image(systemName: "face.smiling").font(.subheadline).foregroundStyle(Color.wandrAccentText)
+                    }
+                    .accessibilityLabel(Text(LocalizedStringKey("comment_add_reaction")))
                 }
-                .accessibilityLabel(Text(LocalizedStringKey("comment_add_reaction")))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .contextMenu {
-            if canEdit {
-                Button { onEdit() } label: { Label(LocalizedStringKey("comment_edit"), systemImage: "pencil") }
-            }
-            if canDelete {
-                Button(role: .destructive) { onDelete() } label: { Label(LocalizedStringKey("comment_delete"), systemImage: "trash") }
-            }
-        }
     }
 }
 

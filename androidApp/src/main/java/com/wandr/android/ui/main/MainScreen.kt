@@ -34,6 +34,7 @@ import com.wandr.android.ui.activity.WatchImportHost
 import com.wandr.android.ui.challenge.ChallengeDetailsScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
 import com.wandr.android.ui.common.HeroLayer
+import com.wandr.android.ui.settings.SettingsScreen
 import com.wandr.android.ui.common.HeroTransitionState
 import com.wandr.android.ui.common.LocalHeroTransition
 import com.wandr.android.ui.common.SlideInOverlay
@@ -74,6 +75,7 @@ fun MainScreen(
     var openActivityId by rememberSaveable { mutableStateOf<String?>(null) }
     var isRecording by rememberSaveable { mutableStateOf(false) }
     var showNotifications by rememberSaveable { mutableStateOf(false) }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
     // One view model for the bell badge and the list, so reading a notification updates the badge.
     val notificationsViewModel: NotificationsViewModel = koinInject()
     val notifications by notificationsViewModel.state.collectAsState()
@@ -132,7 +134,8 @@ fun MainScreen(
                     MainTab.Profile -> ProfileScreen(
                         userId = userId,
                         onLogout = { viewModel.logout(onLogout) },
-                        onOpenTeam = { openTeamId = it }
+                        onOpenTeam = { openTeamId = it },
+                        onOpenSettings = { showSettings = true }
                     )
                 }
             }
@@ -173,6 +176,9 @@ fun MainScreen(
         }
         SlideInOverlay(item = openActivityId.takeIf { userId != null }, onBack = { openActivityId = null }) { activityId ->
             ActivityDetailsScreen(activityId = activityId, userId = userId.orEmpty(), onBack = { openActivityId = null })
+        }
+        SlideInOverlay(item = Unit.takeIf { showSettings }, onBack = { showSettings = false }) {
+            SettingsScreen(onBack = { showSettings = false })
         }
         // Back is handled by the screen itself: it is blocked while a recording is running.
         SlideInOverlay(item = userId.takeIf { isRecording }, onBack = { }) { id ->

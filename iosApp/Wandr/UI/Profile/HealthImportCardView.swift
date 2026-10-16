@@ -25,7 +25,7 @@ struct HealthImportCardView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wandrCard()
     }
 }
 

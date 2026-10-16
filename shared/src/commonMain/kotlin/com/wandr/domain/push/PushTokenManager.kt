@@ -16,7 +16,9 @@ import kotlinx.coroutines.launch
 class PushTokenManager(
     private val registerPushToken: RegisterPushTokenUseCase,
     private val unregisterPushToken: UnregisterPushTokenUseCase,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
+    /** The user's choice in the settings; while off, this device gets no pushes (its token is not on the server). */
+    private val isPushEnabled: () -> Boolean = { true }
 ) {
     private var token: String? = null
     private var platform: String = PLATFORM_ANDROID
@@ -31,9 +33,28 @@ class PushTokenManager(
 
     suspend fun registerIfPossible() {
         val current = token ?: return
+        if (!isPushEnabled()) {
+            // Switched off: make sure the server forgets this device (also retries a removal that failed while offline).
+            unregisterPushToken(current).onSuccess { registeredToken = null }
+            return
+        }
         if (registeredToken == current) return
         // Fails while nobody is signed in; the next call after sign-in tries again.
         registerPushToken(current, platform).onSuccess { registeredToken = current }
+    }
+
+    /**
+     * Applies the user's choice right away: registers this device again, or removes it from the server. The choice itself
+     * is stored by the caller first ([isPushEnabled]); a removal that fails offline is retried at the next start.
+     */
+    suspend fun applyPushSetting(): Result<Unit> {
+        val current = token ?: registeredToken ?: return Result.success(Unit)
+        return if (isPushEnabled()) {
+            registeredToken = null
+            registerPushToken(current, platform).onSuccess { registeredToken = current }
+        } else {
+            unregisterPushToken(current).onSuccess { registeredToken = null }
+        }
     }
 
     /** Stops pushes for the signed-in user; call before signing out (the server needs the session to allow it). */

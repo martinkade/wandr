@@ -1,46 +1,103 @@
 import SwiftUI
+@preconcurrency import shared
 
+/// The challenges the user can see as cards, built from plain values (the observer lives in `ChallengesContainerView`).
+/// The caller filters drafts; joining, leaving and editing happen on the details.
 struct ChallengeListView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ScrollView {
-                VStack(spacing: 12) {
-                    ChallengeCardView(
-                        title: "30-Day 100km Hike",
-                        description: "Hike 100km total within 30 days.",
-                        status: "active",
-                        requireAllMembersCompletion: true
-                    )
+    var challenges: [Challenge] = []
+    var statuses: [String: ChallengeStatus] = [:]
+    var socialCounts: [String: SocialCounts] = [:]
+    var isLoading: Bool = false
+    /// The card's zoom transition source (iOS 18+), matched by the details.
+    var zoomNamespace: Namespace.ID? = nil
+    var onOpen: (Challenge) -> Void = { _ in }
+    var onToggleLike: (Challenge) -> Void = { _ in }
+    var onRefresh: (() async -> Void)? = nil
 
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                ForEach(challenges, id: \.id) { challenge in
                     ChallengeCardView(
-                        title: "5000m Altitude Climb",
-                        description: "Climb 5000m total within 30 days.",
-                        status: "active",
-                        requireAllMembersCompletion: false
+                        challenge: challenge,
+                        status: statuses[challenge.id] ?? .active,
+                        counts: socialCounts[challenge.id] ?? SocialCounts(likeCount: 0, commentCount: 0, likedByMe: false),
+                        onOpen: { onOpen(challenge) },
+                        onToggleLike: { onToggleLike(challenge) }
                     )
+                    .challengeZoomSource(id: challenge.id, in: zoomNamespace)
                 }
             }
-
-            Spacer()
+            .frame(maxWidth: 700)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
         }
-        .padding(24)
-        .background(
-            LinearGradient(
-                colors: [Color.wandrSecondary.opacity(0.08), Color.wandrPrimary.opacity(0.05)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-        )
+        .background(Color(.systemGroupedBackground))
+        .overlay {
+            if challenges.isEmpty {
+                if isLoading {
+                    ProgressView().controlSize(.large)
+                } else {
+                    ContentUnavailableView {
+                        Label(LocalizedStringKey("challenges_empty"), systemImage: "trophy")
+                    } description: {
+                        Text(LocalizedStringKey("challenges_empty_hint"))
+                    }
+                }
+            }
+        }
+        .refreshable { await onRefresh?() }
     }
 }
 
+extension View {
+    /// Marks a view as the source of the zoom transition into a challenge's details (iOS 18+; a no-op before).
+    @ViewBuilder
+    func challengeZoomSource(id: String, in namespace: Namespace.ID?) -> some View {
+        if #available(iOS 18.0, *), let namespace {
+            self.matchedTransitionSource(id: id, in: namespace) { $0.clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous)) }
+        } else {
+            self
+        }
+    }
+
+    /// The details zoom out of the tapped card (iOS 18+; the standard push before).
+    @ViewBuilder
+    func challengeZoomDestination(id: String, in namespace: Namespace.ID?) -> some View {
+        if #available(iOS 18.0, *), let namespace {
+            self.navigationTransition(.zoom(sourceID: id, in: namespace))
+        } else {
+            self
+        }
+    }
+}
+
+private let previewChallenges = [
+    ChallengePreviewData.challenge(),
+    ChallengePreviewData.challenge(id: "c2", title: "5000 m Altitude Climb", description: "Teams compete.", scope: "individual", type: "elevation", target: 5_000),
+]
+
 #Preview("Light Mode") {
-    ChallengeListView()
-        .preferredColorScheme(.light)
+    NavigationStack {
+        ChallengeListView(
+            challenges: previewChallenges,
+            statuses: ["c1": .active, "c2": .planned],
+            socialCounts: ["c1": SocialCounts(likeCount: 5, commentCount: 2, likedByMe: true)]
+        )
+        .navigationTitle("Challenges")
+    }
+    .preferredColorScheme(.light)
 }
 
 #Preview("Dark Mode") {
-    ChallengeListView()
-        .preferredColorScheme(.dark)
+    NavigationStack {
+        ChallengeListView(challenges: previewChallenges, statuses: ["c1": .draft, "c2": .expired]).navigationTitle("Challenges")
+    }
+    .preferredColorScheme(.dark)
+}
+
+#Preview("Empty, iPhone SE", traits: .fixedLayout(width: 320, height: 568)) {
+    NavigationStack { ChallengeListView().navigationTitle("Challenges") }
+        .environment(\.dynamicTypeSize, .xxxLarge)
 }

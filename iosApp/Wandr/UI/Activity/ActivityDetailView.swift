@@ -1,72 +1,104 @@
 import SwiftUI
 @preconcurrency import shared
 
-/// Read-only activity details followed by likes and comments.
+/// The details of one activity (pushed from the feed or from a notification), with its own view model. The owner can
+/// edit (form sheet) or delete it from the toolbar menu; a delete closes the screen.
 struct ActivityDetailView: View {
-    let activity: Activity
-    let userId: String?
-    @StateObject private var social = SocialObserver()
+    let activityId: String
+    let userId: String
+    var onDeleted: () -> Void = {}
+
+    @StateObject private var observer = ActivityObserver()
+    @Environment(\.dismiss) private var dismiss
+    @State private var isEditing = false
+    @State private var confirmDelete = false
+    @State private var isHeaderCollapsed = false
+    @State private var message: SnackbarMessage?
+
+    private var state: ActivityState { observer.state }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(activity.title).font(.title2).fontWeight(.bold)
-                    Text(activity.activityType.capitalized).font(.subheadline).foregroundColor(.wandrAccentText)
-                    Text(Date(timeIntervalSince1970: Double(activity.startTime) / 1000), format: .dateTime.day().month().year().hour().minute())
-                        .font(.subheadline).foregroundColor(.secondary)
-                    if let desc = activity.description_, !desc.isEmpty {
-                        Text(desc).font(.body)
-                    }
-                    HStack {
-                        Label(String(format: "%.2f km", activity.distanceMeters / 1000), systemImage: "ruler")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Label("\(Int(activity.durationSeconds / 60)) min", systemImage: "clock")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Label("\(Int(activity.elevationGainMeters)) m", systemImage: "mountain.2")
-                    }
-                    .font(.subheadline)
+        Group {
+            if let activity = state.selectedActivity, activity.id == activityId {
+                let author = state.authors[activity.userId]
+                ActivityDetailContentView(
+                    activity: activity,
+                    authorName: author?.displayName ?? "",
+                    authorAvatarUrl: author?.avatarUrl,
+                    route: state.selectedTrack.isEmpty ? activity.route : state.selectedTrack,
+                    isOwn: activity.userId == userId,
+                    isHeaderCollapsed: $isHeaderCollapsed
+                ) {
+                    EntitySocialBar(type: .activity, entityId: activity.id, userId: userId, ownerId: activity.userId)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-
-                if activity.route.count >= 2 {
-                    TrackMapView(trackpoints: activity.route, height: 200)
-                }
-
-                SocialSectionView(
-                    likeCount: social.likeCount, likedByMe: social.likedByMe, comments: social.comments,
-                    isPosting: social.isPosting, errorMessage: social.errorMessage,
-                    allowedReactions: social.allowedReactions,
-                    canEdit: { social.canEdit($0) }, canDelete: { social.canDelete($0) },
-                    onToggleLike: { social.toggleLike() }, onPost: { social.post($0) },
-                    onUpdate: { social.update($0, $1) }, onDelete: { social.delete($0) },
-                    onToggleReaction: { social.toggleReaction($0, $1) }
+                .navigationTitle(isHeaderCollapsed ? activity.title : "")
+                .toolbar { ownerMenu(activity) }
+                .activityFormSheet(
+                    observer: observer, isPresented: $isEditing, message: $message,
+                    userId: userId, teamId: activity.teamId,
+                    onSuccess: { if $0 == .deleted { closeAfterDelete() } }
                 )
+                .confirmationDialog(
+                    LocalizedStringKey("activity_delete_confirm_title"), isPresented: $confirmDelete, titleVisibility: .visible
+                ) {
+                    Button(LocalizedStringKey("social_delete"), role: .destructive) {
+                        observer.send(ActivityIntentDeleteActivity(activityId: activity.id))
+                    }
+                    Button(LocalizedStringKey("cancel_button"), role: .cancel) {}
+                } message: {
+                    Text(LocalizedStringKey("activity_delete_confirm_message"))
+                }
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                    .navigationTitle(LocalizedStringKey("activity_details_title"))
             }
-            .padding(16)
         }
-        .navigationTitle(activity.title)
         .navigationBarTitleDisplayMode(.inline)
-        .task(id: userId) {
-            if let userId { social.start(entityId: activity.id, userId: userId, ownerId: activity.userId) }
+        .snackbar($message)
+        .task(id: "\(activityId)|\(userId)") {
+            // Loading the user's list establishes the signed-in user in the view model (owner check for edit / delete).
+            observer.send(ActivityIntentLoadUserActivities(userId: userId))
+            observer.send(ActivityIntentSelectActivity(activityId: activityId))
         }
     }
-}
 
-extension Activity {
-    static var sample: Activity {
-        Activity(
-            id: "a1", userId: "u1", teamId: "t1", title: "Weekend Trail Walk", description: "Lovely day.",
-            activityType: "hiking", distanceMeters: 5400, durationSeconds: 3600, elevationGainMeters: 150,
-            fitFilePath: nil, startTime: 1_700_000_000_000, endTime: 1_700_003_600_000,
-            isManualEntry: true, createdAt: 0, updatedAt: 0,
-            showMap: true,
-            polyline: nil
-        )
+    @ToolbarContentBuilder
+    private func ownerMenu(_ activity: Activity) -> some ToolbarContent {
+        if state.canEdit {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        observer.send(ActivityIntentStartEdit(activityId: activity.id))
+                        isEditing = true
+                    } label: {
+                        Label(LocalizedStringKey("profile_edit_button"), systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        confirmDelete = true
+                    } label: {
+                        Label(LocalizedStringKey("activity_delete_button"), systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+                .accessibilityLabel(Text(LocalizedStringKey("more_options")))
+                .disabled(state.isSaving)
+            }
+        }
+    }
+
+    private func closeAfterDelete() {
+        onDeleted()
+        dismiss()
     }
 }
 
-#Preview("Light Mode") { NavigationStack { ActivityDetailView(activity: .sample, userId: nil) }.preferredColorScheme(.light) }
-#Preview("Dark Mode") { NavigationStack { ActivityDetailView(activity: .sample, userId: nil) }.preferredColorScheme(.dark) }
+
+// The container needs the shared view models (Koin); see `ActivityDetailContentView` for the content previews.
+#Preview("Light Mode") { NavigationStack { ActivityDetailView(activityId: "a1", userId: "u1") }.preferredColorScheme(.light) }
+#Preview("Dark Mode") { NavigationStack { ActivityDetailView(activityId: "a1", userId: "u1") }.preferredColorScheme(.dark) }
+#Preview("Large Text") {
+    NavigationStack { ActivityDetailView(activityId: "a1", userId: "u1") }.environment(\.dynamicTypeSize, .accessibility2)
+}

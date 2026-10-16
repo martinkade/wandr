@@ -8,12 +8,16 @@ import SwiftUI
 struct TrackMapView: View {
     let trackpoints: [GpsTrackpoint]
     var height: CGFloat = 200
+    /// Extra room above / below the route, e.g. for a navigation bar or a sheet over the map.
+    var topPadding: CGFloat = 32
+    var bottomPadding: CGFloat = 32
+    var cornerRadius: CGFloat = 12
 
     var body: some View {
         GeometryReader { geo in
             let layout = trackpoints.isEmpty || geo.size.width < 1 || geo.size.height < 1 ? nil
                 : StaticMapLayout.companion.fit(
-                points: trackpoints, width: Double(geo.size.width), height: Double(geo.size.height), padding: 32, topPadding: 32, bottomPadding: 32)
+                points: trackpoints, width: Double(geo.size.width), height: Double(geo.size.height), padding: 32, topPadding: Double(topPadding), bottomPadding: Double(bottomPadding))
             ZStack(alignment: .bottomTrailing) {
                 Color(.secondarySystemBackground)
                 if let layout {
@@ -38,7 +42,7 @@ struct TrackMapView: View {
             .clipped()
         }
         .frame(height: height)
-        .cornerRadius(12)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
 }
 

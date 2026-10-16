@@ -14,7 +14,8 @@ final class SocialObserver: ObservableObject {
     nonisolated(unsafe) private var latest: SocialState?
     let allowedReactions: [String] = Reactions.shared.allowed
 
-    func start(entityId: String, userId: String, ownerId: String?) {
+    /// [type]: likes and comments of an activity (default) or of a challenge.
+    func start(type: SocialEntityType = .activity, entityId: String, userId: String, ownerId: String?) {
         job?.cancel(cause: nil)
         job = FlowObserverKt.watch(viewModel.state) { [weak self] value in
             guard let state = value as? SocialState else { return }
@@ -27,7 +28,7 @@ final class SocialObserver: ObservableObject {
                 self?.errorMessage = state.error?.userMessage
             }
         }
-        viewModel.processIntent(intent: SocialIntentLoad(type: .activity, entityId: entityId, userId: userId, entityOwnerId: ownerId))
+        viewModel.processIntent(intent: SocialIntentLoad(type: type, entityId: entityId, userId: userId, entityOwnerId: ownerId))
     }
 
     func canEdit(_ comment: Comment) -> Bool { latest?.canEdit(comment: comment) ?? false }

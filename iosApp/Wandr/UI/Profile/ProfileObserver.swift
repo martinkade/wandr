@@ -7,6 +7,9 @@ final class ProfileObserver: ObservableObject {
     @Published var displayName = ""
     @Published var bio = ""
     @Published var avatarUrl: String?
+    /// When the profile was created; nil while unknown.
+    @Published var memberSince: Date?
+    @Published var activityCount = 0
     @Published var isLoading = true
     @Published var isSaving = false
     @Published var isAvatarUpdating = false
@@ -59,6 +62,9 @@ final class ProfileObserver: ObservableObject {
 
     private func apply(_ state: ProfileState) {
         avatarUrl = state.profile?.avatarUrl
+        // A timestamp <= 0 means "unknown".
+        memberSince = state.profile.flatMap { $0.createdAt > 0 ? Date(timeIntervalSince1970: TimeInterval($0.createdAt) / 1000) : nil }
+        activityCount = Int(state.activityCount)
         isLoading = state.isLoading
         isSaving = state.isSaving
         isAvatarUpdating = state.isAvatarUpdating

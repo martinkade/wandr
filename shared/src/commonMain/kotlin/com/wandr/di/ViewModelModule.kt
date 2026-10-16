@@ -46,6 +46,7 @@ val viewModelModule = module {
     factory { com.wandr.presentation.activity.ActivityViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     factory { com.wandr.presentation.watch.WatchImportViewModel(get(), get()) }
     factory { com.wandr.presentation.social.SocialViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    factory { com.wandr.presentation.settings.SettingsViewModel(get(), get()) }
     factory { com.wandr.presentation.notifications.NotificationsViewModel(get(), get(), get()) }
     // The recording must outlive screens (rotation, leaving the app): the foreground service and the recording screen
     // both use this one instance. Browsing the feed uses the factory instances above.

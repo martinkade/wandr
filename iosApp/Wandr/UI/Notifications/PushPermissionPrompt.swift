@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import UserNotifications
+@preconcurrency import shared
 
 /// Asks once (after the disclosure) for the notification permission and registers with APNs.
 @MainActor
@@ -9,6 +10,8 @@ final class PushPermissionObserver: ObservableObject {
     private static let askedKey = "push_permission_asked"
 
     func check() {
+        // Switched off in the settings: neither ask nor register.
+        guard IosDependencies.shared.appSettings().pushNotificationsEnabled else { return }
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             let status = settings.authorizationStatus
             Task { @MainActor in

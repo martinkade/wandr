@@ -33,7 +33,7 @@
 "create_challenge_title" = "Challenge erstellen";
 "challenge_title_label" = "Challenge-Titel";
 "challenge_target_label" = "Zielwert";
-"require_all_members_label" = "Alle Mitglieder müssen abschließen (Alles-oder-Nichts)";
+"require_all_members_label" = "Jedes Teammitglied muss das Ziel erreichen";
 "leaderboard_title" = "Team-Bestenliste";
 "join_challenge_button" = "Challenge beitreten";
 
@@ -105,7 +105,6 @@
 "team_cover_title" = "Titelbild";
 "team_cover_change" = "Titelbild ändern";
 "team_cover_content_description" = "Titelbild";
-"team_members_count" = "Mitglieder (%lld)";
 "team_no_members" = "Noch keine Mitglieder.";
 "team_saved_message" = "Team gespeichert";
 "team_image_updated_message" = "Bild aktualisiert";
@@ -151,7 +150,7 @@
 "comment_delete" = "Löschen";
 "comment_add_reaction" = "Reaktion hinzufügen";
 "notifications_title" = "Benachrichtigungen";
-"notifications_empty" = "Noch keine Benachrichtigungen.";
+"notifications_empty" = "Noch nichts Neues. Likes und Kommentare zu deinen Aktivitäten erscheinen hier.";
 "notifications_loading" = "Lädt ...";
 "notifications_close" = "Schließen";
 "notifications_mark_all_read" = "Alle als gelesen markieren";
@@ -235,3 +234,131 @@
 "recording_gps_weak" = "GPS-Signal schwach";
 "recording_gps_good" = "GPS-Signal gut";
 "recording_recenter" = "Auf meine Position zentrieren";
+
+/* Settings */
+"settings_title" = "Einstellungen";
+"settings_open" = "Einstellungen";
+"settings_notifications_section" = "Benachrichtigungen";
+"settings_push_title" = "Push-Benachrichtigungen";
+"settings_push_description" = "Likes, Kommentare und Reaktionen zu deinen Aktivitäten und Challenges, auf diesem Gerät.";
+"settings_push_blocked" = "Benachrichtigungen für WANDR sind in den Systemeinstellungen blockiert.";
+"settings_open_system" = "Öffnen";
+"settings_about_section" = "Über";
+"settings_version" = "Version";
+
+/* Common */
+"social_unknown_author" = "Unbekannt";
+"more_options" = "Weitere Optionen";
+"close_button" = "Schließen";
+
+/* Feed & activities */
+"activity_feed_mine" = "Meine";
+"activity_feed_team" = "Team";
+"activities_empty" = "Noch keine Aktivitäten aufgezeichnet.";
+"activity_fab_open" = "Aktivität hinzufügen";
+"activity_fab_create" = "Manuell erfassen";
+"activity_created_message" = "Aktivität gespeichert";
+"activity_updated_message" = "Aktivität aktualisiert";
+"activity_deleted_message" = "Aktivität gelöscht";
+"activity_merged_message" = "Aktivitäten zusammengeführt";
+"activity_trimmed_message" = "Aktivität gekürzt und gespeichert";
+"activity_discarded_message" = "Aktivität verworfen, bestehende Aktivitäten behalten";
+"activity_map_hidden_hint" = "Nur du siehst diese Route.";
+"activity_track_local_hint" = "Die aufgezeichnete Strecke liegt nur auf dem Gerät, das sie aufgezeichnet hat.";
+"activity_stat_distance" = "Distanz";
+"activity_stat_time" = "Zeit";
+"activity_stat_pace" = "Tempo";
+"activity_stat_speed" = "Geschwindigkeit";
+"activity_stat_elevation" = "Höhenmeter";
+"activity_source_label" = "Quelle";
+"activity_details_title" = "Aktivitätsdetails";
+"activity_delete_button" = "Aktivität löschen";
+"activity_delete_confirm_title" = "Diese Aktivität löschen?";
+"activity_delete_confirm_message" = "Die Aktivität wird für alle entfernt, zusammen mit Likes und Kommentaren, und zählt nicht mehr für Challenges. Das lässt sich nicht rückgängig machen.";
+"social_delete" = "Löschen";
+"activity_edit_title" = "Aktivität bearbeiten";
+"activity_new_title" = "Neue Aktivität";
+"activity_title_label" = "Titel";
+"activity_description_label" = "Beschreibung";
+"activity_type_label" = "Art";
+"activity_start_label" = "Beginn";
+"activity_measured_hint" = "Die gemessenen Werte einer aufgezeichneten Aktivität lassen sich nicht ändern.";
+"activity_show_map_label" = "Route für andere anzeigen";
+"activity_show_map_hint" = "Andere Nutzer sehen die Route dieser Aktivität auf der Karte. Du siehst sie immer selbst.";
+
+/* Challenges */
+"challenge_new_button" = "Neue Challenge";
+"challenge_edit_title" = "Challenge bearbeiten";
+"challenge_description_label" = "Beschreibung";
+"challenge_type_label" = "Art";
+"challenge_type_distance" = "Distanz";
+"challenge_type_elevation" = "Höhenmeter";
+"challenge_type_time" = "Zeit";
+"challenge_unit_distance" = "km";
+"challenge_unit_elevation" = "m";
+"challenge_unit_time" = "Std.";
+"challenge_scope_label" = "Modus";
+"challenge_scope_individual" = "Einzel (jeder gegen jeden)";
+"challenge_scope_team" = "Team (Team gegen Team)";
+"challenge_scope_team_hint" = "Teams melden sich an und treten gegen andere Teams an. Mitglieder eines Teams treten nicht gegeneinander an, sondern tragen alle zum Ergebnis ihres Teams bei.";
+"challenge_created_message" = "Challenge angelegt";
+"challenge_updated_message" = "Challenge gespeichert";
+"challenge_joined_message" = "Challenge beigetreten";
+"challenge_left_message" = "Challenge verlassen";
+"challenge_team_enrolled_message" = "Team angemeldet";
+"challenge_team_withdrawn_message" = "Team zurückgezogen";
+"challenge_image_updated_message" = "Titelbild aktualisiert";
+"challenges_empty" = "Noch keine Challenges.";
+"challenges_empty_hint" = "Neue Challenges erscheinen hier.";
+"challenge_enroll_team_button" = "Team anmelden";
+"challenge_enroll_dialog_title" = "Team anmelden";
+"challenge_enroll_dialog_hint" = "Nur der Besitzer oder ein Admin eines Teams kann es anmelden. Alle Mitglieder tragen dann zum Ergebnis des Teams bei.";
+"challenge_withdraw_team_button" = "Team zurückziehen";
+"leave_challenge_button" = "Challenge verlassen";
+"challenge_status_draft" = "Entwurf";
+"challenge_status_planned" = "Geplant";
+"challenge_status_active" = "Aktiv";
+"challenge_status_completed" = "Abgeschlossen";
+"challenge_status_expired" = "Beendet";
+"challenge_period_label" = "Zeitraum";
+"challenge_start_label" = "Beginn";
+"challenge_end_label" = "Ende";
+"challenge_active_label" = "Aktiv";
+"challenge_active_hint" = "Aus: Entwurf, nur für dich sichtbar. An: für alle veröffentlicht.";
+"challenge_standings_title" = "Team-Rangliste";
+"challenge_standings_empty" = "Noch keine Teams angemeldet.";
+"challenge_activity_types_label" = "Zählende Aktivitäten";
+"challenge_activity_types_hint" = "Wähle die Aktivitätsarten, die zählen. Ist keine gewählt, zählen alle Aktivitätsarten.";
+"challenge_activity_types_all" = "Alle Aktivitätsarten";
+"save_challenge_button" = "Challenge speichern";
+"challenge_ranking_title" = "Rangliste";
+"challenge_team_ranking_title" = "Rangliste in deinem Team";
+"challenge_ranking_you" = "Du";
+"challenge_ended" = "Beendet";
+"challenge_draft_hint" = "Entwurf · nur du siehst ihn";
+"challenge_change_cover" = "Titelbild ändern";
+"challenge_more_options" = "Weitere Optionen";
+"challenge_goal_text" = "%@: %@";
+"memberships_primary" = "Zählt für Team-Challenges";
+
+/* Teams & profile */
+"memberships_title" = "Meine Teams";
+"memberships_hint" = "Tippe auf „Verschieben“ und ziehe, um die Priorität zu ändern. Nur dein erstes Team zählt für Team-Challenges.";
+"memberships_reorder" = "Verschieben";
+"memberships_reorder_done" = "Fertig";
+"memberships_join_item" = "Team beitreten";
+"join_team_hint" = "Gib den Einladungscode ein oder scanne den QR-Code des Teams.";
+"join_team_code_label" = "Einladungscode";
+"join_team_or" = "oder";
+"join_team_scan" = "QR-Code scannen";
+"join_team_scan_hint" = "Richte die Kamera auf den QR-Code des Teams.";
+"join_team_scan_unavailable" = "Das Scannen von QR-Codes ist auf diesem Gerät nicht verfügbar. Gib stattdessen den Einladungscode ein.";
+"join_team_success" = "Du bist dem Team beigetreten.";
+"team_invite_button" = "Einladen";
+"team_change_cover" = "Titelbild ändern";
+"team_change_photo" = "Teamfoto ändern";
+"team_more_actions" = "Weitere Aktionen";
+"profile_stats_member_since" = "Aktiv seit";
+"profile_stats_activities" = "Aktivitäten";
+"permission_camera_qr_message" = "WANDR nutzt die Kamera nur, um den QR-Code eines Teams zu scannen, damit du ihm beitreten kannst. Es wird kein Foto aufgenommen oder gespeichert.";
+"permission_camera_qr_denied" = "Der Kamerazugriff ist ausgeschaltet. Aktiviere ihn in den Einstellungen, um einen QR-Code zu scannen, oder gib den Einladungscode ein.";

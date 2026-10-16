@@ -10,60 +10,55 @@ struct MainView: View {
     @StateObject private var notifications = NotificationsObserver()
     @StateObject private var pushNavigation = PushNavigation.shared
     @State private var selectedTab = 0
-    @State private var selectedActivity: Activity?
+    @State private var openActivityId: String?
+    @State private var openChallengeId: String?
     @State private var showNotifications = false
     @State private var showRecording = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                FeedView(activities: viewModel.activities, onSelectActivity: { selectedActivity = $0 })
-                    .padding()
-                    .navigationTitle(LocalizedStringKey("feed_title"))
-                    .navigationDestination(item: $selectedActivity) { activity in
-                        ActivityDetailView(activity: activity, userId: viewModel.userId)
-                    }
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            // Red while a recording runs: the record button then opens the running recording.
-                            Button { showRecording = true } label: {
-                                Image(systemName: viewModel.isRecording ? "record.circle.fill" : "record.circle")
-                                    .foregroundColor(viewModel.isRecording ? .red : .accentColor)
-                            }
-                                .accessibilityLabel(Text(LocalizedStringKey("record_activity")))
-                                .disabled(viewModel.userId == nil)
-                        }
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button {
-                                notifications.load()
-                                showNotifications = true
-                            } label: {
-                                Image(systemName: notifications.unreadCount > 0 ? "bell.badge.fill" : "bell")
-                                    .overlay(alignment: .topTrailing) {
-                                        if notifications.unreadCount > 0 {
-                                            Text("\(min(notifications.unreadCount, 99))")
-                                                .font(.system(size: 10, weight: .bold))
-                                                .foregroundColor(.wandrOnPrimary)
-                                                .padding(.horizontal, 4)
-                                                .background(Color.wandrPrimary, in: Capsule())
-                                                .offset(x: 10, y: -8)
-                                        }
+                // The feed owns its view model, the Mine/Team switch and the floating record / add button.
+                FeedContainerView(
+                    userId: viewModel.userId,
+                    teamId: viewModel.teamId,
+                    isRecording: viewModel.isRecording,
+                    onOpenActivity: { openActivityId = $0 },
+                    onRecord: { showRecording = true },
+                    onRefresh: { await healthImport.syncIfEnabled() }
+                )
+                .navigationTitle(LocalizedStringKey("feed_title"))
+                .navigationDestination(item: $openActivityId) { id in
+                    ActivityDetailView(activityId: id, userId: viewModel.userId ?? "", onDeleted: { openActivityId = nil })
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showNotifications = true
+                        } label: {
+                            Image(systemName: notifications.unreadCount > 0 ? "bell.badge.fill" : "bell")
+                                .overlay(alignment: .topTrailing) {
+                                    if notifications.unreadCount > 0 {
+                                        Text("\(min(notifications.unreadCount, 99))")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.wandrOnPrimary)
+                                            .padding(.horizontal, 4)
+                                            .background(Color.wandrPrimary, in: Capsule())
+                                            .offset(x: 10, y: -8)
                                     }
-                            }
-                            .accessibilityLabel(Text(LocalizedStringKey("notifications_title")))
+                                }
                         }
+                        .accessibilityLabel(Text(LocalizedStringKey("notifications_title")))
                     }
+                }
             }
             .tabItem { Label(LocalizedStringKey("tab_feed"), systemImage: "rectangle.stack") }
             .tag(0)
 
-            NavigationStack {
-                ChallengeListView()
-                    .padding()
-                    .navigationTitle(LocalizedStringKey("challenges_title"))
-            }
-            .tabItem { Label(LocalizedStringKey("tab_challenges"), systemImage: "trophy") }
-            .tag(1)
+            // Owns its NavigationStack (list -> details); a tapped push opens a challenge via openChallengeId.
+            ChallengesContainerView(userId: viewModel.userId, isManager: viewModel.isManager, openChallengeId: $openChallengeId)
+                .tabItem { Label(LocalizedStringKey("tab_challenges"), systemImage: "trophy") }
+                .tag(1)
 
             if viewModel.isManager {
                 // Owns its NavigationStack (list -> details).
@@ -95,20 +90,14 @@ struct MainView: View {
         .task(id: viewModel.userId) {
             if let userId = viewModel.userId { notifications.start(userId: userId) }
         }
-        .onChange(of: pushNavigation.target) { _, target in openPushTarget(target) }
-        .onChange(of: viewModel.activities.count) { _, _ in openPushTarget(pushNavigation.target) }
+        .onChange(of: pushNavigation.target, initial: true) { _, target in openPushTarget(target) }
         .sheet(isPresented: $showNotifications, onDismiss: { notifications.refreshBadge() }) {
-            NotificationsView(
-                notifications: notifications.notifications,
-                isLoading: notifications.isLoading,
-                onSelect: { item in
-                    notifications.markRead(item.id)
-                    showNotifications = false
-                    pushNavigation.open(entityType: item.entityType, entityId: item.entityId)
-                },
-                onMarkAllRead: { notifications.markAllRead() },
-                onClose: { showNotifications = false }
-            )
+            // The tapped item's page is pushed inside the sheet, so "back" returns to the list (like Android).
+            if let userId = viewModel.userId {
+                NotificationsContainerView(userId: userId, observer: notifications, onClose: { showNotifications = false }) { id in
+                    ChallengeDetailView(challengeId: id, userId: userId)
+                }
+            }
         }
         .task(id: viewModel.userId) {
             if let userId = viewModel.userId { watchImport.start(userId: userId, teamId: viewModel.teamId) }
@@ -122,30 +111,28 @@ struct MainView: View {
 }
 
 extension MainView {
-    /// Opens the activity a tapped push / notification points to (once it is loaded).
+    /// Opens what a tapped push points to: the challenge in its tab, otherwise the activity on the feed.
     fileprivate func openPushTarget(_ target: PushTarget?) {
         guard let target else { return }
         if target.entityType == "challenge" {
             selectedTab = 1
-            pushNavigation.consume()
-        } else if let activity = viewModel.activities.first(where: { $0.id == target.entityId }) {
+            openChallengeId = target.entityId
+        } else {
             selectedTab = 0
-            selectedActivity = activity
-            pushNavigation.consume()
+            openActivityId = target.entityId
         }
+        pushNavigation.consume()
     }
 }
 
 @MainActor
 final class MainObserver: ObservableObject {
-    @Published var activities: [Activity] = []
     @Published var userId: String?
     @Published var teamId: String?
     @Published var isManager = false
     @Published var isRecording = false
 
     private let mainViewModel = IosDependencies.shared.mainViewModel()
-    private let activity = IosDependencies.shared.activityViewModel()
     nonisolated(unsafe) private var jobs: [any Kotlinx_coroutines_coreJob] = []
 
     func start() {
@@ -156,16 +143,9 @@ final class MainObserver: ObservableObject {
                 self?.teamId = state.teamId
             }
             guard let userId = state.userId else { return }
-            Task { @MainActor in
-                self?.userId = userId
-                self?.activity.processIntent(intent: ActivityIntentLoadUserActivities(userId: userId))
-            }
+            Task { @MainActor in self?.userId = userId }
         })
-        jobs.append(FlowObserverKt.watch(activity.state) { [weak self] value in
-            guard let state = value as? ActivityState else { return }
-            Task { @MainActor in self?.activities = state.activities }
-        })
-        // A running recording shows in the feed's toolbar, so it can be opened again after leaving its screen.
+        // A running recording shows on the feed's record button, so it can be opened again after leaving its screen.
         jobs.append(FlowObserverKt.watch(IosDependencies.shared.recordingViewModel().state) { [weak self] value in
             guard let state = value as? ActivityState else { return }
             Task { @MainActor in self?.isRecording = state.isTracking }

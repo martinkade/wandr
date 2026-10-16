@@ -416,4 +416,14 @@
     <string name="challenge_change_cover">Titelbild ändern</string>
     <string name="challenge_more_options">Weitere Optionen</string>
     <string name="challenge_goal_text">%1$s: %2$s</string>
+    <!-- Settings -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_open">Einstellungen</string>
+    <string name="settings_notifications_section">Benachrichtigungen</string>
+    <string name="settings_push_title">Push-Benachrichtigungen</string>
+    <string name="settings_push_description">Likes, Kommentare und Reaktionen zu deinen Aktivitäten und Challenges, auf diesem Gerät.</string>
+    <string name="settings_push_blocked">Benachrichtigungen für WANDR sind in den Systemeinstellungen blockiert.</string>
+    <string name="settings_open_system">Öffnen</string>
+    <string name="settings_about_section">Über</string>
+    <string name="settings_version">Version</string>
 </resources>

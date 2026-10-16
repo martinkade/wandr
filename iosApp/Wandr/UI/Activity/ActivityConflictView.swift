@@ -83,8 +83,11 @@ struct ActivityConflictView: View {
 }
 
 extension ActivityConflictView {
-    /// Builds the wizard from the shared conflict model.
-    init(conflict: ActivityConflict, isSaving: Bool, onResolve: @escaping (ConflictResolution) -> Void) {
+    /// Builds the wizard from the shared conflict model; [onCancel] is only offered when the conflict is dismissible.
+    init(
+        conflict: ActivityConflict, isSaving: Bool, onCancel: (() -> Void)? = nil,
+        onResolve: @escaping (ConflictResolution) -> Void
+    ) {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
@@ -94,7 +97,7 @@ extension ActivityConflictView {
             canTrim: conflict.canTrim,
             isSaving: isSaving,
             onResolve: onResolve,
-            onCancel: nil
+            onCancel: conflict.dismissible ? onCancel : nil
         )
     }
 }
