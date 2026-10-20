@@ -34,7 +34,6 @@ import com.wandr.android.ui.activity.WatchImportHost
 import com.wandr.android.ui.challenge.ChallengeDetailsScreen
 import com.wandr.android.ui.challenge.ChallengeListScreen
 import com.wandr.android.ui.common.HeroLayer
-import com.wandr.android.ui.settings.SettingsScreen
 import com.wandr.android.ui.common.HeroTransitionState
 import com.wandr.android.ui.common.LocalHeroTransition
 import com.wandr.android.ui.common.SlideInOverlay
@@ -42,6 +41,7 @@ import com.wandr.android.ui.feed.FeedScreen
 import com.wandr.android.ui.notifications.NotificationBellAction
 import com.wandr.android.ui.notifications.NotificationsScreen
 import com.wandr.android.ui.profile.ProfileScreen
+import com.wandr.android.ui.settings.SettingsScreen
 import com.wandr.android.ui.team.TeamDetailsScreen
 import com.wandr.android.ui.team.TeamsScreen
 import com.wandr.android.ui.theme.WandrTheme
@@ -177,8 +177,18 @@ fun MainScreen(
         SlideInOverlay(item = openActivityId.takeIf { userId != null }, onBack = { openActivityId = null }) { activityId ->
             ActivityDetailsScreen(activityId = activityId, userId = userId.orEmpty(), onBack = { openActivityId = null })
         }
-        SlideInOverlay(item = Unit.takeIf { showSettings }, onBack = { showSettings = false }) {
-            SettingsScreen(onBack = { showSettings = false })
+            SlideInOverlay(
+                item = userId.takeIf { showSettings },
+                onBack = { showSettings = false }) { id ->
+                SettingsScreen(
+                    userId = id,
+                    onBack = { showSettings = false },
+                    // Already signed out on this device: straight to the sign-in.
+                    onAccountDeleted = {
+                        showSettings = false
+                        onLogout()
+                    }
+                )
         }
         // Back is handled by the screen itself: it is blocked while a recording is running.
         SlideInOverlay(item = userId.takeIf { isRecording }, onBack = { }) { id ->

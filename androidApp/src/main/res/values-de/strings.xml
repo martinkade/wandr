@@ -426,4 +426,21 @@
     <string name="settings_open_system">Öffnen</string>
     <string name="settings_about_section">Über</string>
     <string name="settings_version">Version</string>
+    <string name="settings_scopes_section">Benachrichtige mich über</string>
+    <string name="settings_scope_activity_likes">Likes für meine Aktivitäten</string>
+    <string name="settings_scope_activity_comments">Kommentare und Reaktionen zu meinen Aktivitäten</string>
+    <string name="settings_scope_challenge_comments">Kommentare und Reaktionen zu meinen Challenges</string>
+    <string name="settings_scopes_hint">Gilt für die Benachrichtigungsliste und für Push auf allen deinen Geräten. Über Likes für Challenges wirst du nicht benachrichtigt.</string>
+    <string name="settings_account_section">Konto</string>
+    <string name="settings_account_reset">Kontodaten zurücksetzen</string>
+    <string name="settings_account_reset_description">Löscht deine Aktivitäten, Likes, Kommentare, Team-Mitgliedschaften, Teilnahmen sowie die Teams und Challenges, die du angelegt hast. Dein Konto und dein Profil bleiben.</string>
+    <string name="settings_account_reset_confirm_title">Deine Daten zurücksetzen?</string>
+    <string name="settings_account_reset_confirm_message">Alle deine Aktivitäten, Likes, Kommentare und Reaktionen, deine Team-Mitgliedschaften und Challenge-Teilnahmen sowie die Teams und Challenges, die du angelegt hast (auch für deren andere Mitglieder), werden auf dem Server und auf diesem Gerät gelöscht. Dein Konto und dein Profil bleiben. Das lässt sich nicht rückgängig machen.</string>
+    <string name="settings_account_reset_confirm">Zurücksetzen</string>
+    <string name="settings_account_reset_done">Deine Daten wurden gelöscht.</string>
+    <string name="settings_account_delete">Konto löschen</string>
+    <string name="settings_account_delete_description">Löscht dein Konto, dein Profil und alle deine Daten. Du wirst abgemeldet.</string>
+    <string name="settings_account_delete_confirm_title">Dein Konto löschen?</string>
+    <string name="settings_account_delete_confirm_message">Dein Konto, dein Profil und alle deine Daten (Aktivitäten, Likes, Kommentare, Team-Mitgliedschaften, Teilnahmen sowie die Teams und Challenges, die du angelegt hast, auch für deren andere Mitglieder) werden auf dem Server und auf diesem Gerät gelöscht. Du wirst abgemeldet. Das lässt sich nicht rückgängig machen.</string>
+    <string name="settings_account_delete_confirm">Löschen</string>
 </resources>

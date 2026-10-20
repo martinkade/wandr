@@ -70,7 +70,12 @@ struct MainView: View {
             }
 
             NavigationStack {
-                ProfileContainerView(userId: viewModel.userId, healthImport: healthImport, onLogout: { viewModel.logout(onLoggedOut) })
+                ProfileContainerView(
+                    userId: viewModel.userId, healthImport: healthImport,
+                    onLogout: { viewModel.logout(onLoggedOut) },
+                    // The deletion signed this device out already.
+                    onAccountDeleted: onLoggedOut
+                )
             }
             .tabItem { Label(LocalizedStringKey("tab_profile"), systemImage: "person.crop.circle") }
             .tag(3)

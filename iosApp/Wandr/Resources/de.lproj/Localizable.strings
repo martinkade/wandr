@@ -362,3 +362,22 @@
 "profile_stats_activities" = "Aktivitäten";
 "permission_camera_qr_message" = "WANDR nutzt die Kamera nur, um den QR-Code eines Teams zu scannen, damit du ihm beitreten kannst. Es wird kein Foto aufgenommen oder gespeichert.";
 "permission_camera_qr_denied" = "Der Kamerazugriff ist ausgeschaltet. Aktiviere ihn in den Einstellungen, um einen QR-Code zu scannen, oder gib den Einladungscode ein.";
+
+/* Settings: notification choices & account */
+"settings_scopes_section" = "Benachrichtige mich über";
+"settings_scope_activity_likes" = "Likes für meine Aktivitäten";
+"settings_scope_activity_comments" = "Kommentare und Reaktionen zu meinen Aktivitäten";
+"settings_scope_challenge_comments" = "Kommentare und Reaktionen zu meinen Challenges";
+"settings_scopes_hint" = "Gilt für die Benachrichtigungsliste und für Push auf allen deinen Geräten. Über Likes für Challenges wirst du nicht benachrichtigt.";
+"settings_account_section" = "Konto";
+"settings_account_reset" = "Kontodaten zurücksetzen";
+"settings_account_reset_description" = "Löscht deine Aktivitäten, Likes, Kommentare, Team-Mitgliedschaften, Teilnahmen sowie die Teams und Challenges, die du angelegt hast. Dein Konto und dein Profil bleiben.";
+"settings_account_reset_confirm_title" = "Deine Daten zurücksetzen?";
+"settings_account_reset_confirm_message" = "Alle deine Aktivitäten, Likes, Kommentare und Reaktionen, deine Team-Mitgliedschaften und Challenge-Teilnahmen sowie die Teams und Challenges, die du angelegt hast (auch für deren andere Mitglieder), werden auf dem Server und auf diesem Gerät gelöscht. Dein Konto und dein Profil bleiben. Das lässt sich nicht rückgängig machen.";
+"settings_account_reset_confirm" = "Zurücksetzen";
+"settings_account_reset_done" = "Deine Daten wurden gelöscht.";
+"settings_account_delete" = "Konto löschen";
+"settings_account_delete_description" = "Löscht dein Konto, dein Profil und alle deine Daten. Du wirst abgemeldet.";
+"settings_account_delete_confirm_title" = "Dein Konto löschen?";
+"settings_account_delete_confirm_message" = "Dein Konto, dein Profil und alle deine Daten (Aktivitäten, Likes, Kommentare, Team-Mitgliedschaften, Teilnahmen sowie die Teams und Challenges, die du angelegt hast, auch für deren andere Mitglieder) werden auf dem Server und auf diesem Gerät gelöscht. Du wirst abgemeldet. Das lässt sich nicht rückgängig machen.";
+"settings_account_delete_confirm" = "Löschen";

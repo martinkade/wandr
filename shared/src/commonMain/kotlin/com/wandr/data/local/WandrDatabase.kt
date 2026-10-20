@@ -42,6 +42,7 @@ abstract class WandrDatabase : RoomDatabase() {
     abstract fun challengeDao(): ChallengeDao
     abstract fun challengeParticipantDao(): ChallengeParticipantDao
     abstract fun activityDao(): ActivityDao
+    abstract fun cacheDao(): com.wandr.data.local.dao.CacheDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

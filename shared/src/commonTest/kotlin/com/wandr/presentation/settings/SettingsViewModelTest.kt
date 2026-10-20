@@ -1,10 +1,18 @@
 package com.wandr.presentation.settings
 
+import com.wandr.domain.model.NotificationPreferences
+import com.wandr.domain.model.NotificationScope
 import com.wandr.domain.push.PushTokenManager
+import com.wandr.domain.repository.AccountRepository
+import com.wandr.domain.repository.NotificationPreferencesRepository
 import com.wandr.domain.repository.PushTokenRepository
 import com.wandr.domain.settings.AppSettings
 import com.wandr.domain.settings.PreferenceStore
+import com.wandr.domain.usecase.DeleteAccountUseCase
+import com.wandr.domain.usecase.GetNotificationPreferencesUseCase
 import com.wandr.domain.usecase.RegisterPushTokenUseCase
+import com.wandr.domain.usecase.ResetAccountUseCase
+import com.wandr.domain.usecase.SaveNotificationPreferencesUseCase
 import com.wandr.domain.usecase.UnregisterPushTokenUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.TestScope
@@ -14,6 +22,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private class MemoryStore : PreferenceStore {
@@ -37,6 +46,35 @@ private class TokenServer : PushTokenRepository {
     }
 }
 
+private class PreferencesServer : NotificationPreferencesRepository {
+    var online = true
+    var stored = NotificationPreferences()
+    override suspend fun get(userId: String) =
+        if (online) Result.success(stored) else Result.failure(IllegalStateException("offline"))
+
+    override suspend fun save(userId: String, preferences: NotificationPreferences): Result<Unit> {
+        if (!online) return Result.failure(IllegalStateException("offline"))
+        stored = preferences
+        return Result.success(Unit)
+    }
+}
+
+private class AccountServer : AccountRepository {
+    var online = true
+    val calls = mutableListOf<String>()
+    override suspend fun resetData(userId: String): Result<Unit> {
+        if (!online) return Result.failure(IllegalStateException("offline"))
+        calls += "reset:$userId"
+        return Result.success(Unit)
+    }
+
+    override suspend fun deleteAccount(userId: String): Result<Unit> {
+        if (!online) return Result.failure(IllegalStateException("offline"))
+        calls += "delete:$userId"
+        return Result.success(Unit)
+    }
+}
+
 class SettingsViewModelTest {
     private class Setup(scope: TestScope) {
         val store = MemoryStore()
@@ -47,7 +85,17 @@ class SettingsViewModelTest {
             RegisterPushTokenUseCase(server), UnregisterPushTokenUseCase(server), CoroutineScope(dispatcher),
             isPushEnabled = { settings.pushNotificationsEnabled }
         )
-        val vm = SettingsViewModel(settings, manager, CoroutineScope(dispatcher))
+        val preferences = PreferencesServer()
+        val account = AccountServer()
+        val vm = SettingsViewModel(
+            settings,
+            manager,
+            GetNotificationPreferencesUseCase(preferences),
+            SaveNotificationPreferencesUseCase(preferences),
+            ResetAccountUseCase(account),
+            DeleteAccountUseCase(account, manager),
+            CoroutineScope(dispatcher)
+        )
     }
 
     @Test
@@ -91,5 +139,73 @@ class SettingsViewModelTest {
         s.server.online = true
         s.manager.registerIfPossible() // e.g. the next start
         assertEquals(emptySet(), s.server.tokens)
+    }
+
+    @Test
+    fun thePreferencesComeFromTheServerAndAChangeIsSaved() = runTest {
+        val s = Setup(this)
+        s.preferences.stored = NotificationPreferences(activityLikes = false)
+        s.vm.processIntent(SettingsIntent.Load("u1"))
+        assertEquals(false, s.vm.state.value.notificationPreferences?.activityLikes)
+
+        s.vm.processIntent(
+            SettingsIntent.SetNotificationScope(
+                NotificationScope.CHALLENGE_COMMENTS,
+                false
+            )
+        )
+        assertEquals(
+            NotificationPreferences(activityLikes = false, challengeComments = false),
+            s.preferences.stored
+        )
+        assertEquals(s.preferences.stored, s.vm.state.value.notificationPreferences)
+    }
+
+    @Test
+    fun aChangeThatCannotBeSavedIsTakenBack() = runTest {
+        val s = Setup(this)
+        s.vm.processIntent(SettingsIntent.Load("u1"))
+        s.preferences.online = false
+        s.vm.processIntent(
+            SettingsIntent.SetNotificationScope(
+                NotificationScope.ACTIVITY_COMMENTS,
+                false
+            )
+        )
+        assertEquals(true, s.vm.state.value.notificationPreferences?.activityComments)
+        assertNotNull(s.vm.state.value.error)
+    }
+
+    @Test
+    fun resetKeepsTheAccountAndDeletionReportsTheSignOut() = runTest {
+        val s = Setup(this)
+        s.vm.processIntent(SettingsIntent.Load("u1"))
+
+        s.vm.processIntent(SettingsIntent.ResetAccount)
+        assertEquals(SettingsSuccess.ACCOUNT_RESET, s.vm.state.value.success)
+        assertFalse(s.vm.state.value.isResettingAccount)
+
+        s.vm.processIntent(SettingsIntent.ClearMessages)
+        s.vm.processIntent(SettingsIntent.DeleteAccount)
+        assertEquals(SettingsSuccess.ACCOUNT_DELETED, s.vm.state.value.success)
+        assertEquals(listOf("reset:u1", "delete:u1"), s.account.calls)
+    }
+
+    @Test
+    fun aFailedDeletionKeepsTheUserSignedInAndShowsTheError() = runTest {
+        val s = Setup(this)
+        s.vm.processIntent(SettingsIntent.Load("u1"))
+        s.account.online = false
+        s.vm.processIntent(SettingsIntent.DeleteAccount)
+        assertNull(s.vm.state.value.success)
+        assertNotNull(s.vm.state.value.error)
+        assertFalse(s.vm.state.value.isDeletingAccount)
+    }
+
+    @Test
+    fun withoutASignedInUserNothingHappens() = runTest {
+        val s = Setup(this)
+        s.vm.processIntent(SettingsIntent.DeleteAccount)
+        assertEquals(emptyList(), s.account.calls)
     }
 }

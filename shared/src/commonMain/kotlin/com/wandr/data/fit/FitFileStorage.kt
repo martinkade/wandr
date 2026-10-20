@@ -37,6 +37,13 @@ class FitFileStorage(
         fileSystem.delete(file, mustExist = false)
     }
 
+    /** Deletes every FIT file of this storage (account reset / deletion). */
+    fun deleteAll() {
+        if (!fileSystem.exists(directory)) return
+        fileSystem.list(directory).filter { isOwnFile(it) }
+            .forEach { fileSystem.delete(it, mustExist = false) }
+    }
+
     /** Only touches files directly inside [directory], never arbitrary paths. */
     private fun isOwnFile(file: Path): Boolean = file.parent == directory && file.name.endsWith(".fit")
 }

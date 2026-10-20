@@ -362,3 +362,22 @@
 "profile_stats_activities" = "Activities";
 "permission_camera_qr_message" = "WANDR uses the camera only to scan a team's QR code so you can join it. No photo is taken or saved.";
 "permission_camera_qr_denied" = "Camera access is turned off. Enable it in Settings to scan a QR code, or enter the invite code.";
+
+/* Settings: notification choices & account */
+"settings_scopes_section" = "Notify me about";
+"settings_scope_activity_likes" = "Likes on my activities";
+"settings_scope_activity_comments" = "Comments and reactions on my activities";
+"settings_scope_challenge_comments" = "Comments and reactions on my challenges";
+"settings_scopes_hint" = "Applies to the notifications list and to push on all your devices. Likes on challenges are not notified.";
+"settings_account_section" = "Account";
+"settings_account_reset" = "Reset account data";
+"settings_account_reset_description" = "Deletes your activities, likes, comments, team memberships, participations and the teams and challenges you created. Your account and profile stay.";
+"settings_account_reset_confirm_title" = "Reset your data?";
+"settings_account_reset_confirm_message" = "All your activities, likes, comments and reactions, your team memberships and challenge participations, and the teams and challenges you created (also for their other members) are deleted on the server and on this device. Your account and profile stay. This cannot be undone.";
+"settings_account_reset_confirm" = "Reset";
+"settings_account_reset_done" = "Your data has been deleted.";
+"settings_account_delete" = "Delete account";
+"settings_account_delete_description" = "Deletes your account, your profile and all your data. You are signed out.";
+"settings_account_delete_confirm_title" = "Delete your account?";
+"settings_account_delete_confirm_message" = "Your account, your profile and all your data (activities, likes, comments, team memberships, participations, and the teams and challenges you created, also for their other members) are deleted on the server and on this device. You are signed out. This cannot be undone.";
+"settings_account_delete_confirm" = "Delete";

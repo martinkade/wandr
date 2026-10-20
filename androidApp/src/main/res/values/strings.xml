@@ -426,4 +426,21 @@
     <string name="settings_open_system">Open</string>
     <string name="settings_about_section">About</string>
     <string name="settings_version">Version</string>
+    <string name="settings_scopes_section">Notify me about</string>
+    <string name="settings_scope_activity_likes">Likes on my activities</string>
+    <string name="settings_scope_activity_comments">Comments and reactions on my activities</string>
+    <string name="settings_scope_challenge_comments">Comments and reactions on my challenges</string>
+    <string name="settings_scopes_hint">Applies to the notifications list and to push on all your devices. Likes on challenges are not notified.</string>
+    <string name="settings_account_section">Account</string>
+    <string name="settings_account_reset">Reset account data</string>
+    <string name="settings_account_reset_description">Deletes your activities, likes, comments, team memberships, participations and the teams and challenges you created. Your account and profile stay.</string>
+    <string name="settings_account_reset_confirm_title">Reset your data?</string>
+    <string name="settings_account_reset_confirm_message">All your activities, likes, comments and reactions, your team memberships and challenge participations, and the teams and challenges you created (also for their other members) are deleted on the server and on this device. Your account and profile stay. This cannot be undone.</string>
+    <string name="settings_account_reset_confirm">Reset</string>
+    <string name="settings_account_reset_done">Your data has been deleted.</string>
+    <string name="settings_account_delete">Delete account</string>
+    <string name="settings_account_delete_description">Deletes your account, your profile and all your data. You are signed out.</string>
+    <string name="settings_account_delete_confirm_title">Delete your account?</string>
+    <string name="settings_account_delete_confirm_message">Your account, your profile and all your data (activities, likes, comments, team memberships, participations, and the teams and challenges you created, also for their other members) are deleted on the server and on this device. You are signed out. This cannot be undone.</string>
+    <string name="settings_account_delete_confirm">Delete</string>
 </resources>

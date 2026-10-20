@@ -8,6 +8,8 @@ struct ProfileContainerView: View {
     /// Owned by the main view, which also syncs it when the app becomes active.
     @ObservedObject var healthImport: HealthKitImporter
     var onLogout: () -> Void = {}
+    var onAccountDeleted: () -> Void = {
+    }
     @StateObject private var observer = ProfileObserver()
     @StateObject private var teams = TeamObserver()
     @State private var showJoin = false
@@ -28,6 +30,8 @@ struct ProfileContainerView: View {
             onAvatarReady: observer.uploadAvatar,
             onRemoveAvatar: observer.removeAvatar,
             onLogout: onLogout,
+            userId: userId,
+            onAccountDeleted: onAccountDeleted,
             healthSummary: healthImport.isEnabled ? healthImport.summary : nil,
             onHealthSettings: healthImport.openSettingsOrConnect,
             teams: teams.teams,

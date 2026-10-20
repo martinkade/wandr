@@ -48,4 +48,17 @@ val dataModule = module {
     single<com.wandr.domain.repository.PushTokenRepository> { com.wandr.data.repository.PushTokenRepositoryImpl(get()) }
     single<com.wandr.domain.repository.ActivityFeedRepository> { com.wandr.data.repository.ActivityFeedRepositoryImpl(get(), get(), get(), get()) }
     single { SyncManager(get(), get(), get(), get(), get()) }
+    single { get<com.wandr.data.local.WandrDatabase>().cacheDao() }
+    single<com.wandr.domain.repository.NotificationPreferencesRepository> {
+        com.wandr.data.repository.NotificationPreferencesRepositoryImpl(
+            get()
+        )
+    }
+    single<com.wandr.domain.repository.AccountRepository> {
+        com.wandr.data.repository.AccountRepositoryImpl(
+            get(),
+            get(),
+            get()
+        )
+    }
 }

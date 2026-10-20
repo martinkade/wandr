@@ -21,6 +21,11 @@ struct ProfileView: View {
     var onAvatarReady: (Data) -> Void = { _ in }
     var onRemoveAvatar: () -> Void = {}
     var onLogout: () -> Void = {}
+    /// The signed-in user, for the settings (notification choices, account reset / deletion).
+    var userId: String? = nil
+    /// After the account was deleted (this device is signed out already): back to the sign-in.
+    var onAccountDeleted: () -> Void = {
+    }
     var healthSummary: DailyHealthSummary? = nil
     var onHealthSettings: () -> Void = {}
     /// The user's teams, highest priority first.
@@ -84,7 +89,7 @@ struct ProfileView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
-                    SettingsView()
+                    SettingsView(userId: userId, onAccountDeleted: onAccountDeleted)
                 } label: {
                     Image(systemName: "gearshape")
                 }

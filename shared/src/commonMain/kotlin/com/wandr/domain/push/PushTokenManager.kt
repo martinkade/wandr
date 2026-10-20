@@ -57,6 +57,11 @@ class PushTokenManager(
         }
     }
 
+    /** The server dropped this device's registration (the account was deleted): register again for the next user. */
+    fun forgetRegistration() {
+        registeredToken = null
+    }
+
     /** Stops pushes for the signed-in user; call before signing out (the server needs the session to allow it). */
     suspend fun unregisterCurrent() {
         val current = registeredToken ?: return

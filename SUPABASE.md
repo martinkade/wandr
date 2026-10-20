@@ -239,6 +239,16 @@ CREATE TABLE public.notifications (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- What a user wants to be notified about (in the inbox and by push). No row = everything on. Likes on challenges
+-- are never notified.
+CREATE TABLE public.notification_preferences (
+    user_id UUID PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
+    activity_likes BOOLEAN NOT NULL DEFAULT TRUE,       -- likes on my activities
+    activity_comments BOOLEAN NOT NULL DEFAULT TRUE,    -- comments on my activities, reactions to my comments there
+    challenge_comments BOOLEAN NOT NULL DEFAULT TRUE,   -- comments on my challenges, reactions to my comments there
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Indexes for the social feed and the notification inbox
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient_created ON public.notifications(recipient_user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_entity_created ON public.comments(entity_type, entity_id, created_at);
@@ -631,6 +641,13 @@ CREATE POLICY "Users can delete their own device tokens"
     ON public.device_tokens FOR DELETE TO authenticated
     USING (user_id = auth.uid());
 
+ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users manage their own notification preferences"
+    ON public.notification_preferences FOR ALL TO authenticated
+    USING (user_id = auth.uid())
+    WITH CHECK (user_id = auth.uid());
+
 -- Clients may only flip is_read (no INSERT policy exists, so only triggers create notifications).
 REVOKE UPDATE ON public.notifications FROM authenticated;
 GRANT UPDATE (is_read) ON public.notifications TO authenticated;
@@ -1005,6 +1022,9 @@ Likes, comments and reactions create notifications through `SECURITY DEFINER` tr
 `notifications`). Nobody is notified about their own actions. `notifications.target_id` is the entity id; `payload`
 carries `entity_type`, `entity_id`, plus `comment_id` / `preview` (first 80 chars) for comments and `comment_id` /
 `emoji` for reactions. Recipients: like and comment notify the entity owner, a reaction notifies the comment author.
+Each recipient chooses what they get (`notification_preferences`, see `wants_notification`): likes
+on activities, comments on (and reactions in) activities, comments on (and reactions in) challenges.
+Likes on challenges are never notified.
 
 ```sql
 -- Comments: only the content can change; updated_at is kept fresh by the server.
@@ -1020,13 +1040,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SET search_path = public;
 
+-- Whether [p_user] wants a notification of [p_kind] ('like', 'comment', 'reaction') about an entity of [p_entity_type]
+-- (their notification preferences; no row = yes). Likes on challenges are never notified. Reactions count with comments.
+CREATE OR REPLACE FUNCTION public.wants_notification(p_user UUID, p_entity_type social_entity_type, p_kind TEXT)
+RETURNS BOOLEAN AS $$
+    SELECT CASE
+        WHEN p_kind = 'like' AND p_entity_type = 'challenge' THEN FALSE
+        WHEN p_kind = 'like' THEN COALESCE((SELECT activity_likes FROM public.notification_preferences WHERE user_id = p_user), TRUE)
+        WHEN p_entity_type = 'challenge' THEN COALESCE((SELECT challenge_comments FROM public.notification_preferences WHERE user_id = p_user), TRUE)
+        ELSE COALESCE((SELECT activity_comments FROM public.notification_preferences WHERE user_id = p_user), TRUE)
+    END;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
+
 -- like -> entity owner
 CREATE OR REPLACE FUNCTION public.notify_on_like()
 RETURNS TRIGGER AS $$
 DECLARE
     v_owner UUID := public.entity_owner_id(NEW.entity_type, NEW.entity_id);
 BEGIN
-    IF v_owner IS NOT NULL AND v_owner <> NEW.user_id THEN
+    IF v_owner IS NOT NULL AND v_owner <> NEW.user_id AND public.wants_notification(v_owner, NEW.entity_type, 'like') THEN
         INSERT INTO public.notifications (recipient_user_id, actor_user_id, notification_type, target_id, payload)
         VALUES (v_owner, NEW.user_id, 'like', NEW.entity_id,
                 jsonb_build_object('entity_type', NEW.entity_type, 'entity_id', NEW.entity_id));
@@ -1041,7 +1073,7 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_owner UUID := public.entity_owner_id(NEW.entity_type, NEW.entity_id);
 BEGIN
-    IF v_owner IS NOT NULL AND v_owner <> NEW.user_id THEN
+    IF v_owner IS NOT NULL AND v_owner <> NEW.user_id AND public.wants_notification(v_owner, NEW.entity_type, 'comment') THEN
         INSERT INTO public.notifications (recipient_user_id, actor_user_id, notification_type, target_id, payload)
         VALUES (v_owner, NEW.user_id, 'comment', NEW.entity_id,
                 jsonb_build_object('entity_type', NEW.entity_type, 'entity_id', NEW.entity_id,
@@ -1058,7 +1090,8 @@ DECLARE
     v_comment public.comments%ROWTYPE;
 BEGIN
     SELECT * INTO v_comment FROM public.comments WHERE id = NEW.comment_id;
-    IF FOUND AND v_comment.user_id <> NEW.user_id THEN
+    IF FOUND AND v_comment.user_id <> NEW.user_id
+       AND public.wants_notification(v_comment.user_id, v_comment.entity_type, 'reaction') THEN
         INSERT INTO public.notifications (recipient_user_id, actor_user_id, notification_type, target_id, payload)
         VALUES (v_comment.user_id, NEW.user_id, 'reaction', v_comment.entity_id,
                 jsonb_build_object('entity_type', v_comment.entity_type, 'entity_id', v_comment.entity_id,
@@ -1219,6 +1252,77 @@ GRANT EXECUTE ON FUNCTION public.social_counts(social_entity_type, UUID[]) TO au
 ```
 
 ---
+
+### Account reset & deletion
+
+The user can wipe their data (reset) or their whole account (deletion) in the app's settings. Both
+run on the server as the user (`auth.uid()`); the app also clears its local cache and deletes the
+user's files in Storage first (the Storage API is the only supported way to delete files; teams' and
+challenges' covers and, on deletion, the avatar).
+
+- **Reset** removes everything the user created or did, but keeps the account and the profile (name,
+  avatar, bio) and the device tokens (push keeps working): activities (with routes; their likes,
+  comments and notifications go with them), the user's likes, comments and reactions anywhere, likes
+  and comments on the user's challenges, the challenges and teams the user created (for everyone:
+  other members lose these teams), participations, team memberships, notifications sent to or caused
+  by the user, and the notification preferences.
+- **Deletion** does the reset and then deletes the auth user; the profile and everything left that
+  refers to it go with it (foreign keys `ON DELETE CASCADE`). The app signs out locally afterwards.
+
+The functions must be created by the `postgres` role (SQL editor) so that `delete_my_account` may
+delete from
+`auth.users`.
+
+```sql
+CREATE OR REPLACE FUNCTION public.reset_my_data()
+RETURNS VOID AS $$
+DECLARE
+    v_user UUID := auth.uid();
+BEGIN
+    IF v_user IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+    -- Likes and comments carry no foreign key to what they are about: the ones on the user's challenges first.
+    DELETE FROM public.likes WHERE entity_type = 'challenge'
+        AND entity_id IN (SELECT id FROM public.challenges WHERE created_by = v_user);
+    DELETE FROM public.comments WHERE entity_type = 'challenge'
+        AND entity_id IN (SELECT id FROM public.challenges WHERE created_by = v_user);
+    -- What the user did anywhere (reactions to a deleted comment go with it).
+    DELETE FROM public.comment_reactions WHERE user_id = v_user;
+    DELETE FROM public.comments WHERE user_id = v_user;
+    DELETE FROM public.likes WHERE user_id = v_user;
+    -- Activities: routes, likes, comments and notifications go with them (foreign keys / on_activity_deleted); the
+    -- challenge progress is recalculated (on_activity_changed).
+    DELETE FROM public.activities WHERE user_id = v_user;
+    -- Challenges and teams the user created (enrollments, participants and memberships go with them).
+    DELETE FROM public.challenges WHERE created_by = v_user;
+    DELETE FROM public.teams WHERE created_by = v_user;
+    DELETE FROM public.challenge_participants WHERE user_id = v_user;
+    DELETE FROM public.team_members WHERE user_id = v_user;
+    DELETE FROM public.notifications WHERE recipient_user_id = v_user OR actor_user_id = v_user;
+    DELETE FROM public.notification_preferences WHERE user_id = v_user;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE OR REPLACE FUNCTION public.delete_my_account()
+RETURNS VOID AS $$
+DECLARE
+    v_user UUID := auth.uid();
+BEGIN
+    IF v_user IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+    PERFORM public.reset_my_data();
+    -- The profile (and device tokens, anything left) go with the auth user (ON DELETE CASCADE).
+    DELETE FROM auth.users WHERE id = v_user;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth;
+
+REVOKE ALL ON FUNCTION public.reset_my_data() FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.delete_my_account() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.reset_my_data() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.delete_my_account() TO authenticated;
+```
 
 ### Realtime
 
